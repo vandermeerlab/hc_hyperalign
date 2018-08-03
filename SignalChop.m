@@ -1,4 +1,4 @@
-function [AdjSig] = SignalChop(TrialStart,TrialEnd,t,signal)
+function [AdjSignal] = SignalChop(TrialStart,TrialEnd,t,signal)
 % This function truncates the signal based on one of two options; chopping
 % the signal based on the start and end point of a traversal through space
 % or by modifying the length of the signal in samples (i.e. time)
@@ -15,12 +15,9 @@ function [AdjSig] = SignalChop(TrialStart,TrialEnd,t,signal)
 %           3)adjusted signal of longest signal to match shortest
 %
 
+t_extend = linspace(t(1,1),t(1,end),length(signal));
 
-t = linspace(t(1,1),t(1,end),length(signal));
 
-t = t(t(1,:)>TrialStart(1,1) & t(,:)<TrialEnd(1,1));
-
-AdjSig = signal((t(1,1):t(1,end)),:);
 
 end
 
