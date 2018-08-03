@@ -16,9 +16,11 @@ function [AdjSig] = SignalChop(TrialStart,TrialEnd,t,signal)
 %
 
 
-t = linspace(t(TrialStart(1,1)),t(TrialEnd(1,end)),length(signal));
+t = linspace(t(1,1),t(1,end),length(signal));
 
-AdjSig = signal(t(1,1),t(1,end));
+t = t(t(1,:)>TrialStart(1,1) & t(,:)<TrialEnd(1,1));
+
+AdjSig = signal((t(1,1):t(1,end)),:);
 
 end
 
