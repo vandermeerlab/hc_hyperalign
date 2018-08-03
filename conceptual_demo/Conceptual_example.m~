@@ -1,4 +1,10 @@
-% load example data
+% Some notes:
+
+% The classic 
+
+
+
+load example data
 load T_maze_demo.mat pos1 Q1 
 
 % Pos1 is a vector describing where the animial is at each time point.
@@ -9,7 +15,7 @@ pos1.data; % location data, can be binned data
 pos1.tvec;  % time data, can be bined data 
 
 % pos1.data generate random location
-pos1.data(5001:end) = randi(100,1,5000);
+% pos1.data(5001:end) = randi(100,1,5000);
 
 [N,Xedges,Yedges] = histcounts2(pos1.tvec,pos1.data,1:10001,1:11);
 
@@ -41,12 +47,30 @@ title('Representaitonal Matrix: Neuronal By loction')
 %% reduce the factors (neurons) to 3 major components
 [reducedR scoreR] = pca(R,'NumComponents',10);
 
-for i=1:20
+steps=size(scoreR,1)/20;
+
+for i=1:size(scoreR,1)/steps
 figure(1);subplot(1,4,4);
-plot3(scoreR([1:floor(100/20)*i-10],1),scoreR([1:floor(100/20)*i-10],2),scoreR([1:floor(100/20)*i-10],3),'r.');
+plot3(scoreR([1:steps*i-10],1),scoreR([1:steps*i-10],2),scoreR([1:steps*i-10],3),'r.');
 axis([min(scoreR(:,1)) max(scoreR(:,1)) min(scoreR(:,2)) max(scoreR(:,2)) min(scoreR(:,3)) max(scoreR(:,3))]);
-hold on; WaitSecs(0.1)
-title('Dimension reduction to 3 components')
+hold on; WaitSecs(0.01)
+title('Dimension reduction to 3 components: Based on the Q matrix')
+end
+
+
+
+%% What if we reduce the dimensionality only based on the Q matrix
+
+[reducedR scoreR] = pca(Q','NumComponents',10);
+
+steps=size(scoreR,1)/200;
+
+for i=1:size(scoreR,1)/steps
+figure(2);
+plot3(scoreR([1:steps*i-10],1),scoreR([1:steps*i-10],2),scoreR([1:steps*i-10],3),'r.');
+axis([min(scoreR(:,1)) max(scoreR(:,1)) min(scoreR(:,2)) max(scoreR(:,2)) min(scoreR(:,3)) max(scoreR(:,3))]);
+hold on; WaitSecs(0.01)
+title('Dimension reduction to 3 components: Based on the Q matrix')
 end
 
 

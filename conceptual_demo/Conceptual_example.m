@@ -1,4 +1,17 @@
-% load example data
+% Some notes:
+
+% The concept comes from this following paper Haxby, J. V., Connolly, A.
+% C., & Guntupalli, J. S. (2014). Decoding Neural Representational Spaces
+% Using Multivariate Pattern Analysis. Annual Review of Neuroscience,
+% 37(1), 435?456. http://doi.org/10.1146/annurev-neuro-062012-170325
+
+% This approach makes most sense when we would like to decode the
+% data pattern. However, if we do not want to decode behaivoral pattern,
+% the multiplication of Neural by Time (Q) matrix with a Behavioral (B)
+% matrix is not necessary. 
+% 
+
+load example data
 load T_maze_demo.mat pos1 Q1 
 
 % Pos1 is a vector describing where the animial is at each time point.
@@ -41,12 +54,30 @@ title('Representaitonal Matrix: Neuronal By loction')
 %% reduce the factors (neurons) to 3 major components
 [reducedR scoreR] = pca(R,'NumComponents',10);
 
-for i=1:20
+steps=size(scoreR,1)/20;
+
+for i=1:size(scoreR,1)/steps
 figure(1);subplot(1,4,4);
-plot3(scoreR([1:floor(100/20)*i-10],1),scoreR([1:floor(100/20)*i-10],2),scoreR([1:floor(100/20)*i-10],3),'r.');
+plot3(scoreR([1:steps*i-10],1),scoreR([1:steps*i-10],2),scoreR([1:steps*i-10],3),'r.');
 axis([min(scoreR(:,1)) max(scoreR(:,1)) min(scoreR(:,2)) max(scoreR(:,2)) min(scoreR(:,3)) max(scoreR(:,3))]);
-hold on; WaitSecs(0.1)
-title('Dimension reduction to 3 components')
+hold on; WaitSecs(0.01)
+title('Dimension reduction to 3 components: Based on the Q matrix')
+end
+
+
+
+%% What if we reduce the dimensionality only based on the Q matrix
+
+[reducedR scoreR] = pca(Q','NumComponents',10);
+
+steps=size(scoreR,1)/200;
+
+for i=1:size(scoreR,1)/steps
+figure(2);
+plot3(scoreR([1:steps*i-10],1),scoreR([1:steps*i-10],2),scoreR([1:steps*i-10],3),'r.');
+axis([min(scoreR(:,1)) max(scoreR(:,1)) min(scoreR(:,2)) max(scoreR(:,2)) min(scoreR(:,3)) max(scoreR(:,3))]);
+hold on; WaitSecs(0.01)
+title('Dimension reduction to 3 components: Based on the Q matrix')
 end
 
 
