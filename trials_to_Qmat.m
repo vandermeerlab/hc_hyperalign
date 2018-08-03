@@ -4,8 +4,8 @@
 %% 
 clear;
 %For Justin's data
-animalprefix = 'ER1'
-dir = '/Users/justinshin/Desktop/MIND18_data/ER1_direct/'
+animalprefix = 'JS15'
+dir = '/Users/justinshin/Desktop/MIND18_data/JS15_direct/'
 
 load(sprintf('%s%shpidx.mat',dir,animalprefix)); %load indices for hpc cells
 load(sprintf('%s%sctxidx.mat',dir,animalprefix)); %load indices for pfc cells (if using)
@@ -111,10 +111,10 @@ for epoch = 2:2:16;
 end
 %% 
 
-load(sprintf('%s%sspikesforQmat_hpc_left.mat',dir,animalprefix)); 
-load(sprintf('%s%sspikesforQmat_hpc_right.mat',dir,animalprefix)); 
-load(sprintf('%s%sspikesforQmat_pfc_left.mat',dir,animalprefix));
-load(sprintf('%s%sspikesforQmat_pfc_right.mat',dir,animalprefix)); 
+% load(sprintf('%s%sspikesforQmat_hpc_left.mat',dir,animalprefix)); 
+% load(sprintf('%s%sspikesforQmat_hpc_right.mat',dir,animalprefix)); 
+% load(sprintf('%s%sspikesforQmat_pfc_left.mat',dir,animalprefix));
+% load(sprintf('%s%sspikesforQmat_pfc_right.mat',dir,animalprefix)); 
 
 %Get Q Matrices
 for r = 1:length(hpc_spikesforQfunction_left)
