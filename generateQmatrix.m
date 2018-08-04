@@ -1,4 +1,4 @@
-function [Qmat_data] = generateQmatrix(reg_trials, spikes, datadirectory)
+function [Qmat_data] = generateQmatrix(reg_trials, spikes)
 
 %function to compile spiking data into left and right Q matrices for
 %subsequent PCA analysis. 
