@@ -3,7 +3,7 @@
 adjust = 1;
 %% chop signal from each trial
 for i = 1:length(Int)
-    temp{i,:} = time(time > Int(i,1) & time < Int (i,5));
+    temp{i,:} = time(time > Int(i,1) & time < Int (i,2));
 end
 %% not resizing
 if adjust == 0;
