@@ -1,4 +1,4 @@
-function [Qmat_data] = generateQmatrix(reg_trials, spikes)
+function [Qmat_data] = generateQmatrix(reg_trials, spikes, concatenate)
 
 %function to compile spiking data into left and right Q matrices for
 %subsequent PCA analysis. 
@@ -10,6 +10,10 @@ function [Qmat_data] = generateQmatrix(reg_trials, spikes)
 %trial/trajectory and creates NxT matrices.
 
 %%%% may include options %%%
+
+%option - concatenate
+    %if concatenate = 1, concatenate all left and right trials separately
+    %into one large Q matrix.
 
 %get spikes for left trials
 for l = 1:length(reg_trials.left(:,1));
@@ -46,6 +50,24 @@ for r = 1:length(spikesforQ_right)
      Qmat_data.right{r}.Q = Q.data
      Qmat_data.right{r}.time = Q.tsd
 end
+
+%concatenate everything if you want to
+if concatenate == 1;
+    Qmat_data.left.concat = Qmat_data.left{1}.Q
+    for s = 2:numel(Qmat_data.left)
+        Qmat_data.left.concat = [Qmat_data.left.concat Qmat_data.left{s}.Q];
+    end
+    
+    Qmat_data.right.concat = Qmat_data.right{1}.Q
+    for s = 2:numel(Qmat_data.right)
+        Qmat_data.right.concat = [Qmat_data.right.concat Qmat_data.right{s}.Q];
+    end
+end
+ 
+
+
+
+
 
  
 
