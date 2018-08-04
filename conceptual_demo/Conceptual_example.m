@@ -11,7 +11,9 @@
 % matrix is not necessary. 
 % 
 
-load example data
+close all 
+clear all 
+%load example data
 load T_maze_demo.mat pos1 Q1 
 
 % Pos1 is a vector describing where the animial is at each time point.
@@ -22,7 +24,7 @@ pos1.data; % location data, can be binned data
 pos1.tvec;  % time data, can be bined data 
 
 % pos1.data generate random location
-% pos1.data(5001:end) = randi(100,1,5000);
+%pos1.data(5001:end) = randi(100,1,5000);
 
 [N,Xedges,Yedges] = histcounts2(pos1.tvec,pos1.data,1:10001,1:11);
 
@@ -83,4 +85,78 @@ end
 
 
 
+
+%% 5 trials data
+
+Qtrail{1} = Q1(:,1:10000);
+Qtrail{2} = Q1(:,10001:20000);
+Qtrail{3} = Q1(:,20001:30000);
+Qtrail{4} = Q1(:,30001:40000);
+Qtrail{5} = Q1(:,40001:50000);
+
+
+[coeff1,score1,latent,tsquared,explained,mu1] = pca(Qtrail{1}','NumComponents',10);
+
+% rawQ = score1*coeff1' + repmat(mu1, size(score1,1),1);
+
+rawQ = Qtrail{2}';
+reconstruct_score = [rawQ - repmat(mean(rawQ), size(score1,1),1)]/coeff1';
+
+
+
+
+%%
+
+% [reducedR scoreR] = pca(Q','NumComponents',10);
+
+
+scoreR = reconstruct_score;
+steps=size(scoreR,1)/200;
+
+for i=1:size(scoreR,1)/steps
+figure(2);hold on; 
+plot3(scoreR([1:steps*i-10],1),scoreR([1:steps*i-10],2),scoreR([1:steps*i-10],3));
+% axis([min(scoreR(:,1)) max(scoreR(:,1)) min(scoreR(:,2)) max(scoreR(:,2)) min(scoreR(:,3)) max(scoreR(:,3))]);
+hold on; WaitSecs(0.01)
+title('Dimension reduction to 3 components: Based on the Q matrix')
+end
+
+% goodness of fit 
+
+
+
+
+
+%% Plot the data 
+
+reconstruct_score = pca_reconstruction(Qhpc_left,2,0);
+
+
+for itr = 1%:size(reconstruct_score,2)
+
+    
+   
+scoreR = reconstruct_score{itr};
+steps=size(scoreR,1)/140;
+
+
+     curclr = rand(1,3);
+     
+     figure(5);    
+     plot3(scoreR(:,1),scoreR(:,2),scoreR(:,3),'.-','color',curclr);
+     hold on; 
+     axis([min(scoreR(:,1)) max(scoreR(:,1)) min(scoreR(:,2)) max(scoreR(:,2)) min(scoreR(:,3)) max(scoreR(:,3))]);
+     
+     
+%     for i=1:size(scoreR,1)/steps
+%         
+%         figure(4);
+%         plot3(scoreR([1:steps*i],1),scoreR([1:steps*i],2),scoreR([1:steps*i],3),'.-','color',curclr);
+%         axis([min(scoreR(:,1)) max(scoreR(:,1)) min(scoreR(:,2)) max(scoreR(:,2)) min(scoreR(:,3)) max(scoreR(:,3))]);
+%         hold on; 
+%         WaitSecs(0.001)
+%         title('Dimension reduction to 3 components: Based on the Q matrix')
+%     end
+
+end
 
