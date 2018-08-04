@@ -126,22 +126,32 @@ end
 
 %% Plot the data for the left trials. 
 
-[reconstruct_score coeff]= pca_reconstruction(Qhpc_left,1,0);
+[reconstruct_score coeff]= pca_reconstruction(Qhpc_left,1,3);
 
 % for the left trials
 for itr = 1:size(reconstruct_score,2)
 
      scoreR = reconstruct_score{itr};   
      curclr = rand(1,3);
-     figure(6);subplot(1,2,1);    
+     figure(6);subplot(1,3,1);    
      h=plot3(scoreR(:,1),scoreR(:,2),scoreR(:,3),'.-','color',curclr);
-     h.Color(4) = 0.1;
+     h.Color(4) = 0.01;
      hold on; 
      axis on;
-     grid on;
+     grid on;title('left trials only')
+     axis([-2 2 -2 2 -2 2]);
+
+     
+     figure(6);subplot(1,3,3);    
+     h=plot3(scoreR(:,1),scoreR(:,2),scoreR(:,3),'r.-');
+     h.Color(4) = 0.01;
+     hold on; 
+     axis on;
+     grid on; title('left-red, right-blue')
+     axis([-2 2 -2 2 -2 2]);
+
 end
 
-axis([-2 2 -2 2 -2 2]);
 
 
 [reconstruct_score ]= pca_project(Qhpc_right,coeff);
@@ -150,14 +160,24 @@ for itr = 1:size(reconstruct_score,2)
 
      scoreR = reconstruct_score{itr};   
      curclr = rand(1,3);
-     figure(6);subplot(1,2,2);    
+     figure(6);subplot(1,3,2);    
      h=plot3(scoreR(:,1),scoreR(:,2),scoreR(:,3),'.-','color',curclr);
-     h.Color(4) = 0.1;
+     h.Color(4) = 0.01;
      hold on; 
      axis on;
-     grid on;
+     grid on;title('right trials only')
+     axis([-2 2 -2 2 -2 2]);
+
+     
+     figure(6);subplot(1,3,3);    
+     h=plot3(scoreR(:,1),scoreR(:,2),scoreR(:,3),'b.-');
+     h.Color(4) = 0.01;
+     hold on; 
+     axis on;
+     grid on; title('left-red, right-blue') 
+     axis([-2 2 -2 2 -2 2]);
+
 end
-axis([-2 2 -2 2 -2 2]);
 
 
 
