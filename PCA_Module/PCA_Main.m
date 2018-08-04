@@ -11,7 +11,7 @@
 % for iq= 1:size(Qhpc_right,2)
 %     NQright{iq}.data =Qhpc_right{iq}.data(:,end-minlen+1:end);
 % end
-
+ 
 
 %% Plot the data for the left trials. 
 load('JS15allQmat.mat')
