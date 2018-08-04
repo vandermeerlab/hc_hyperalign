@@ -62,12 +62,5 @@ if concatenate == 1;
     for s = 2:numel(Qmat_data.right)
         Qmat_data.right.concat = [Qmat_data.right.concat Qmat_data.right{s}.Q];
     end
-end
- 
-
-
-
-
-
- 
+end 
 
