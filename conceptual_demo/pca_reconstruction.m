@@ -1,5 +1,5 @@
 
-function reconstruct_score = pca_reconstruction(InputMatrix,PCA_decision,NumComponents)
+function [reconstruct_score coeff] = pca_reconstruction(InputMatrix,PCA_decision,NumComponents)
 
 % InputMatrix is a cell struct.
 % InputMatrix{itrial}.data is the Q matrix: N(neurons) by T(time) data
@@ -15,12 +15,12 @@ end
 if PCA_decision == 1 % do the PCA only based on the first trial.
     
     % do the first trial seperately
-    [coeff1,reconstruct_score{1},latent,tsquared,explained,mu1] = pca(InputMatrix{1}.data','NumComponents',NumComponents);
+    [coeff,reconstruct_score{1},latent,tsquared,explained,mu1] = pca(InputMatrix{1}.data','NumComponents',NumComponents);
     
     for itr = 2:Ntrial
-        % rawQ = score1*coeff1' + repmat(mu1, size(score1,1),1);
+        % rawQ = score1*coeff' + repmat(mu1, size(score1,1),1);
         rawQ = InputMatrix{itr}.data';
-        reconstruct_score{itr} = [rawQ - repmat(mean(rawQ), size(rawQ,1),1)]/coeff1';
+        reconstruct_score{itr} = [rawQ - repmat(mean(rawQ), size(rawQ,1),1)]/coeff';
     end
     
 else
@@ -32,12 +32,12 @@ else
     end
         
      % do the pca based on the data from all trials
-    [coeff1,score,latent,tsquared,explained,mu1] = pca(allQ,'NumComponents',NumComponents);
+    [coeff,score,latent,tsquared,explained,mu1] = pca(allQ,'NumComponents',NumComponents);
        
      for itr = 1:Ntrial
-        % rawQ = score1*coeff1' + repmat(mu1, size(score1,1),1);
+        % rawQ = score1*coeff' + repmat(mu1, size(score1,1),1);
         rawQ = InputMatrix{itr}.data';
-        reconstruct_score{itr} = [rawQ - repmat(mean(rawQ), size(rawQ,1),1)]/coeff1';
+        reconstruct_score{itr} = [rawQ - repmat(mean(rawQ), size(rawQ,1),1)]/coeff';
     end  
 end
 
@@ -148,12 +148,12 @@ end
 % Qtrail{5} = Q1(:,40001:50000);
 %
 %
-% [coeff1,score1,latent,tsquared,explained,mu1] = pca(Qtrail{1}','NumComponents',10);
+% [coeff,score1,latent,tsquared,explained,mu1] = pca(Qtrail{1}','NumComponents',10);
 %
-% % rawQ = score1*coeff1' + repmat(mu1, size(score1,1),1);
+% % rawQ = score1*coeff' + repmat(mu1, size(score1,1),1);
 %
 % rawQ = Qtrail{2}';
-% reconstruct_score = [rawQ - repmat(mean(rawQ), size(score1,1),1)]/coeff1';
+% reconstruct_score = [rawQ - repmat(mean(rawQ), size(score1,1),1)]/coeff';
 %
 %
 %
