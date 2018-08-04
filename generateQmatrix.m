@@ -1,17 +1,15 @@
 function [Qmat_data] = generateQmatrix(reg_trials, spikes, datadirectory)
+
 %function to compile spiking data into left and right Q matrices for
 %subsequent PCA analysis. 
-%% 
 
-%Include option for data type
+%Load time periods for left and right trajectories for each session.
+%May have to modify a bit to make compatible with different data formats.
 
-%Load time periods for left and right trajectories for each epoch (*if
-%necessary. David's function should pull out relevant times for L and R
-%trials)
+%This function pulls out spiking data for each cell for each
+%trial/trajectory and creates NxT matrices.
 
-
-%This pulls out spiking data for each cell for each trial/trajectory.
-
+%%%% may include options %%%
 
 %get spikes for left trials
 for l = 1:length(reg_trials.left(:,1));
@@ -50,7 +48,4 @@ for r = 1:length(spikesforQ_right)
 end
 
  
-%saves Qmat_data file to directory
-
-
 
