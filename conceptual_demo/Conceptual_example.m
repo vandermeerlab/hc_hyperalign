@@ -106,10 +106,7 @@ reconstruct_score = [rawQ - repmat(mean(rawQ), size(score1,1),1)]/coeff1';
 
 
 %%
-
 % [reducedR scoreR] = pca(Q','NumComponents',10);
-
-
 scoreR = reconstruct_score;
 steps=size(scoreR,1)/200;
 
@@ -127,36 +124,55 @@ end
 
 
 
-%% Plot the data 
+%% Plot the data for the left trials. 
 
-reconstruct_score = pca_reconstruction(Qhpc_left,2,0);
+[reconstruct_score coeff]= pca_reconstruction(Qhpc_left,1,0);
 
+% for the left trials
+for itr = 1:size(reconstruct_score,2)
 
-for itr = 1%:size(reconstruct_score,2)
-
-    
-   
-scoreR = reconstruct_score{itr};
-steps=size(scoreR,1)/140;
-
-
+     scoreR = reconstruct_score{itr};   
      curclr = rand(1,3);
-     
-     figure(5);    
-     plot3(scoreR(:,1),scoreR(:,2),scoreR(:,3),'.-','color',curclr);
+     figure(6);subplot(1,2,1);    
+     h=plot3(scoreR(:,1),scoreR(:,2),scoreR(:,3),'.-','color',curclr);
+     h.Color(4) = 0.1;
      hold on; 
-     axis([min(scoreR(:,1)) max(scoreR(:,1)) min(scoreR(:,2)) max(scoreR(:,2)) min(scoreR(:,3)) max(scoreR(:,3))]);
-     
-     
-%     for i=1:size(scoreR,1)/steps
-%         
-%         figure(4);
-%         plot3(scoreR([1:steps*i],1),scoreR([1:steps*i],2),scoreR([1:steps*i],3),'.-','color',curclr);
-%         axis([min(scoreR(:,1)) max(scoreR(:,1)) min(scoreR(:,2)) max(scoreR(:,2)) min(scoreR(:,3)) max(scoreR(:,3))]);
-%         hold on; 
-%         WaitSecs(0.001)
-%         title('Dimension reduction to 3 components: Based on the Q matrix')
-%     end
-
+     axis on;
+     grid on;
 end
 
+axis([-2 2 -2 2 -2 2]);
+
+
+[reconstruct_score ]= pca_project(Qhpc_right,coeff);
+% for the right trials
+for itr = 1:size(reconstruct_score,2)
+
+     scoreR = reconstruct_score{itr};   
+     curclr = rand(1,3);
+     figure(6);subplot(1,2,2);    
+     h=plot3(scoreR(:,1),scoreR(:,2),scoreR(:,3),'.-','color',curclr);
+     h.Color(4) = 0.1;
+     hold on; 
+     axis on;
+     grid on;
+end
+axis([-2 2 -2 2 -2 2]);
+
+
+
+
+%%
+scoreR = mean(allscore,3);
+    for i=1:size(scoreR,1)
+        
+        figure(4);
+        plot3(scoreR([1:steps*i],1),scoreR([1:steps*i],2),scoreR([1:steps*i],3),'.-','color',curclr);
+        axis([min(scoreR(:,1)) max(scoreR(:,1)) min(scoreR(:,2)) max(scoreR(:,2)) min(scoreR(:,3)) max(scoreR(:,3))]);
+        hold on; 
+        WaitSecs(0.001)
+        title('Dimension reduction to 3 components: Based on the Q matrix')
+        
+        axis on;
+        grid on;
+    end
