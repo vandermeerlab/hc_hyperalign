@@ -138,7 +138,8 @@ end
 %% Plot the data for the left trials. 
 
 
-    InputMatrix = Qpfc_left;
+    InputMatrix = Qhpc_left;
+    NumComponents =30;
     [Egvecs] = pca_egvecs(InputMatrix{1}.data,size(InputMatrix{1}.data,1));
     TransformM = Egvecs(:,1:3); % use the first 3 factor as the transformation matrix
     Ntrial = size(InputMatrix,2);    
@@ -149,7 +150,7 @@ end
     
 
 
-figIn=3;
+figIn=2;
 % for the left trials
 for itr = 1:size(reconstruct_score,2)
 
@@ -177,8 +178,9 @@ end
 
 
 
-    InputMatrix = Qpfc_right;
-    [Egvecs] = pca_egvecs(InputMatrix{1}.data,size(InputMatrix{1}.data,1));
+    InputMatrix = Qhpc_right;
+    NumComponents =30;
+%     [Egvecs] = pca_egvecs(InputMatrix{1}.data,size(InputMatrix{1}.data,1));
     TransformM = Egvecs(:,1:3); % use the first 3 factor as the transformation matrix
     Ntrial = size(InputMatrix,2);    
     for itr = 1:Ntrial

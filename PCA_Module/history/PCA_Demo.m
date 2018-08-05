@@ -1,9 +1,7 @@
 
 % PCA analysis
-
 M1 = Q1(:,1:10000);
 M2 = Q1(:,10001:20000);
-
 
 
 y1 = M1'*TransformM;
