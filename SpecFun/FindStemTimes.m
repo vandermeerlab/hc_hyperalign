@@ -1,6 +1,6 @@
 pos = LoadPos([]);
 
-time = pos.tvec; pos_data_x = pos.data(1,:); pos_data_x = pos.data(2,:);
+time = pos.tvec; pos_data_x = pos.data(1,:); pos_data_y = pos.data(2,:);
 
 y_max = 290; y_min = 210; x_min = 250; x_max = 560;
 
