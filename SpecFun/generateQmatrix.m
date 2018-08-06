@@ -44,7 +44,7 @@ end
 %Get Q Matrices
 for r = 1:length(spikesforQ_left)
     if sum(~cellfun(@isempty, spikesforQ_left{r})) > 0
-        Q = MakeQfromS([], spikesforQ_left{r});
+        Q = MakeQfromS_mind18([], spikesforQ_left{r});
         Qmat_data.left{r}.Q = Q.data;
         Qmat_data.left{r}.time = Q.tvec;
     end
@@ -55,7 +55,7 @@ Qmat_data.left = Qmat_data.left(index)
 
 for r = 1:length(spikesforQ_right)
     if sum(~cellfun(@isempty, spikesforQ_right{r})) > 0
-        Q = MakeQfromS([], spikesforQ_right{r});
+        Q = MakeQfromS_mind18([], spikesforQ_right{r});
         Qmat_data.right{r}.Q = Q.data;
         Qmat_data.right{r}.time = Q.tvec;
     end
