@@ -35,7 +35,7 @@ Qmat = generateQmatrix(reg_trials, S, 0);
 %     InputMatrix=[InputMatrix Qmat.right{i}.Q];
 % end
 
-InputMatrix = Qmat.left{1}.Q; 
+% InputMatrix = Qmat.left{1}.Q; 
 
 NumComponents = 3;
 [Egvecs]=pca_egvecs(InputMatrix,NumComponents);
@@ -55,6 +55,7 @@ end
 
 
 %% Plot the data 
+
 mat = Recon_Qmat;
 figinx = 101;
 

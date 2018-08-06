@@ -31,12 +31,8 @@ Qmat = generateQmatrix(reg_trials, S, 0);
 % for i = 1:size(Qmat.left,2)
 %     InputMatrix=[InputMatrix Qmat.left{i}.Q];
 % end
-% for i = 1:size(Qmat.right,2)
-%     InputMatrix=[InputMatrix Qmat.right{i}.Q];
-% end
 
 InputMatrix = Qmat.left{1}.Q; 
-
 NumComponents = 3;
 [Egvecs]=pca_egvecs(InputMatrix,NumComponents);
 
