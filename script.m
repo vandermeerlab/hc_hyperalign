@@ -25,6 +25,19 @@ reg_trials = RegularizedTrials(TSE_L, TSE_R);
 Qmat = generateQmatrix(reg_trials, S, 0);
 
 
+% smooth the data 
+for itr = 1:size(Qmat.left,2)
+    for it=1:size(Qmat.left{itr}.Q,1)
+      SmoothQ.left{itr}.Q(it,:) = smoothdata(Qmat.left{itr}.Q(it,:),'gaussian',20);
+    end
+end
+
+for itr = 1:size(Qmat.right,2)
+    for it=1:size(Qmat.right{itr}.Q,1)
+      SmoothQ.right{itr}.Q(it,:) = smoothdata(Qmat.right{itr}.Q(it,:),'gaussian',20);
+    end
+end
+
 
 %% PCA 
 % InputMatrix =[];
@@ -32,19 +45,19 @@ Qmat = generateQmatrix(reg_trials, S, 0);
 %     InputMatrix=[InputMatrix Qmat.left{i}.Q];
 % end
 
-InputMatrix = Qmat.left{1}.Q; 
+InputMatrix = SmoothQ.left{1}.Q; 
 NumComponents = 3;
 [Egvecs]=pca_egvecs(InputMatrix,NumComponents);
 
 InputMatrix=[]
 %  project all other trials (both left and right trials) to the same dimension
-for i = 1:size(Qmat.left,2)
-    InputMatrix = Qmat.left{i}.Q;
+for i = 1:size(SmoothQ.left,2)
+    InputMatrix = SmoothQ.left{i}.Q;
     Recon_Qmat.left{i}.Q = pca_project(InputMatrix,Egvecs);
 end
 
 for i = 1:size(Qmat.right,2)
-    InputMatrix = Qmat.right{i}.Q;
+    InputMatrix = SmoothQ.right{i}.Q;
     Recon_Qmat.right{i}.Q = pca_project(InputMatrix,Egvecs);
 end
 
