@@ -41,8 +41,8 @@ end
 clear Shortest
 for i = 1:size(RT_A,1)
     for j = 1:size(RT_A,2);
-        RT.Left(i,j) = RT_A(i,j);
-        RT.Right(i,j) = RT_B(i,j);
+        RT.left(i,j) = RT_A(i,j);
+        RT.right(i,j) = RT_B(i,j);
     end
 end
 clear i j RT_A RT_B
