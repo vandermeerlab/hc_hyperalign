@@ -44,28 +44,24 @@ end
 %Get Q Matrices
 for r = 1:length(spikesforQ_left)
     if sum(~cellfun(@isempty, spikesforQ_left{r})) > 0
-        cfg = []; cfg.tvec_edges = reg_trials.left(r,1):0.05:reg_trials.left(r,2);
-        Q = MakeQfromS(cfg, spikesforQ_left{r});
+        Q = MakeQfromS([], spikesforQ_left{r});
         Qmat_data.left{r}.Q = Q.data;
         Qmat_data.left{r}.time = Q.tvec;
     end
 end
-
 index = cellfun(@isempty, Qmat_data.left) == 0;
-Qmat_data.left = Qmat_data.left(index);
+Qmat_data.left = Qmat_data.left(index)
 
 
 for r = 1:length(spikesforQ_right)
     if sum(~cellfun(@isempty, spikesforQ_right{r})) > 0
-        cfg = []; cfg.tvec_edges = reg_trials.right(r,1):0.05:reg_trials.right(r,2);
-        Q = MakeQfromS(cfg, spikesforQ_right{r});
+        Q = MakeQfromS([], spikesforQ_right{r});
         Qmat_data.right{r}.Q = Q.data;
         Qmat_data.right{r}.time = Q.tvec;
     end
 end
-
 index = cellfun(@isempty, Qmat_data.right) == 0;
-Qmat_data.right = Qmat_data.right(index);
+Qmat_data.right = Qmat_data.right(index)
 
 
 
@@ -82,5 +78,5 @@ if concatenate == 1;
     for s = 2:numel(Qmat_data.right)
         Qmat_data.rightconcat = [Qmat_data.rightconcat Qmat_data.right{s}.Q];
     end
-end
+end 
 
