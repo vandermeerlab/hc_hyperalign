@@ -113,6 +113,9 @@ p1.Color(4) = 1;
 xlabel('Component 1');ylabel('Component 2');zlabel('Component 3')
 title('Blue - Left, Red - Right')
 
+
+
+%%
  
 
 
