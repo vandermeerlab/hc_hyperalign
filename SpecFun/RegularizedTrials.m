@@ -1,4 +1,4 @@
-function [RT] = RegularizedTrials(TSE_L,TSE_R)
+function [RT] = RegularizedTrials(TSE_L,TSE_R,opt)
 % 
 % Regularize Trial Lengths
 %
@@ -13,7 +13,9 @@ function [RT] = RegularizedTrials(TSE_L,TSE_R)
 % TSE_A & TSE_B: matrices of start and end times for each trial (Trials X 
 %       2) for all trials of a given type (left or right, correct or 
 %       incorrect, etc.)
-%
+% Opt: Input is in seconds. Option for defining a specific time duration 
+% for the legnth of a trial, based on counting back from the trial end by 
+% that many seconds
 %
 % OUTPUTS:
 % 
@@ -21,6 +23,7 @@ function [RT] = RegularizedTrials(TSE_L,TSE_R)
 %       2, and contents of a matrix of adjusted start and end time for each
 %       trial (i.e. RT.A and RT.B each containing N X 2 matrices).
 
+if opt==[]
 for i = 1:length(TSE_L)
     dif_A(i,1) = TSE_L(i,2) - TSE_L(i,1);
     dif_B(i,1) = TSE_R(i,2) - TSE_R(i,1);
@@ -39,22 +42,20 @@ for i = 1:length(TSE_L)
     RT_B(i,2) = TSE_R(i,2);
 end
 clear Shortest
-for i = 1:size(RT_A,1)
-    for j = 1:size(RT_A,2);
-        RT.left(i,j) = RT_A(i,j);
-        RT.right(i,j) = RT_B(i,j);
-    end
+
+else
+    for i = 1:length(TSE_L)
+    RT_A(i,1) = TSE_L(i,2) - opt;
+    RT_A(i,2) = TSE_L(i,2);
+    RT_B(i,1) = TSE_R(i,2) - opt;
+    RT_B(i,2) = TSE_R(i,2);
 end
-% CHANGED CODE HERE
-% for i = 1:size(RT_A,1)
-%    for j = 1:size(RT_A,2);
-%         RT.left(i,j) = RT_A(i,j);
-%         RT.right(i,j) = RT_B(i,j);
-%     end
-% end
+clear Shortest
+
 RT.left = RT_A;
-RT.right = RT_B
+RT.right = RT_B;
 clear i j RT_A RT_B
 
+end
 end
 
