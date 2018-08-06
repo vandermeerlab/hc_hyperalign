@@ -26,18 +26,26 @@ function [RT] = RegularizedTrials(TSE_L,TSE_R,opt)
 if opt==[]
 for i = 1:length(TSE_L)
     dif_A(i,1) = TSE_L(i,2) - TSE_L(i,1);
+end
+for i = 1:length(TSE_R)
     dif_B(i,1) = TSE_R(i,2) - TSE_R(i,1);
 end
 
 for i = 1:length(dif_A)
     search(i,1) = min(dif_A);
+end
+for i = 1:length(dif_B)
     search(i,2) = min(dif_B);
     Shortest = min(min(search));
 end
+    Shortest = min(min(search));
 clear search dif_A dif_B
+
 for i = 1:length(TSE_L)
     RT_A(i,1) = TSE_L(i,2) - Shortest;
     RT_A(i,2) = TSE_L(i,2);
+end
+for i = 1:length(TSE_R)
     RT_B(i,1) = TSE_R(i,2) - Shortest;
     RT_B(i,2) = TSE_R(i,2);
 end
@@ -47,11 +55,12 @@ else
     for i = 1:length(TSE_L)
     RT_A(i,1) = TSE_L(i,2) - opt;
     RT_A(i,2) = TSE_L(i,2);
+    end
+    for i = 1:length(TSE_R)
     RT_B(i,1) = TSE_R(i,2) - opt;
     RT_B(i,2) = TSE_R(i,2);
-end
-clear Shortest
-
+    end
+    
 RT.left = RT_A;
 RT.right = RT_B;
 clear i j RT_A RT_B
