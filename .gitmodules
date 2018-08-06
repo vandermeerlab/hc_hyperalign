@@ -1,0 +1,3 @@
+[submodule "vandermeerlab"]
+	path = vandermeerlab
+	url = https://github.com/vandermeerlab/vandermeerlab
