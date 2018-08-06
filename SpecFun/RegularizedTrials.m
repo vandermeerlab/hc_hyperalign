@@ -45,6 +45,7 @@ for i = 1:size(RT_A,1)
         RT.right(i,j) = RT_B(i,j);
     end
 end
+% CHANGED CODE HERE
 % for i = 1:size(RT_A,1)
 %    for j = 1:size(RT_A,2);
 %         RT.left(i,j) = RT_A(i,j);
