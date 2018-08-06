@@ -1,5 +1,0 @@
-#ignore Matlab autosave files
-*.m~
-
-#ignore .pyc files
-*.pyc
