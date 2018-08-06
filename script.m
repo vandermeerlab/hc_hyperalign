@@ -53,34 +53,21 @@ for i = 1:size(Qmat.right,2)
 end
 
 
-%%
-
-vbls = {'left','right'};
-figure;
-
 
 %% Plot the data 
 
 mat = Recon_Qmat;
-
 figinx = 101;
 
 colors = linspecer(2);
 for i_left = 1:numel(mat.left)
     Q_left = mat.left{i_left}.Q;
-%     figure(figinx);plot3(Q_left(:,1), Q_left(:,2), Q_left(:,3), '.-','color', colors(1,:));
-    
-    
-    figure(figinx+1);biplot(Egvecs(:,1:end),'Scores',Q_left(:,1:end),'color',colors(1,:));
-
+    figure(figinx);plot3(Q_left(:,1), Q_left(:,2), Q_left(:,3), '.-','color', colors(1,:));
     hold on;
 end
 for i_right = 1:numel(mat.right)
     Q_right = mat.right{i_right}.Q;
-%     figure(figinx);plot3(Q_right(:,1), Q_right(:,2), Q_right(:,3), '.-','color', colors(2,:));
-
-    figure(figinx+1);biplot(Egvecs(:,1:end),'Scores',Q_right(:,1:end),'color',colors(2,:));
-    
+    figure(figinx);plot3(Q_right(:,1), Q_right(:,2), Q_right(:,3), '.-','color', colors(2,:));
     hold on;
 end
 grid on;

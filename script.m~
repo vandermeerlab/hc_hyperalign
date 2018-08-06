@@ -27,14 +27,20 @@ Qmat = generateQmatrix(reg_trials, S, 0);
 
 
 %% PCA 
-InputMatrix =[];
-for i = 1:size(Qmat.left,2)
-    InputMatrix=[InputMatrix;Qmat.left{i}.Q];
-end
-% InputMatrix = Qmat.left{1}.Q; 
+% InputMatrix =[];
+% for i = 1:size(Qmat.left,2)
+%     InputMatrix=[InputMatrix Qmat.left{i}.Q];
+% end
+% for i = 1:size(Qmat.right,2)
+%     InputMatrix=[InputMatrix Qmat.right{i}.Q];
+% end
+
+InputMatrix = Qmat.left{1}.Q; 
+
 NumComponents = 3;
 [Egvecs]=pca_egvecs(InputMatrix,NumComponents);
 
+InputMatrix=[]
 %  project all other trials (both left and right trials) to the same dimension
 for i = 1:size(Qmat.left,2)
     InputMatrix = Qmat.left{i}.Q;
@@ -46,21 +52,21 @@ for i = 1:size(Qmat.right,2)
     Recon_Qmat.right{i}.Q = pca_project(InputMatrix,Egvecs);
 end
 
+
+
 %% Plot the data 
-
-Qmat = Recon_Qmat;
-
+mat = Recon_Qmat;
 figinx = 101;
 
 colors = linspecer(2);
-for i_left = 1:numel(Qmat.left)
-    Q_left = Qmat.left{i_left}.Q;
-    figure(figinx);plot3(Q_left(:,1), Q_left(:,2), Q_left(:,3), '.','color', colors(1,:));
+for i_left = 1:numel(mat.left)
+    Q_left = mat.left{i_left}.Q;
+    figure(figinx);plot3(Q_left(:,1), Q_left(:,2), Q_left(:,3), '.-','color', colors(1,:));
     hold on;
 end
-for i_right = 1:numel(Qmat.right)
-    Q_right = Qmat.right{i_right}.Q;
-    figure(figinx);plot3(Q_right(:,1), Q_right(:,2), Q_right(:,3), '.','color', colors(2,:));
+for i_right = 1:numel(mat.right)
+    Q_right = mat.right{i_right}.Q;
+    figure(figinx);plot3(Q_right(:,1), Q_right(:,2), Q_right(:,3), '.-','color', colors(2,:));
     hold on;
 end
 grid on;
