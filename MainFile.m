@@ -1,7 +1,0 @@
-
-
-% add toolbox path
-% add data path
-
-addpath('/Users/weizhenxie/Documents/Jupyter/mind2018/hc_hyperalign/vandermeerlab')
-addpath('/Users/weizhenxie/Documents/Jupyter/mind2018/hc_hyperalign/R042-2013-08-18')

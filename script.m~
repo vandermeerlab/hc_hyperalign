@@ -4,7 +4,7 @@
 
 % Add Path 
 addpath('../../mind_2018/hc_hyperalign/SpecFun')
-addpath('/Users/weizhenxie/Documents/Jupyter/mind2018/hc_hyperalign/R042-2013-08-18')
+addpath('../../mind_2018/hc_hyperalign/R042-2013-08-18')
 
 
 % load data
