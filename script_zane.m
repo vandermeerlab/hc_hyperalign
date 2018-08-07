@@ -117,58 +117,39 @@ save sub64.mat all_right all_left
 
 %% Do the hyperalignment
 
-load sub1.mat 
-Mats{1}=all_left;
+load sub42.mat 
+lMats{1}=all_left;
 
-load sub2.mat 
-Mats{2}=all_right;
+load sub44.mat 
+lMats{2}=all_left;
+
+load sub64.mat 
+lMats{3}=all_left;
+
+load sub42.mat 
+lMats{4}=all_right;
+
+load sub44.mat 
+lMats{5}=all_right;
+
+load sub64.mat 
+lMats{6}=all_right;
+
+[alighleft, averaged_transforms] = hyperalign(lMats{1:3});
+
+% 
+alighright{1} = averaged_transforms{1}.T*lMats{3};
+alighright{2} = averaged_transforms{2}.T*lMats{4};
+alighright{3} = averaged_transforms{3}.T*lMats{5};
+
+% alighright{1} = averaged_transforms{4}.T*lMats{4};
+% alighright{2} = averaged_transforms{5}.T*lMats{5};
+% alighright{3} = averaged_transforms{6}.T*lMats{6};
 
 
-[aligned, transforms] = hyperalign(Mats);
+trajectory_plotter(20, alighright{1}, alighright{2}, alighright{3});
+trajectory_plotter(20, alighleft{1}, alighleft{2}, alighleft{3});
 
+% figure(2) % aligned
+% trajectory_plotter('trajectories_test', 30, aligned{1}, aligned{2}, aligned{3});
 
-
-
-%% Do the hyperalignment
-
-% the input of to-be-aligned matrixes should have the same dimension. 
-
-
-Mats{1}=all_left;
-Mats{2}=all_right;
-Mats{3}=all_left;
-Mats{4}=all_right;
-Mats{5}=all_left;
-
-varargin =Mats;
-
-
-
-
-%step 1: compute common template
-for s = 1:length(varargin)        
-    if s == 1
-        template = varargin{s};
-    else
-        [~, next] = procrustes((template./(s - 1))', varargin{s}');
-        template = template + next';
-    end
-end
-template = template./length(varargin);
-
-%step 2: align each pattern to the common template template and compute a
-%new common template
-template2 = zeros(size(template));
-for s = 1:length(varargin)
-    [~, next] = procrustes(template', varargin{s}');
-    template2 = template2 + next';
-end
-template2 = template2./length(varargin);
-
-%step 3: align each subject to the mean alignment from the previous round.
-%save the transformation parameters
-[aligned, transforms] = deal(cell(size(varargin)));
-for s = 1:length(varargin)
-    [~, next, transforms{s}] = procrustes(template2', varargin{s}');
-    aligned{s} = next';
-end
