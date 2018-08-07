@@ -153,7 +153,7 @@ for i = 1:(min(n_timepoints) - windowlength*EXPAND_RES + 1)
     end
     
     if ~isempty(outfile)
-        f = getframe;
+        f = getframe();
         writeVideo(vidObj, f);
     else
         drawnow;

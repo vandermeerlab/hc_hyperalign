@@ -137,18 +137,29 @@ lMats{6}=all_right;
 
 [alighleft, averaged_transforms] = hyperalign(lMats{1:3});
 
-% 
-alighright{1} = averaged_transforms{1}.T*lMats{3};
-alighright{2} = averaged_transforms{2}.T*lMats{4};
-alighright{3} = averaged_transforms{3}.T*lMats{5};
+% Z = TRANSFORM.b * Y .* TRANSFORM.T + TRANSFORM.c;
+
+alighright{1} = totransform(averaged_transforms{1},lMats{4});
+alighright{2} = totransform(averaged_transforms{2},lMats{5});
+alighright{3} = totransform(averaged_transforms{3},lMats{6});
+
+z{1} = totransform(averaged_transforms{1},lMats{1});
+z{2} = totransform(averaged_transforms{2},lMats{2});
+z{3} = totransform(averaged_transforms{3},lMats{3});
+
+% function Z = totransform(TRANSFORM,Y)
+% Z = TRANSFORM.b * Y * TRANSFORM.T + TRANSFORM.c;
+% end
+
 
 % alighright{1} = averaged_transforms{4}.T*lMats{4};
 % alighright{2} = averaged_transforms{5}.T*lMats{5};
 % alighright{3} = averaged_transforms{6}.T*lMats{6};
 
-
-trajectory_plotter(20, alighright{1}, alighright{2}, alighright{3});
-trajectory_plotter(20, alighleft{1}, alighleft{2}, alighleft{3});
+%%
+trajectory_plotter('right_3_animals',15*3, alighright{1}, alighright{2}, alighright{3});
+trajectory_plotter('left_3_animals',15*3, alighleft{1}, alighleft{2}, alighleft{3});
+trajectory_plotter(20, z{1}, z{2}, z{3});
 
 % figure(2) % aligned
 % trajectory_plotter('trajectories_test', 30, aligned{1}, aligned{2}, aligned{3});
