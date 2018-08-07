@@ -7,12 +7,13 @@ close all
 
 % Add Path
 hc_hyperalign_path = '/Users/weizhenxie/Documents/Jupyter/mind2018/hc_hyperalign';
-addpath([hc_hyperalign_path '/hc_hyperalign/SpecFun'])
-
+addpath([hc_hyperalign_path '/SpecFun'])
+addpath([hc_hyperalign_path '/hypertools_matlab_toolbox'])
 
 % load data
-%datatoload = '/R042-2013-08-18/'; % sub1
-datatoload = '/R044-2013-12-21/'; % sub2
+%datatoload = '/R042-2013-08-18/'; % sub42
+%datatoload = '/R044-2013-12-21/'; % sub44
+datatoload = '/R064-2015-04-20/'; % sub64
 
 load([hc_hyperalign_path '/Data' datatoload 'metadata.mat']) % metadata
 load([hc_hyperalign_path '/Data' datatoload 'Spikes.mat']) % metadata
@@ -59,7 +60,7 @@ for i = 1:size(Qmat.left,2)
 end
 
 % InputMatrix = SmoothQ.left{1}.Q; 
-NumComponents = 3;
+NumComponents = 10;
 [Egvecs]=pca_egvecs(InputMatrix,NumComponents);
 
 InputMatrix=[];
@@ -112,7 +113,7 @@ xlabel('Component 1');ylabel('Component 2');zlabel('Component 3')
 title([datatoload ' : Blue - Left, Red - Right'])
 
 
-save sub2.mat all_right all_left
+save sub64.mat all_right all_left
 
 %% Do the hyperalignment
 
