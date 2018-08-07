@@ -1,4 +1,4 @@
-function [Qmat_data] = generateQmatrix(reg_trials, spikes, concatenate)
+function [Qmat_data] = generateQmatrix(reg_trials, spikes, concatenate, timebin)
 
 %function to compile spiking data into left and right Q matrices for
 %subsequent PCA analysis. 
@@ -42,26 +42,31 @@ end
 
 
 %Get Q Matrices
+dt = timebin
 for r = 1:length(spikesforQ_left)
     if sum(~cellfun(@isempty, spikesforQ_left{r})) > 0
-        Q = MakeQfromS_mind18([], spikesforQ_left{r});
+        cfg = []; cfg.tvec_edges = reg_trials.left(r,1):dt:reg_trials.left(r,2);
+        Q = MakeQfromS(cfg, spikesforQ_left{r});
         Qmat_data.left{r}.Q = Q.data;
         Qmat_data.left{r}.time = Q.tvec;
     end
 end
+
 index = cellfun(@isempty, Qmat_data.left) == 0;
-Qmat_data.left = Qmat_data.left(index)
+Qmat_data.left = Qmat_data.left(index);
 
 
 for r = 1:length(spikesforQ_right)
     if sum(~cellfun(@isempty, spikesforQ_right{r})) > 0
-        Q = MakeQfromS_mind18([], spikesforQ_right{r});
+        cfg = []; cfg.tvec_edges = reg_trials.right(r,1):dt:reg_trials.right(r,2);
+        Q = MakeQfromS(cfg, spikesforQ_right{r});
         Qmat_data.right{r}.Q = Q.data;
         Qmat_data.right{r}.time = Q.tvec;
     end
 end
+
 index = cellfun(@isempty, Qmat_data.right) == 0;
-Qmat_data.right = Qmat_data.right(index)
+Qmat_data.right = Qmat_data.right(index);
 
 
 
