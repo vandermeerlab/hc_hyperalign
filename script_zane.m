@@ -115,6 +115,8 @@ title([datatoload ' : Blue - Left, Red - Right'])
 
 save sub64.mat all_right all_left
 
+
+
 %% Do the hyperalignment
 
 load sub42.mat 
@@ -157,10 +159,16 @@ z{3} = totransform(averaged_transforms{3},lMats{3});
 % alighright{3} = averaged_transforms{6}.T*lMats{6};
 
 %%
-trajectory_plotter('right_3_animals',15*3, alighright{1}, alighright{2}, alighright{3});
-trajectory_plotter('left_3_animals',15*3, alighleft{1}, alighleft{2}, alighleft{3});
-trajectory_plotter(20, z{1}, z{2}, z{3});
+% left
+trajectory_plotter(30, alighleft{1}, alighleft{2}, alighleft{3});
+title('hyperaligned left trials');
 
+% right
+trajectory_plotter(30, alighright{1}, alighright{2}, alighright{3});
+title('hyperaligned right trials');
+
+
+% trajectory_plotter(20, z{1}, z{2}, z{3});
 % figure(2) % aligned
 % trajectory_plotter('trajectories_test', 30, aligned{1}, aligned{2}, aligned{3});
 

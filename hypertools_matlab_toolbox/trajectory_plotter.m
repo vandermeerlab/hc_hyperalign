@@ -115,7 +115,7 @@ end
 
 if ~isempty(outfile)
     vidObj = VideoWriter(outfile);
-    vidObj.FrameRate = 15*EXPAND_RES;
+    vidObj.FrameRate = 10*EXPAND_RES;
     vidObj.Quality = 100;
     open(vidObj);
 end
