@@ -20,63 +20,72 @@ end
 %% PCA 
 InputMatrix =[];
 for i = 1:12
-    InputMatrix=[InputMatrix Sample.HC_MEC.Correct(i).Coh];
-    InputMatrix=[InputMatrix Sample.HC_MEC.Incorrect(i).Coh];
-    InputMatrix=[InputMatrix Sample.HC_Re.Correct(i).Coh];
-    InputMatrix=[InputMatrix Sample.HC_Re.Incorrect(i).Coh];
-    InputMatrix=[InputMatrix Sample.MEC_Re.Correct(i).Coh];
-    InputMatrix=[InputMatrix Sample.MEC_Re.Incorrect(i).Coh];
+    InputMatrix1=[InputMatrix Sample.HC_MEC.Correct(i).Coh_Smooth];
+    InputMatrix1=[InputMatrix Sample.HC_MEC.Incorrect(i).Coh_Smooth];
     
-    InputMatrix=[InputMatrix Choice.HC_MEC.Correct(i).Coh];
-    InputMatrix=[InputMatrix Choice.HC_MEC.Incorrect(i).Coh];
-    InputMatrix=[InputMatrix Choice.HC_Re.Correct(i).Coh];
-    InputMatrix=[InputMatrix Choice.HC_Re.Incorrect(i).Coh];
-    InputMatrix=[InputMatrix Choice.MEC_Re.Correct(i).Coh];
-    InputMatrix=[InputMatrix Choice.MEC_Re.Incorrect(i).Coh];
-end
+    InputMatrix1=[InputMatrix Choice.HC_MEC.Correct(i).Coh_Smooth];
+    InputMatrix1=[InputMatrix Choice.HC_MEC.Incorrect(i).Coh_Smooth];
 
+end
+for i = 1:12;
+    InputMatrix2=[InputMatrix Sample.HC_Re.Correct(i).Coh_Smooth];
+    InputMatrix2=[InputMatrix Sample.HC_Re.Incorrect(i).Coh_Smooth];
+    
+    InputMatrix2=[InputMatrix Choice.HC_Re.Correct(i).Coh_Smooth];
+    InputMatrix2=[InputMatrix Choice.HC_Re.Incorrect(i).Coh_Smooth];
+
+end
+for i = 1:12;
+    InputMatrix3=[InputMatrix Sample.MEC_Re.Correct(i).Coh_Smooth];
+    InputMatrix3=[InputMatrix Sample.MEC_Re.Incorrect(i).Coh_Smooth];
+    
+    InputMatrix3=[InputMatrix Choice.MEC_Re.Correct(i).Coh_Smooth];
+    InputMatrix3=[InputMatrix Choice.MEC_Re.Incorrect(i).Coh_Smooth];
+end
 % InputMatrix = SmoothQ.left{1}.Q; 
 NumComponents = 3;
-[Egvecs]=pca_egvecs(InputMatrix,NumComponents);
+[Egvecs1]=pca_egvecs(InputMatrix1,NumComponents);
+[Egvecs2]=pca_egvecs(InputMatrix2,NumComponents);
+[Egvecs3]=pca_egvecs(InputMatrix3,NumComponents);
 
 InputMatrix=[]
 %  project all other trials (both left and right trials) to the same dimension
 for i = 1:12
     InputMatrix = Sample.HC_MEC.Correct(i).Coh;
-    Sample.HC_MEC.Correct(i).Coh_Recon = pca_project(InputMatrix,Egvecs);
+    Sample.HC_MEC.Correct(i).Coh_Recon = pca_project(InputMatrix,Egvecs1);
     
     InputMatrix = Sample.HC_MEC.Incorrect(i).Coh;
-    Sample.HC_MEC.Incorrect(i).Coh_Recon = pca_project(InputMatrix,Egvecs);
+    Sample.HC_MEC.Incorrect(i).Coh_Recon = pca_project(InputMatrix,Egvecs1);
     
     InputMatrix = Sample.HC_Re.Correct(i).Coh;
-    Sample.HC_Re.Correct(i).Coh_Recon = pca_project(InputMatrix,Egvecs);
+    Sample.HC_Re.Correct(i).Coh_Recon = pca_project(InputMatrix,Egvecs2);
     
     InputMatrix = Sample.HC_Re.Incorrect(i).Coh;
-    Sample.HC_Re.Incorrect(i).Coh_Recon = pca_project(InputMatrix,Egvecs);
+    Sample.HC_Re.Incorrect(i).Coh_Recon = pca_project(InputMatrix,Egvecs2);
     
     InputMatrix = Sample.MEC_Re.Correct(i).Coh;
-    Sample.MEC_Re.Correct(i).Coh_Recon = pca_project(InputMatrix,Egvecs);
+    Sample.MEC_Re.Correct(i).Coh_Recon = pca_project(InputMatrix,Egvecs3);
     
     InputMatrix = Sample.MEC_Re.Incorrect(i).Coh;
-    Sample.MEC_Re.Incorrect(i).Coh_Recon = pca_project(InputMatrix,Egvecs);
+    Sample.MEC_Re.Incorrect(i).Coh_Recon = pca_project(InputMatrix,Egvecs3);
     %
     InputMatrix = Choice.HC_MEC.Correct(i).Coh;
-    Choice.HC_MEC.Correct(i).Coh_Recon = pca_project(InputMatrix,Egvecs);
+    Choice.HC_MEC.Correct(i).Coh_Recon = pca_project(InputMatrix,Egvecs1);
     
     InputMatrix = Choice.HC_MEC.Incorrect(i).Coh;
-    Choice.HC_MEC.Incorrect(i).Coh_Recon = pca_project(InputMatrix,Egvecs);
+    Choice.HC_MEC.Incorrect(i).Coh_Recon = pca_project(InputMatrix,Egvecs1);
     
     InputMatrix = Choice.HC_Re.Correct(i).Coh;
-    Choice.HC_Re.Correct(i).Coh_Recon = pca_project(InputMatrix,Egvecs);
+    Choice.HC_Re.Correct(i).Coh_Recon = pca_project(InputMatrix,Egvecs2);
     
     InputMatrix = Choice.HC_Re.Incorrect(i).Coh;
-    Choice.HC_Re.Incorrect(i).Coh_Recon = pca_project(InputMatrix,Egvecs);
+    Choice.HC_Re.Incorrect(i).Coh_Recon = pca_project(InputMatrix,Egvecs2);
     
     InputMatrix = Choice.MEC_Re.Correct(i).Coh;
-    Choice.MEC_Re.Correct(i).Coh_Recon = pca_project(InputMatrix,Egvecs);
+    Choice.MEC_Re.Correct(i).Coh_Recon = pca_project(InputMatrix,Egvecs3);
     
     InputMatrix = Choice.MEC_Re.Incorrect(i).Coh;
-    Choice.MEC_Re.Incorrect(i).Coh_Recon = pca_project(InputMatrix,Egvecs);
+    Choice.MEC_Re.Incorrect(i).Coh_Recon = pca_project(InputMatrix,Egvecs3);
     
 end
 
