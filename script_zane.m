@@ -11,15 +11,15 @@ hc_hyperalign_path = '/Users/weizhenxie/Documents/Jupyter/mind2018/hc_hyperalign
 addpath([hc_hyperalign_path '/hc_hyperalign/SpecFun'])
 
 
-addpath([hc_hyperalign_path '/hc_hyperalign/R042-2013-08-18'])
+datatoload = '/R042-2013-08-20/';
 
 % load data
-load([hc_hyperalign_path '/Data' '/R042-2013-08-18/' 'metadata.mat']) % metadata
-load([hc_hyperalign_path '/Data' '/R042-2013-08-18/' 'Spikes.mat']) % metadata
+load([hc_hyperalign_path '/Data' datatoload 'metadata.mat']) % metadata
+load([hc_hyperalign_path '/Data' datatoload 'Spikes.mat']) % metadata
 
 
 %% Regularize left and right trials
-wholetrial = 0;
+wholetrial = 1;
 
 if wholetrial
     TSE_L(:, 1) = metadata.taskvars.trial_iv_L.tstart;
@@ -69,7 +69,7 @@ end
 NumComponents = 3;
 [Egvecs]=pca_egvecs(InputMatrix,NumComponents);
 
-InputMatrix=[]
+InputMatrix=[];
 %  project all other trials (both left and right trials) to the same dimension
 for i = 1:size(SmoothQ.left,2)
     InputMatrix = SmoothQ.left{i}.Q;
@@ -101,7 +101,7 @@ end
 grid on;
 
 for i_right = 1:numel(mat.right)
-    Q_right(:,:,i_right) = mat.right{i_right}.Q;
+    Q_right(:,:,i_right) = mat.right{i_right}.Q(1:87,:);
     figure(figinx);
     p1=plot3(Q_right(:,1,i_right), Q_right(:,2,i_right), Q_right(:,3,i_right), '-','color',[1 0 0],'LineWidth',3);
     p1.Color(4) = 0.1;
@@ -131,4 +131,27 @@ title('Blue - Left, Red - Right')
 % the input of to-be-aligned matrixes should have the same dimension. 
 
 
+Mats{1}=all_left;
+Mats{2}=all_right;
 
+varargin =Mats;
+for s = 1 %:length(varargin)        
+    if s == 1
+        template = varargin{s};
+    else
+        [~, next] = procrustes((template./(s - 1))', varargin{s}');
+        template = template + next';
+    end
+end
+
+
+
+for s = 1:length(varargin)        
+    if s == 1
+        template = varargin{s};
+    else
+        [~, next] = procrustes((template./(s - 1))', varargin{s}');
+        template = template + next';
+    end
+end
+template = template./length(varargin);
