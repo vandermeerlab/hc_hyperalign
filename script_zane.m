@@ -11,7 +11,9 @@ addpath([hc_hyperalign_path '/hc_hyperalign/SpecFun'])
 
 
 % load data
-datatoload = '/R042-2013-08-18/';
+%datatoload = '/R042-2013-08-18/'; % sub1
+datatoload = '/R044-2013-12-21/'; % sub2
+
 load([hc_hyperalign_path '/Data' datatoload 'metadata.mat']) % metadata
 load([hc_hyperalign_path '/Data' datatoload 'Spikes.mat']) % metadata
 
@@ -100,16 +102,28 @@ all_right = mean(Q_right,3);
 figure(figinx);
 p1=plot3(all_right(:,1), all_right(:,2), all_right(:,3), '-','color',[1 0 0],'LineWidth',3);
 p1.Color(4) = 1;
-mean(Q_right,3)
 xlabel('Component 1');ylabel('Component 2');zlabel('Component 3')
 
 all_left = mean(Q_left,3);
-figure(figinx);
+figure(figinx);hold on
 p1=plot3(all_left(:,1), all_left(:,2), all_left(:,3), '-','color',[0 0 1],'LineWidth',3);
 p1.Color(4) = 1;
 xlabel('Component 1');ylabel('Component 2');zlabel('Component 3')
 title([datatoload ' : Blue - Left, Red - Right'])
 
+
+save sub2.mat all_right all_left
+
+%% Do the hyperalignment
+
+load sub1.mat 
+Mats{1}=all_left;
+
+load sub2.mat 
+Mats{2}=all_right;
+
+
+[aligned, transforms] = hyperalign(Mats);
 
 
 
@@ -126,6 +140,8 @@ Mats{4}=all_right;
 Mats{5}=all_left;
 
 varargin =Mats;
+
+
 
 
 %step 1: compute common template
