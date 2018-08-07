@@ -6,26 +6,37 @@ clear all
 close all
 
 % Add Path
-hc_hyperalign_path = '/Users/weizhenxie/Documents/Jupyter/mind2018';
+hc_hyperalign_path = '/Users/weizhenxie/Documents/Jupyter/mind2018/hc_hyperalign';
 
 addpath([hc_hyperalign_path '/hc_hyperalign/SpecFun'])
+
+
 addpath([hc_hyperalign_path '/hc_hyperalign/R042-2013-08-18'])
 
 % load data
-load('metadata.mat') % metadata
-load('Spikes.mat') % metadata
+load([hc_hyperalign_path '/Data' '/R042-2013-08-18/' 'metadata.mat']) % metadata
+load([hc_hyperalign_path '/Data' '/R042-2013-08-18/' 'Spikes.mat']) % metadata
 
 
 %% Regularize left and right trials
-TSE_L(:, 1) = metadata.taskvars.trial_iv_L.tstart;
-TSE_L(:, 2) = metadata.taskvars.trial_iv_L.tend;
-TSE_R(:, 1) = metadata.taskvars.trial_iv_R.tstart;
-TSE_R(:, 2) = metadata.taskvars.trial_iv_R.tend;
+wholetrial = 0;
 
-reg_trials = RegularizedTrials(TSE_L, TSE_R,5); % extract data from the last 5 seconds
+if wholetrial
+    TSE_L(:, 1) = metadata.taskvars.trial_iv_L.tstart;
+    TSE_L(:, 2) = metadata.taskvars.trial_iv_L.tend;
+    TSE_R(:, 1) = metadata.taskvars.trial_iv_R.tstart;
+    TSE_R(:, 2) = metadata.taskvars.trial_iv_R.tend;
+    reg_trials = RegularizedTrials(TSE_L, TSE_R,5); % extract data from the last 5 seconds
+else  
+    load([hc_hyperalign_path '/Data' '/R042-2013-08-18/' 'StemSE.mat']) % metadata
+    opt =[];
+    reg_trials = RegularizedTrials(StemSE_L, StemSE_R,opt); 
+    
+end
 
 %% Produce the Q matrix (Neuron by Time)
-Qmat = generateQmatrix(reg_trials, Spikes, 0);
+
+Qmat = generateQmatrix(reg_trials, S, 0);
 
 %%
 
@@ -115,7 +126,9 @@ title('Blue - Left, Red - Right')
 
 
 
-%%
- 
+%% Do the hyperalignment
+
+% the input of to-be-aligned matrixes should have the same dimension. 
+
 
 
