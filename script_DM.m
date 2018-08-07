@@ -2,19 +2,19 @@
 
 % smooth the data 
 for itr = 1:12 %trials number
-      Sample.HC_MEC.Correct(itr).Coh_Smooth = zscore(smoothdata(Sample.HC_MEC.Correct(itr).Coh,'gaussian',20));
-      Sample.HC_MEC.Incorrect(itr).Coh_Smooth = zscore(smoothdata(Sample.HC_MEC.Incorrect(itr).Coh,'gaussian',20));
-      Sample.HC_Re.Correct(itr).Coh_Smooth = zscore(smoothdata(Sample.HC_Re.Correct(itr).Coh,'gaussian',20));
-      Sample.HC_Re.Incorrect(itr).Coh_Smooth = zscore(smoothdata(Sample.HC_Re.Incorrect(itr).Coh,'gaussian',20));
-      Sample.MEC_Re.Correct(itr).Coh_Smooth = zscore(smoothdata(Sample.MEC_Re.Correct(itr).Coh,'gaussian',20));
-      Sample.MEC_Re.Incorrect(itr).Coh_Smooth = zscore(smoothdata(Sample.MEC_Re.Incorrect(itr).Coh,'gaussian',20));
+      Sample.HC_MEC.Correct(itr).Coh_Smooth = zscore(smoothdata(Sample.HC_MEC.Correct(itr).Coh,'gaussian',1000));
+      Sample.HC_MEC.Incorrect(itr).Coh_Smooth = zscore(smoothdata(Sample.HC_MEC.Incorrect(itr).Coh,'gaussian',1000));
+      Sample.HC_Re.Correct(itr).Coh_Smooth = zscore(smoothdata(Sample.HC_Re.Correct(itr).Coh,'gaussian',1000));
+      Sample.HC_Re.Incorrect(itr).Coh_Smooth = zscore(smoothdata(Sample.HC_Re.Incorrect(itr).Coh,'gaussian',1000));
+      Sample.MEC_Re.Correct(itr).Coh_Smooth = zscore(smoothdata(Sample.MEC_Re.Correct(itr).Coh,'gaussian',1000));
+      Sample.MEC_Re.Incorrect(itr).Coh_Smooth = zscore(smoothdata(Sample.MEC_Re.Incorrect(itr).Coh,'gaussian',1000));
       
-      Choice.HC_MEC.Correct(itr).Coh_Smooth = zscore(smoothdata(Choice.HC_MEC.Correct(itr).Coh,'gaussian',20));
-      Choice.HC_MEC.Incorrect(itr).Coh_Smooth = zscore(smoothdata(Choice.HC_MEC.Incorrect(itr).Coh,'gaussian',20));
-      Choice.HC_Re.Correct(itr).Coh_Smooth = zscore(smoothdata(Choice.HC_Re.Correct(itr).Coh,'gaussian',20));
-      Choice.HC_Re.Incorrect(itr).Coh_Smooth = zscore(smoothdata(Choice.HC_Re.Incorrect(itr).Coh,'gaussian',20));
-      Choice.MEC_Re.Correct(itr).Coh_Smooth = zscore(smoothdata(Choice.MEC_Re.Correct(itr).Coh,'gaussian',20));
-      Choice.MEC_Re.Incorrect(itr).Coh_Smooth = zscore(smoothdata(Choice.MEC_Re.Incorrect(itr).Coh,'gaussian',20));
+      Choice.HC_MEC.Correct(itr).Coh_Smooth = zscore(smoothdata(Choice.HC_MEC.Correct(itr).Coh,'gaussian',1000));
+      Choice.HC_MEC.Incorrect(itr).Coh_Smooth = zscore(smoothdata(Choice.HC_MEC.Incorrect(itr).Coh,'gaussian',1000));
+      Choice.HC_Re.Correct(itr).Coh_Smooth = zscore(smoothdata(Choice.HC_Re.Correct(itr).Coh,'gaussian',1000));
+      Choice.HC_Re.Incorrect(itr).Coh_Smooth = zscore(smoothdata(Choice.HC_Re.Incorrect(itr).Coh,'gaussian',1000));
+      Choice.MEC_Re.Correct(itr).Coh_Smooth = zscore(smoothdata(Choice.MEC_Re.Correct(itr).Coh,'gaussian',1000));
+      Choice.MEC_Re.Incorrect(itr).Coh_Smooth = zscore(smoothdata(Choice.MEC_Re.Incorrect(itr).Coh,'gaussian',1000));
 end
 
 %% PCA 
