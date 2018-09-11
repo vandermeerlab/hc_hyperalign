@@ -11,9 +11,9 @@ addpath([hc_hyperalign_path '/SpecFun'])
 addpath([hc_hyperalign_path '/hypertools_matlab_toolbox'])
 
 % load data
-%datatoload = '/R042-2013-08-18/'; % sub42
-%datatoload = '/R044-2013-12-21/'; % sub44
-datatoload = '/R064-2015-04-20/'; % sub64
+datatoload = '/R042-2013-08-18/'; % sub42
+% datatoload = '/R044-2013-12-21/'; % sub44
+% datatoload = '/R064-2015-04-20/'; % sub64
 
 load([hc_hyperalign_path '/Data' datatoload 'metadata.mat']) % metadata
 load([hc_hyperalign_path '/Data' datatoload 'Spikes.mat']) % metadata
@@ -29,47 +29,48 @@ cfg.gausswin_sd = 0.02;
 left_tend = metadata.taskvars.trial_iv_L.tend;
 right_tend = metadata.taskvars.trial_iv_R.tend;
 
+% PCA
+pca_input = [];
+
 % Do the left trials first.
 for i = 1:length(left_tend)
     % Regularize the trials
     reg_S.left{i} = restrict(S, left_tend(i) - 5, left_tend(i));
+    
     % Produce the Q matrix (Neuron by Time)
+    cfg.tvec_edges = left_tend(i)-5:cfg.dt:left_tend(i);
     Q.left{i} = MakeQfromS(cfg, reg_S.left{i}.t);
+    
+    % Produce to the input matrix for PCA
+    pca_input = [pca_input Q.left{i}.data];
 end
 
 % Do the right trials later. DRY: I will make it as a function if it
 % happens third times.
 for i = 1:length(right_tend)
     reg_S.right{i} = restrict(S, right_tend(i) - 5, right_tend(i));
+    
+    cfg.tvec_edges = right_tend(i)-5:cfg.dt:right_tend(i);
     Q.right{i} = MakeQfromS(cfg, reg_S.right{i}.t);
+    
+    pca_input = [pca_input Q.right{i}.data];
 end
 
-%% PCA 
-InputMatrix =[];
-for i = 1:size(Qmat.right,2)
-    InputMatrix=[InputMatrix Qmat.right{i}.Q];
-end
-for i = 1:size(Qmat.left,2)
-    InputMatrix=[InputMatrix Qmat.left{i}.Q];
-end
-
-% InputMatrix = SmoothQ.left{1}.Q; 
 NumComponents = 10;
-[Egvecs]=pca_egvecs(InputMatrix,NumComponents);
+[eigvecs] = pca_egvecs(pca_input, NumComponents);
 
-InputMatrix=[];
 %  project all other trials (both left and right trials) to the same dimension
-for i = 1:size(SmoothQ.left,2)
-    InputMatrix = SmoothQ.left{i}.Q;
-    Recon_Qmat.left{i}.Q = pca_project(InputMatrix,Egvecs);
+for i = 1:size(Q.left,2)
+    InputMatrix = Q.left{i}.data;
+    Recon_Q.left{i}.Q = pca_project(InputMatrix, eigvecs);
 end
-for i = 1:size(Qmat.right,2)
-    InputMatrix = SmoothQ.right{i}.Q;
-    Recon_Qmat.right{i}.Q = pca_project(InputMatrix,Egvecs);
+for i = 1:size(Q.right,2)
+    InputMatrix = Q.right{i}.data;
+    Recon_Q.right{i}.Q = pca_project(InputMatrix, eigvecs);
 end
 
 %% Plot the data 
-mat = Recon_Qmat;
+mat = Recon_Q;
 figinx = 101;
 
 colors = linspecer(2);
@@ -107,7 +108,7 @@ xlabel('Component 1');ylabel('Component 2');zlabel('Component 3')
 title([datatoload ' : Blue - Left, Red - Right'])
 
 
-save sub64.mat all_right all_left
+save sub42.mat all_right all_left
 
 
 
