@@ -7,7 +7,7 @@ close all
 
 % Add Path
 hc_hyperalign_path = '/Users/mac/Projects/hc_hyperalign';
-addpath([hc_hyperalign_path '/SpecFun'])
+addpath([hc_hyperalign_path '/utils'])
 addpath([hc_hyperalign_path '/hypertools_matlab_toolbox'])
 
 % load data
@@ -39,7 +39,14 @@ for i = 1:length(left_tend)
     
     % Produce the Q matrix (Neuron by Time)
     cfg.tvec_edges = left_tend(i)-5:cfg.dt:left_tend(i);
-    Q.left{i} = MakeQfromS(cfg, reg_S.left{i}.t);
+    Q.left{i} = MakeQfromS(cfg, reg_S.left{i});
+    % By z-score the smoothed binned spikes, we try to decorrelate the
+    % absolute spike rate with the later PCAed space variables.
+    % The second variable determine using population standard deviation
+    % (1 using n, 0(default) using n-1)
+    % The third argument determine the dim, 1 along columns and 2 along
+    % rows.
+    Q.left{i}.data = zscore(Q.left{i}.data, 0, 2);
     
     % Produce to the input matrix for PCA
     pca_input = [pca_input Q.left{i}.data];
@@ -51,7 +58,8 @@ for i = 1:length(right_tend)
     reg_S.right{i} = restrict(S, right_tend(i) - 5, right_tend(i));
     
     cfg.tvec_edges = right_tend(i)-5:cfg.dt:right_tend(i);
-    Q.right{i} = MakeQfromS(cfg, reg_S.right{i}.t);
+    Q.right{i} = MakeQfromS(cfg, reg_S.right{i});
+    Q.right{i}.data = zscore(Q.right{i}.data, 0, 2);
     
     pca_input = [pca_input Q.right{i}.data];
 end
@@ -108,28 +116,28 @@ xlabel('Component 1');ylabel('Component 2');zlabel('Component 3')
 title([datatoload ' : Blue - Left, Red - Right'])
 
 
-save sub42.mat all_right all_left
+save sub42_new.mat all_right all_left
 
 
 
 %% Do the hyperalignment
 
-load sub42.mat 
+load sub42_new.mat 
 lMats{1}=all_left;
 
-load sub44.mat 
+load sub44_new.mat 
 lMats{2}=all_left;
 
-load sub64.mat 
+load sub64_new.mat 
 lMats{3}=all_left;
 
-load sub42.mat 
+load sub42_new.mat 
 lMats{4}=all_right;
 
-load sub44.mat 
+load sub44_new.mat 
 lMats{5}=all_right;
 
-load sub64.mat 
+load sub64_new.mat 
 lMats{6}=all_right;
 
 [alighleft, averaged_transforms] = hyperalign(lMats{1:3});
@@ -155,12 +163,16 @@ z{3} = totransform(averaged_transforms{3},lMats{3});
 
 %%
 % left
-trajectory_plotter(30, alighleft{1}, alighleft{2}, alighleft{3});
+trajectory_plotter(10, alighleft{1}, alighleft{2}, alighleft{3});
 title('hyperaligned left trials');
 
 % right
-trajectory_plotter(30, alighright{1}, alighright{2}, alighright{3});
+trajectory_plotter(10, alighright{1}, alighright{2}, alighright{3});
 title('hyperaligned right trials');
+
+% non-aligned right trials
+trajectory_plotter(10, lMats{4}, lMats{5}, lMats{6});
+title('non-aligned right trials');
 
 
 % trajectory_plotter(20, z{1}, z{2}, z{3});
