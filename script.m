@@ -11,9 +11,9 @@ addpath([hc_hyperalign_path '/utils'])
 addpath([hc_hyperalign_path '/hypertools_matlab_toolbox'])
 
 % load data
-datatoload = '/R042-2013-08-18/'; % sub42
+% datatoload = '/R042-2013-08-18/'; % sub42
 % datatoload = '/R044-2013-12-21/'; % sub44
-% datatoload = '/R064-2015-04-20/'; % sub64
+datatoload = '/R064-2015-04-20/'; % sub64
 
 load([hc_hyperalign_path '/Data' datatoload 'metadata.mat']) % metadata
 load([hc_hyperalign_path '/Data' datatoload 'Spikes.mat']) % metadata
@@ -70,11 +70,11 @@ NumComponents = 10;
 %  project all other trials (both left and right trials) to the same dimension
 for i = 1:size(Q.left,2)
     InputMatrix = Q.left{i}.data;
-    Recon_Q.left{i}.Q = pca_project(InputMatrix, eigvecs);
+    Recon_Q.left{i} = pca_project(InputMatrix, eigvecs);
 end
 for i = 1:size(Q.right,2)
     InputMatrix = Q.right{i}.data;
-    Recon_Q.right{i}.Q = pca_project(InputMatrix, eigvecs);
+    Recon_Q.right{i} = pca_project(InputMatrix, eigvecs);
 end
 
 %% Plot the data
@@ -84,7 +84,7 @@ figinx = 101;
 colors = linspecer(2);
 % need to fix the trial level
 for i = 1: numel(mat.left)
-    Q_left(:,:,i) = mat.left{i}.Q;
+    Q_left(:,:,i) = mat.left{i};
     figure(figinx);
     p1=plot3(Q_left(:,1,i), Q_left(:,2,i), Q_left(:,3,i), '-','color',[0 0 1],'LineWidth',3);
     p1.Color(4) = 0.1;
@@ -93,7 +93,7 @@ end
 grid on;
 
 for i = 1:numel(mat.right)
-    Q_right(:,:,i) = mat.right{i}.Q;
+    Q_right(:,:,i) = mat.right{i};
     figure(figinx);
     p1=plot3(Q_right(:,1,i), Q_right(:,2,i), Q_right(:,3,i), '-','color',[1 0 0],'LineWidth',3);
     p1.Color(4) = 0.1;
@@ -116,4 +116,4 @@ xlabel('Component 1');ylabel('Component 2');zlabel('Component 3')
 title([datatoload ' : Blue - Left, Red - Right'])
 
 
-save sub42_new.mat all_right all_left
+save sub64_new.mat all_right all_left
