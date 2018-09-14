@@ -43,11 +43,25 @@ for i = 1:100
 
     % Calculate distance for 3 pairs of subjects
     rand_dists_42_44 = [rand_dists_42_44, calculate_dist(shuffled_aligned_42, aligned_right{2})];
-    rand_dists_42_64 = [rand_dists_42_44, calculate_dist(shuffled_aligned_42, aligned_right{3})];
-    rand_dists_44_64 = [rand_dists_42_44, calculate_dist(aligned_right{2}, aligned_right{3})];
+    rand_dists_42_64 = [rand_dists_42_64, calculate_dist(shuffled_aligned_42, aligned_right{3})];
+    rand_dists_44_64 = [rand_dists_44_64, calculate_dist(aligned_right{2}, aligned_right{3})];
 end
 
-for 
+% Plot shuffle distance histogram and true distance (using aligned-Q matrix)
+subplot(3, 1, 1)
+histogram(rand_dists_42_44)
+line([dist_42_44, dist_42_44], ylim, 'LineWidth', 2, 'Color', 'r');
+title('Distance after shuffling aligned-Q matrix between 42 and 44')
+
+subplot(3, 1, 2)
+histogram(rand_dists_42_64)
+line([dist_42_64, dist_42_64], ylim, 'LineWidth', 2, 'Color', 'r');
+title('Distance after shuffling aligned-Q matrix between 42 and 64')
+
+subplot(3, 1, 3)
+histogram(rand_dists_44_64)
+line([dist_44_64, dist_44_64], ylim, 'LineWidth', 2, 'Color', 'r');
+title('Distance after shuffling aligned-Q matrix between 44 and 64')
 
 % % Plot trajectory
 % % left
