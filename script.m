@@ -31,6 +31,7 @@ mean_proj_Q.left{3} = mean(cat(3, proj_Q_64.left{:}), 3);
 mean_proj_Q.right{1} = mean(cat(3, proj_Q_42.right{:}), 3);
 mean_proj_Q.right{2} = mean(cat(3, proj_Q_44.right{:}), 3);
 mean_proj_Q.right{3} = mean(cat(3, proj_Q_64.right{:}), 3);
+
 % Hyperalignment
 aligned_right = hyperalignment(mean_proj_Q.left, mean_proj_Q.right);
 
@@ -106,6 +107,3 @@ title('Distance after shuffling aligned-Q matrix between 44 and 64')
 % p1.Color(4) = 1;
 % xlabel('Component 1');ylabel('Component 2');zlabel('Component 3')
 % title([datatoload ' : Blue - Left, Red - Right'])
-
-
-% save sub64_new.mat all_right all_left
