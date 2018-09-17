@@ -5,14 +5,6 @@
 clear all
 close all
 
-% load data
-% datatoload = '/R042-2013-08-18/'; % sub42
-% datatoload = '/R044-2013-12-21/'; % sub44
-datatoload = '/R064-2015-04-20/'; % sub64
-
-load([hc_hyperalign_path '/Data' datatoload 'metadata.mat']) % metadata
-load([hc_hyperalign_path '/Data' datatoload 'Spikes.mat']) % metadata
-
 % Common binning and windowing configurations.
 cfg = [];
 cfg.dt = 0.05;
@@ -20,59 +12,27 @@ cfg.smooth = 'gauss';
 cfg.gausswin_size = 1;
 cfg.gausswin_sd = 0.02;
 
-% The end times of left and right trials.
-left_tend = metadata.taskvars.trial_iv_L.tend;
-right_tend = metadata.taskvars.trial_iv_R.tend;
+% get processed data
+Q_42 = get_processed_Q(cfg, '/R042-2013-08-18/');
+Q_44 = get_processed_Q(cfg, '/R044-2013-12-21/');
+Q_64 = get_processed_Q(cfg, '/R064-2015-04-20/');
 
 % PCA
-pca_input = [];
-
-% Do the left trials first.
-for i = 1:length(left_tend)
-    % Regularize the trials
-    reg_S.left{i} = restrict(S, left_tend(i) - 5, left_tend(i));
-
-    % Produce the Q matrix (Neuron by Time)
-    cfg.tvec_edges = left_tend(i)-5:cfg.dt:left_tend(i);
-    Q.left{i} = MakeQfromS(cfg, reg_S.left{i});
-    % By z-score the smoothed binned spikes, we try to decorrelate the
-    % absolute spike rate with the later PCAed space variables.
-    % The second variable determine using population standard deviation
-    % (1 using n, 0(default) using n-1)
-    % The third argument determine the dim, 1 along columns and 2 along
-    % rows.
-    Q.left{i}.data = zscore(Q.left{i}.data, 0, 2);
-
-    % Produce to the input matrix for PCA
-    pca_input = [pca_input Q.left{i}.data];
-end
-
-% Do the right trials later. DRY: I will make it as a function if it
-% happens third times.
-for i = 1:length(right_tend)
-    reg_S.right{i} = restrict(S, right_tend(i) - 5, right_tend(i));
-
-    cfg.tvec_edges = right_tend(i)-5:cfg.dt:right_tend(i);
-    Q.right{i} = MakeQfromS(cfg, reg_S.right{i});
-    Q.right{i}.data = zscore(Q.right{i}.data, 0, 2);
-
-    pca_input = [pca_input Q.right{i}.data];
-end
-
 NumComponents = 10;
-[eigvecs] = pca_egvecs(pca_input, NumComponents);
+proj_Q_42 = perform_pca(Q_42, NumComponents);
+proj_Q_44 = perform_pca(Q_44, NumComponents);
+proj_Q_64 = perform_pca(Q_64, NumComponents);
 
-%  project all other trials (both left and right trials) to the same dimension
-for i = 1:size(Q.left,2)
-    InputMatrix = Q.left{i}.data;
-    Recon_Q.left{i} = pca_project(InputMatrix, eigvecs);
-end
-for i = 1:size(Q.right,2)
-    InputMatrix = Q.right{i}.data;
-    Recon_Q.right{i} = pca_project(InputMatrix, eigvecs);
-end
+% Average across all left (and right) trials
+mean_proj_Q.left{1} = mean(cat(3, proj_Q_42.left{:}), 3);
+mean_proj_Q.left{2} = mean(cat(3, proj_Q_44.left{:}), 3);
+mean_proj_Q.left{3} = mean(cat(3, proj_Q_64.left{:}), 3);
 
-aligned_right = hyperalignment(Recon_Q.left, Recon_Q.right)
+mean_proj_Q.right{1} = mean(cat(3, proj_Q_42.right{:}), 3);
+mean_proj_Q.right{2} = mean(cat(3, proj_Q_44.right{:}), 3);
+mean_proj_Q.right{3} = mean(cat(3, proj_Q_64.right{:}), 3);
+% Hyperalignment
+aligned_right = hyperalignment(mean_proj_Q.left, mean_proj_Q.right);
 
 % Calculate distance
 dist_42_44 = calculate_dist(aligned_right{1}, aligned_right{2});
@@ -110,9 +70,9 @@ line([dist_44_64, dist_44_64], ylim, 'LineWidth', 2, 'Color', 'r');
 title('Distance after shuffling aligned-Q matrix between 44 and 64')
 
 %% Plot the data
-% mat = Recon_Q;
+% mat = proj_Q_42;
 % figinx = 101;
-
+%
 % colors = linspecer(2);
 % % need to fix the trial level
 % for i = 1: numel(mat.left)
@@ -123,7 +83,7 @@ title('Distance after shuffling aligned-Q matrix between 44 and 64')
 %     hold on;
 % end
 % grid on;
-
+%
 % for i = 1:numel(mat.right)
 %     Q_right(:,:,i) = mat.right{i};
 %     figure(figinx);
