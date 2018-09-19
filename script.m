@@ -1,10 +1,3 @@
-% Decription of purpose
-% Users/Owners
-% Date of modification
-
-clear all
-close all
-
 % Common binning and windowing configurations.
 cfg = [];
 cfg.dt = 0.05;
@@ -12,7 +5,7 @@ cfg.smooth = 'gauss';
 cfg.gausswin_size = 1;
 cfg.gausswin_sd = 0.02;
 
-% get processed data
+% Get processed data
 Q_42 = get_processed_Q(cfg, '/R042-2013-08-18/');
 Q_44 = get_processed_Q(cfg, '/R044-2013-12-21/');
 Q_64 = get_processed_Q(cfg, '/R064-2015-04-20/');
@@ -24,16 +17,16 @@ proj_Q_44 = perform_pca(Q_44, NumComponents);
 proj_Q_64 = perform_pca(Q_64, NumComponents);
 
 % Average across all left (and right) trials
-mean_proj_Q.left{1} = mean(cat(3, proj_Q_42.left{:}), 3);
-mean_proj_Q.left{2} = mean(cat(3, proj_Q_44.left{:}), 3);
-mean_proj_Q.left{3} = mean(cat(3, proj_Q_64.left{:}), 3);
+mean_proj_Q.left{1} = mean(cat(3, proj_Q_42.left{1:5}), 3);
+mean_proj_Q.left{2} = mean(cat(3, proj_Q_44.left{1:9}), 3);
+mean_proj_Q.left{3} = mean(cat(3, proj_Q_64.left{1:8}), 3);
 
-mean_proj_Q.right{1} = mean(cat(3, proj_Q_42.right{:}), 3);
-mean_proj_Q.right{2} = mean(cat(3, proj_Q_44.right{:}), 3);
-mean_proj_Q.right{3} = mean(cat(3, proj_Q_64.right{:}), 3);
+mean_proj_Q.right{1} = mean(cat(3, proj_Q_42.left{6:end}), 3);
+mean_proj_Q.right{2} = mean(cat(3, proj_Q_44.left{10:end}), 3);
+mean_proj_Q.right{3} = mean(cat(3, proj_Q_64.left{9:end}), 3);
 
 % Hyperalignment
-aligned_right = hyperalignment(mean_proj_Q.left, mean_proj_Q.right);
+[aligned_left, aligned_right] = hyperalignment(mean_proj_Q.left, mean_proj_Q.right);
 
 % Calculate distance
 dist_42_44 = calculate_dist(aligned_right{1}, aligned_right{2});
@@ -107,3 +100,13 @@ title('Distance after shuffling aligned-Q matrix between 44 and 64')
 % p1.Color(4) = 1;
 % xlabel('Component 1');ylabel('Component 2');zlabel('Component 3')
 % title([datatoload ' : Blue - Left, Red - Right'])
+
+% Plot trajectory
+% left
+trajectory_plotter(5, aligned_left{1}', aligned_left{2}', aligned_left{3}');
+%
+% right
+trajectory_plotter(5, aligned_right{1}', aligned_right{2}', aligned_right{3}');
+%
+% non-aligned right trials
+trajectory_plotter(5, mean_proj_Q.right{1}', mean_proj_Q.right{2}', mean_proj_Q.right{3}');
