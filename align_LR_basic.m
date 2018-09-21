@@ -37,9 +37,7 @@ for i = 1:length(aligned_left)
 end
 
 % Shuffle aligned Q matrix
-rand_dists{1} = [];
-rand_dists{2} = [];
-rand_dists{3} = [];
+rand_dists  = cell(1, 3);
 for i = 1:100
     for j = 1:length(aligned_right)
         shuffle_indices{j} = randperm(NumComponents);
@@ -49,22 +47,14 @@ for i = 1:100
     end
 end
 
-% Plot shuffle distance histogram and true distance (using aligned-Q matrix)
-subplot(3, 1, 1)
-histogram(rand_dists{1})
-line([dist{1}, dist{1}], ylim, 'LineWidth', 2, 'Color', 'r');
-title('Subject 42: Distance after shuffling Q matrix between left and right')
-
-subplot(3, 1, 2)
-histogram(rand_dists{2})
-line([dist{2}, dist{2}], ylim, 'LineWidth', 2, 'Color', 'r');
-title('Subject 44: Distance after shuffling Q matrix between left and right')
-
-subplot(3, 1, 3)
-histogram(rand_dists{3})
-line([dist{3}, dist{3}], ylim, 'LineWidth', 2, 'Color', 'r');
-title('Subject 64: Distance after shuffling Q matrix between left and right')
-
+% Plot shuffle distance histogram and true distance (by shuffling Q matrix)
+subj_list = [42, 44, 64];
+for i = 1:length(subj_list)
+    subplot(3, 1, i)
+    histogram(rand_dists{i})
+    line([dist{i}, dist{i}], ylim, 'LineWidth', 2, 'Color', 'r');
+    title(sprintf('Subject %d: Distance after shuffling Q matrix between left and right', subj_list(i)))
+end
 %% Plot the data
 % mat = proj_Q_42;
 % figinx = 101;
