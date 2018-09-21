@@ -12,56 +12,58 @@ Q_64 = get_processed_Q(cfg, '/R064-2015-04-20/');
 
 % PCA
 NumComponents = 10;
-proj_Q_42 = perform_pca(Q_42, NumComponents);
-proj_Q_44 = perform_pca(Q_44, NumComponents);
-proj_Q_64 = perform_pca(Q_64, NumComponents);
+proj_Q{1} = perform_pca(Q_42, NumComponents);
+proj_Q{2} = perform_pca(Q_44, NumComponents);
+proj_Q{3} = perform_pca(Q_64, NumComponents);
 
 % Average across all left (and right) trials
-mean_proj_Q.left{1} = mean(cat(3, proj_Q_42.left{1:5}), 3);
-mean_proj_Q.left{2} = mean(cat(3, proj_Q_44.left{1:9}), 3);
-mean_proj_Q.left{3} = mean(cat(3, proj_Q_64.left{1:8}), 3);
-
-mean_proj_Q.right{1} = mean(cat(3, proj_Q_42.left{6:end}), 3);
-mean_proj_Q.right{2} = mean(cat(3, proj_Q_44.left{10:end}), 3);
-mean_proj_Q.right{3} = mean(cat(3, proj_Q_64.left{9:end}), 3);
+for i = 1:length(proj_Q)
+    mean_proj_Q.left{i} = mean(cat(3, proj_Q{i}.left{:}), 3);
+    mean_proj_Q.right{i} = mean(cat(3, proj_Q{i}.right{:}), 3);
+end
 
 % Hyperalignment
-[aligned_left, aligned_right] = hyperalignment(mean_proj_Q.left, mean_proj_Q.right);
+[aligned, transforms] = hyperalign(mean_proj_Q.left{1:3}, mean_proj_Q.right{1:3});
+
+aligned_left = aligned(1:3);
+transforms_left = transforms(1:3);
+
+aligned_right = aligned(4:6);
+transforms_right = transforms(4:6);
 
 % Calculate distance
-dist_42_44 = calculate_dist(aligned_right{1}, aligned_right{2});
-dist_42_64 = calculate_dist(aligned_right{1}, aligned_right{3});
-dist_44_64 = calculate_dist(aligned_right{2}, aligned_right{3});
+for i = 1:length(aligned_left)
+    dist{i} = calculate_dist(aligned_left{i}, aligned_right{i});
+end
 
 % Shuffle aligned Q matrix
-rand_dists_42_44 = [];
-rand_dists_42_64 = [];
-rand_dists_44_64 = [];
+rand_dists{1} = [];
+rand_dists{2} = [];
+rand_dists{3} = [];
 for i = 1:100
-    shuffle_indices = randperm(size(aligned_right{1}, 1));
-    shuffled_aligned_42 = aligned_right{1}(shuffle_indices, :);
-
-    % Calculate distance for 3 pairs of subjects
-    rand_dists_42_44 = [rand_dists_42_44, calculate_dist(shuffled_aligned_42, aligned_right{2})];
-    rand_dists_42_64 = [rand_dists_42_64, calculate_dist(shuffled_aligned_42, aligned_right{3})];
-    rand_dists_44_64 = [rand_dists_44_64, calculate_dist(aligned_right{2}, aligned_right{3})];
+    for j = 1:length(aligned_right)
+        shuffle_indices{j} = randperm(NumComponents);
+        shuffled_right{j} = mean_proj_Q.right{j}(shuffle_indices{j}, :);
+        s_aligned_right{j} = p_transform(transforms_right{j}, shuffled_right{j});
+        rand_dists{j} = [rand_dists{j}, calculate_dist(aligned_left{j}, s_aligned_right{j})];
+    end
 end
 
 % Plot shuffle distance histogram and true distance (using aligned-Q matrix)
 subplot(3, 1, 1)
-histogram(rand_dists_42_44)
-line([dist_42_44, dist_42_44], ylim, 'LineWidth', 2, 'Color', 'r');
-title('Distance after shuffling aligned-Q matrix between 42 and 44')
+histogram(rand_dists{1})
+line([dist{1}, dist{1}], ylim, 'LineWidth', 2, 'Color', 'r');
+title('Subject 42: Distance after shuffling Q matrix between left and right')
 
 subplot(3, 1, 2)
-histogram(rand_dists_42_64)
-line([dist_42_64, dist_42_64], ylim, 'LineWidth', 2, 'Color', 'r');
-title('Distance after shuffling aligned-Q matrix between 42 and 64')
+histogram(rand_dists{2})
+line([dist{2}, dist{2}], ylim, 'LineWidth', 2, 'Color', 'r');
+title('Subject 44: Distance after shuffling Q matrix between left and right')
 
 subplot(3, 1, 3)
-histogram(rand_dists_44_64)
-line([dist_44_64, dist_44_64], ylim, 'LineWidth', 2, 'Color', 'r');
-title('Distance after shuffling aligned-Q matrix between 44 and 64')
+histogram(rand_dists{3})
+line([dist{3}, dist{3}], ylim, 'LineWidth', 2, 'Color', 'r');
+title('Subject 64: Distance after shuffling Q matrix between left and right')
 
 %% Plot the data
 % mat = proj_Q_42;
