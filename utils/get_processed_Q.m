@@ -1,8 +1,8 @@
 function [Q] = get_processed_Q(cfg, session_name)
     % Get the data
     hc_hyperalign_path = '/Users/mac/Projects/hc_hyperalign';
-    load([hc_hyperalign_path '/Data' session_name 'metadata.mat']) % metadata
-    load([hc_hyperalign_path '/Data' session_name 'Spikes.mat']) % metadata
+    load([hc_hyperalign_path '/Data' session_name 'metadata.mat'])
+    load([hc_hyperalign_path '/Data' session_name 'Spikes.mat'])
 
     % The end times of left and right trials.
     left_tend = metadata.taskvars.trial_iv_L.tend;
