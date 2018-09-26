@@ -3,6 +3,7 @@ function [TC] = get_tuning_curve(session_name)
     % Get the data
     hc_hyperalign_path = '/Users/mac/Projects/hc_hyperalign';
     load([hc_hyperalign_path '/Data' session_name 'metadata.mat'])
+    load([hc_hyperalign_path '/Data' session_name 'ExpKeys.mat'])
     load([hc_hyperalign_path '/Data' session_name 'Spikes.mat'])
     load([hc_hyperalign_path '/Data' session_name 'pos.mat'])
 
@@ -28,7 +29,11 @@ function [TC] = get_tuning_curve(session_name)
 
         this_coord.coord = expCond(iCond).coord; this_coord.units = 'px'; this_coord.standardized = 0;
         expCond(iCond).linpos = LinearizePos([],pos,this_coord);
-
+        % Compute the coordinate that the choice point corresponds
+        chp = tsd(0,metadata.coord.chp_cm,{'x','y'});
+        chp.units = 'cm';
+        chp.cfg.ExpKeys.convFact = ExpKeys.convFact;
+        expCond(iCond).cp = LinearizePos([],chp,this_coord);
     end
 
     %% find intervals where rat is running
@@ -54,9 +59,12 @@ function [TC] = get_tuning_curve(session_name)
 
         cfg_tc = [];
         expCond(iCond).tc = TuningCurves(cfg_tc,expCond(iCond).S,expCond(iCond).linpos);
+        [~,expCond(iCond).cp_bin] = histc(expCond(iCond).cp.data, expCond(iCond).tc.usr.binEdges);
 
     end
 
-    TC.left = zscore(expCond(1).tc.tc, 0, 2);
-    TC.right = zscore(expCond(2).tc.tc, 0, 2);
+    TC.left.tc = zscore(expCond(1).tc.tc, 0, 2);
+    TC.right.tc = zscore(expCond(2).tc.tc, 0, 2);
+    TC.left.cp_bin = expCond(1).cp_bin;
+    TC.right.cp_bin = expCond(2).cp_bin;
 end
