@@ -33,11 +33,12 @@ transforms_right = transforms(4:6);
 
 % Find the transform for first subject from left to right in the common space.
 [~, ~, M{1}] = procrustes(aligned_right{1}', aligned_left{1}');
-aligned_LR = cellfun(@(x) p_transform(M{1}, x), aligned_left, 'UniformOutput', false);
+predicted_R = cellfun(@(x) p_transform(M{1}, x), aligned_left, 'UniformOutput', false);
 
 % Compare with its original aligned right
-for i = 1:length(aligned_LR)
-    dist{i} = calculate_dist(aligned_LR{i}, aligned_right{i});
+for i = 1:length(predicted_R)
+    dist{i} = calculate_dist(predicted_R{i}, aligned_right{i});
+    dist_LR{i} = calculate_dist(aligned_left{i}, aligned_right{i});
 end
 
 % Shuffle aligned Q matrix
@@ -47,15 +48,27 @@ for i = 1:100
         shuffle_indices{j} = randperm(NumComponents);
         shuffled_right{j} = mean_proj_Q.right{j}(shuffle_indices{j}, :);
         s_aligned_right{j} = p_transform(transforms_right{j}, shuffled_right{j});
-        rand_dists{j} = [rand_dists{j}, calculate_dist(aligned_LR{j}, s_aligned_right{j})];
+        rand_dists{j} = [rand_dists{j}, calculate_dist(predicted_R{j}, s_aligned_right{j})];
     end
 end
+    % Perform hyperalignment on independently shuffled right Q matrix
+%     [s_aligned, ~] = hyperalign(mean_proj_Q.left{1:3}, shuffled_right{1:3});
+%     s_aligned_left = s_aligned(1:3);
+%     s_aligned_right = s_aligned(4:6);
+%
+%     % Find the transform for first subject from left to right in the common space.
+%     [~, ~, shuffled_M{1}] = procrustes(s_aligned_right{1}', s_aligned_left{1}');
+%     s_predicted_R = cellfun(@(x) p_transform(M{1}, x), s_aligned_left, 'UniformOutput', false);
+%     for k = 1:length(s_aligned_right)
+%         rand_dists{k} = [rand_dists{k}, calculate_dist(s_predicted_R{k}, s_aligned_right{k})];
+%     end
 
 % Plot shuffle distance histogram and true distance (by shuffling Q matrix)
 subj_list = [42, 44, 64];
 for i = 1:length(subj_list)
     subplot(3, 1, i)
     histogram(rand_dists{i})
-    line([dist{i}, dist{i}], ylim, 'LineWidth', 2, 'Color', 'r');
+    line([dist{i}, dist{i}], ylim, 'LineWidth', 2, 'Color', 'r')
+    line([dist_LR{i}, dist_LR{i}], ylim, 'LineWidth', 2, 'Color', 'g')
     title(sprintf('Subject %d: Distance betweeen using transformation of 42 and its own aligned right trials', subj_list(i)))
 end

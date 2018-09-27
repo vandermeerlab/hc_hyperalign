@@ -31,7 +31,7 @@ transforms_left = transforms(1:3);
 aligned_right = aligned(4:6);
 transforms_right = transforms(4:6);
 
-% Calculate distance
+% Calculate distance between left and right aligned trajectories
 for i = 1:length(aligned_left)
     dist{i} = calculate_dist(aligned_left{i}, aligned_right{i});
 end
@@ -42,8 +42,14 @@ for i = 1:100
     for j = 1:length(aligned_right)
         shuffle_indices{j} = randperm(NumComponents);
         shuffled_right{j} = mean_proj_Q.right{j}(shuffle_indices{j}, :);
-        s_aligned_right{j} = p_transform(transforms_right{j}, shuffled_right{j});
-        rand_dists{j} = [rand_dists{j}, calculate_dist(aligned_left{j}, s_aligned_right{j})];
+    end
+    % Perform hyperalignment on independently shuffled right Q matrix
+    [s_aligned, ~] = hyperalign(mean_proj_Q.left{1:3}, shuffled_right{1:3});
+    s_aligned_left = s_aligned(1:3);
+    s_aligned_right = s_aligned(4:6);
+    % Calculate distance
+    for k = 1:length(s_aligned_right)
+        rand_dists{k} = [rand_dists{k}, calculate_dist(s_aligned_left{k}, s_aligned_right{k})];
     end
 end
 
