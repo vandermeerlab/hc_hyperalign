@@ -39,17 +39,28 @@ end
 % Shuffle aligned Q matrix
 rand_dists  = cell(1, 3);
 for i = 1:100
+%     for j = 1:length(aligned_right)
+%         shuffle_indices{j} = randperm(NumComponents);
+%         shuffled_right{j} = mean_proj_Q.right{j}(shuffle_indices{j}, :);
+%         s_aligned_right{j} = p_transform(transforms_right{j}, shuffled_right{j});
+%         rand_dists{j} = [rand_dists{j}, calculate_dist(aligned_left{j}, s_aligned_right{j})];
+%     end
     for j = 1:length(aligned_right)
-        shuffle_indices{j} = randperm(NumComponents);
-        shuffled_right{j} = mean_proj_Q.right{j}(shuffle_indices{j}, :);
+        win_len = size(aligned_right{j}, 2);
+        for k = 1:NumComponents
+            shuffle_indices = shift_shuffle(win_len);
+            shuffled_right{j}(k, :) = mean_proj_Q.right{j}(k, shuffle_indices);
+        end
+%         s_aligned_right{j} = p_transform(transforms_right{j}, shuffled_right{j});
+%         rand_dists{j} = [rand_dists{j}, calculate_dist(aligned_left{j}, s_aligned_right{j})];
     end
     % Perform hyperalignment on independently shuffled right Q matrix
     [s_aligned, ~] = hyperalign(mean_proj_Q.left{1:3}, shuffled_right{1:3});
     s_aligned_left = s_aligned(1:3);
     s_aligned_right = s_aligned(4:6);
     % Calculate distance
-    for k = 1:length(s_aligned_right)
-        rand_dists{k} = [rand_dists{k}, calculate_dist(s_aligned_left{k}, s_aligned_right{k})];
+    for dist_i = 1:length(s_aligned_right)
+        rand_dists{dist_i} = [rand_dists{dist_i}, calculate_dist(s_aligned_left{dist_i}, s_aligned_right{dist_i})];
     end
 end
 
@@ -101,10 +112,10 @@ end
 
 % Plot trajectory
 % left
-trajectory_plotter(5, aligned_left{1}', aligned_left{2}', aligned_left{3}');
+% trajectory_plotter(5, aligned_left{1}', aligned_left{2}', aligned_left{3}');
 %
 % right
-trajectory_plotter(5, aligned_right{1}', aligned_right{2}', aligned_right{3}');
+% trajectory_plotter(5, aligned_right{1}', aligned_right{2}', aligned_right{3}');
 %
 % non-aligned right trials
-trajectory_plotter(5, mean_proj_Q.right{1}', mean_proj_Q.right{2}', mean_proj_Q.right{3}');
+% trajectory_plotter(5, mean_proj_Q.right{1}', mean_proj_Q.right{2}', mean_proj_Q.right{3}');
