@@ -55,6 +55,6 @@ addpath(genpath(cat(2,base_fp,filesep,'utils')));
 addpath(genpath(cat(2,base_fp,filesep,'hypertools_matlab_toolbox')));
 
 if cfg.vandermeerlab
-   addpath(genpath(cat(2,'..',filesep, '..',filesep,'vandermeerlab',filesep,'code-matlab',filesep,'shared')));
-%    addpath(genpath(cat(2,'..',filesep, '..',filesep,'vandermeerlab',filesep,'code-matlab',filesep,'tasks',filesep,'Alyssa_Tmaze'))); % To get getTmazeDataPath
+   addpath(genpath(cat(2,'..',filesep,'vandermeerlab',filesep,'code-matlab',filesep,'shared')));
+%    addpath(genpath(cat(2,'..',filesep,'vandermeerlab',filesep,'code-matlab',filesep,'tasks',filesep,'Alyssa_Tmaze'))); % To get getTmazeDataPath
 end
