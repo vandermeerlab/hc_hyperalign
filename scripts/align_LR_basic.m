@@ -9,12 +9,13 @@ cfg.gausswin_sd = 0.02;
 Q_42 = get_processed_Q(cfg, '/R042-2013-08-18/');
 Q_44 = get_processed_Q(cfg, '/R044-2013-12-21/');
 Q_64 = get_processed_Q(cfg, '/R064-2015-04-20/');
+Q = {Q_42, Q_44, Q_64};
 
 % PCA
 NumComponents = 10;
-proj_Q{1} = perform_pca(Q_42, NumComponents);
-proj_Q{2} = perform_pca(Q_44, NumComponents);
-proj_Q{3} = perform_pca(Q_64, NumComponents);
+for i = 1:length(Q)
+    proj_Q{i} = perform_pca(Q{i}, NumComponents);
+end
 
 % Average across all left (and right) trials
 for i = 1:length(proj_Q)
@@ -39,23 +40,47 @@ end
 % Shuffle aligned Q matrix
 rand_dists  = cell(1, 3);
 for i = 1:100
-%     for j = 1:length(aligned_right)
-%         shuffle_indices{j} = randperm(NumComponents);
-%         shuffled_right{j} = mean_proj_Q.right{j}(shuffle_indices{j}, :);
-%         s_aligned_right{j} = p_transform(transforms_right{j}, shuffled_right{j});
-%         rand_dists{j} = [rand_dists{j}, calculate_dist(aligned_left{j}, s_aligned_right{j})];
-%     end
-    for j = 1:length(aligned_right)
-        win_len = size(aligned_right{j}, 2);
-        for k = 1:NumComponents
-            shuffle_indices = shift_shuffle(win_len);
-            shuffled_right{j}(k, :) = mean_proj_Q.right{j}(k, shuffle_indices);
+    % shuffling the mean projected matrix (right)
+    % for j = 1:length(aligned_right)
+    %     shuffle_indices{j} = randperm(NumComponents);
+    %     shuffled_right{j} = mean_proj_Q.right{j}(shuffle_indices{j}, :);
+    %     s_aligned_right{j} = p_transform(transforms_right{j}, shuffled_right{j});
+    %     rand_dists{j} = [rand_dists{j}, calculate_dist(predicted_R{j}, s_aligned_right{j})];
+    % end
+
+    % shuffling original Q matrix for all right trials
+    s_Q = {Q_42, Q_44, Q_64};
+    for j = 1:length(s_Q)
+        shuffle_indices{j} = randperm(size(s_Q{j}.right{j}.data, 1));
+        for k = 1:length(s_Q{j}.right)
+            s_Q{j}.right{k}.data = s_Q{j}.right{k}.data(shuffle_indices{j}, :);
         end
-%         s_aligned_right{j} = p_transform(transforms_right{j}, shuffled_right{j});
-%         rand_dists{j} = [rand_dists{j}, calculate_dist(aligned_left{j}, s_aligned_right{j})];
     end
+
+    % shift-shuffling the mean projected matrix (right)
+    % for j = 1:length(aligned_right)
+    %     win_len = size(aligned_right{j}, 2);
+    %     for k = 1:NumComponents
+    %         shuffle_indices = shift_shuffle(win_len);
+    %         shuffled_right{j}(k, :) = mean_proj_Q.right{j}(k, shuffle_indices);
+    %     end
+    %     s_aligned_right{j} = p_transform(transforms_right{j}, shuffled_right{j});
+    %     rand_dists{j} = [rand_dists{j}, calculate_dist(aligned_left{j}, s_aligned_right{j})];
+    % end
+
+    % PCA
+    for i = 1:length(Q)
+        s_proj_Q{i} = perform_pca(s_Q{i}, NumComponents);
+    end
+
+    % Average across all left (and right) trials
+    for i = 1:length(s_proj_Q)
+        mean_s_proj_Q.left{i} = mean(cat(3, s_proj_Q{i}.left{:}), 3);
+        mean_s_proj_Q.right{i} = mean(cat(3, s_proj_Q{i}.right{:}), 3);
+    end
+
     % Perform hyperalignment on independently shuffled right Q matrix
-    [s_aligned, ~] = hyperalign(mean_proj_Q.left{1:3}, shuffled_right{1:3});
+    [s_aligned, ~] = hyperalign(mean_s_proj_Q.left{1:3}, mean_s_proj_Q.right{1:3});
     s_aligned_left = s_aligned(1:3);
     s_aligned_right = s_aligned(4:6);
     % Calculate distance
