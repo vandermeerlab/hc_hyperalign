@@ -24,17 +24,18 @@ for i = 1:length(proj_Q)
 end
 
 % Hyperalignment
-[aligned, transforms] = hyperalign(mean_proj_Q.left{1:3}, mean_proj_Q.right{1:3});
+for i = 1:3
+    hyper_input{i} = [mean_proj_Q.left{i}, mean_proj_Q.right{i}];
+end
+[aligned, transforms] = hyperalign(hyper_input{1:3});
 
-aligned_left = aligned(1:3);
-transforms_left = transforms(1:3);
-
-aligned_right = aligned(4:6);
-transforms_right = transforms(4:6);
+t_len = size(mean_proj_Q.left{1}, 2);
+aligned_left = cellfun(@(x) x(:, 1:t_len), aligned, 'UniformOutput', false);
+aligned_right = cellfun(@(x) x(:, t_len+1:end), aligned, 'UniformOutput', false);
 
 % Find the transform for first subject from left to right in the common space.
-[~, ~, M{1}] = procrustes(aligned_right{1}', aligned_left{1}');
-predicted_R = cellfun(@(x) p_transform(M{1}, x), aligned_left, 'UniformOutput', false);
+[~, ~, M_42] = procrustes(aligned_right{1}', aligned_left{1}');
+predicted_R = cellfun(@(x) p_transform(M_42, x), aligned_left, 'UniformOutput', false);
 
 % Compare with its original aligned right
 for i = 1:length(predicted_R)
@@ -45,20 +46,20 @@ end
 % Shuffle aligned Q matrix
 rand_dists  = cell(1, 3);
 for i = 1:100
-    % shuffling the mean projected matrix (right)
-    % for j = 1:length(aligned_right)
-    %     shuffle_indices{j} = randperm(NumComponents);
-    %     shuffled_right{j} = mean_proj_Q.right{j}(shuffle_indices{j}, :);
-    %     s_aligned_right{j} = p_transform(transforms_right{j}, shuffled_right{j});
-    %     rand_dists{j} = [rand_dists{j}, calculate_dist(predicted_R{j}, s_aligned_right{j})];
-    % end
-    s_Q = {Q_42, Q_44, Q_64};
-    for j = 1:length(s_Q)
-        shuffle_indices{j} = randperm(size(s_Q{j}.right{j}.data, 1));
-        for k = 1:length(s_Q{j}.right)
-            s_Q{j}.right{k}.data = s_Q{j}.right{k}.data(shuffle_indices{j}, :);
-        end
+%     Shuffling the mean projected matrix (right)
+    for j = 1:length(aligned_right)
+        shuffle_indices{j} = randperm(NumComponents);
+        shuffled_right{j} = mean_proj_Q.right{j}(shuffle_indices{j}, :);
+%         s_aligned{j} = p_transform(transforms{j}, [mean_proj_Q.left{j}, shuffled_right{j}]);
+%         rand_dists{j} = [rand_dists{j}, calculate_dist(predicted_R{j}, s_aligned{j}(:, t_len+1:end))];
     end
+%     s_Q = {Q_42, Q_44, Q_64};
+%     for j = 1:length(s_Q)
+%         shuffle_indices{j} = randperm(size(s_Q{j}.right{j}.data, 1));
+%         for k = 1:length(s_Q{j}.right)
+%             s_Q{j}.right{k}.data = s_Q{j}.right{k}.data(shuffle_indices{j}, :);
+%         end
+%     end
 
     % shift-shuffling the mean projected matrix (right)
     % for j = 1:length(aligned_right)
@@ -71,27 +72,31 @@ for i = 1:100
     %     rand_dists{j} = [rand_dists{j}, calculate_dist(predicted_R{j}, s_aligned_right{j})];
     % end
 
-    % PCA
-    for i = 1:length(Q)
-        s_proj_Q{i} = perform_pca(s_Q{i}, NumComponents);
+%     % PCA
+%     for p_i = 1:length(Q)
+%         s_proj_Q{p_i} = perform_pca(s_Q{p_i}, NumComponents);
+%     end
+% 
+%     % Average across all left (and right) trials
+%     for a_i = 1:length(s_proj_Q)
+%         mean_s_proj_Q.left{a_i} = mean(cat(3, s_proj_Q{a_i}.left{:}), 3);
+%         mean_s_proj_Q.right{a_i} = mean(cat(3, s_proj_Q{a_i}.right{:}), 3);
+%     end
+
+%     Perform hyperalignment on independently shuffled right Q matrix
+    for h_i = 1:3
+        s_hyper_input{h_i} = [mean_proj_Q.left{h_i}, shuffled_right{h_i}];
     end
+    [s_aligned, s_transforms] = hyperalign(s_hyper_input{1:3});
+    s_aligned_left = cellfun(@(x) x(:, 1:t_len), s_aligned, 'UniformOutput', false);
+    s_aligned_right = cellfun(@(x) x(:, t_len+1:end), s_aligned, 'UniformOutput', false);
 
-    % Average across all left (and right) trials
-    for i = 1:length(s_proj_Q)
-        mean_s_proj_Q.left{i} = mean(cat(3, s_proj_Q{i}.left{:}), 3);
-        mean_s_proj_Q.right{i} = mean(cat(3, s_proj_Q{i}.right{:}), 3);
-    end
-
-    % Perform hyperalignment on independently shuffled right Q matrix
-    [s_aligned, ~] = hyperalign(mean_s_proj_Q.left{1:3}, mean_s_proj_Q.right{1:3});
-    s_aligned_left = s_aligned(1:3);
-    s_aligned_right = s_aligned(4:6);
-
-    % Find the transform for first subject from left to right in the common space.
-    [~, ~, shuffled_M{1}] = procrustes(s_aligned_right{1}', s_aligned_left{1}');
-    s_predicted_R = cellfun(@(x) p_transform(M{1}, x), s_aligned_left, 'UniformOutput', false);
-    for dist_i = 1:length(s_aligned_right)
-        rand_dists{dist_i} = [rand_dists{dist_i}, calculate_dist(s_predicted_R{dist_i}, s_aligned_right{dist_i})];
+%     Find the transform for first subject from left to right in the common space.
+%     [~, ~, shuffle_M_42] = procrustes(s_aligned_right{1}', s_aligned_left{1}');
+    s_predicted_R = cellfun(@(x) p_transform(M_42, x), s_aligned_left, 'UniformOutput', false);
+    
+    for d_i = 1:length(s_aligned_right)
+        rand_dists{d_i} = [rand_dists{d_i}, calculate_dist(s_predicted_R{d_i}, s_aligned_right{d_i})];
     end
 end
 

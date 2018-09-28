@@ -8,8 +8,8 @@ for i = 1:3
 end
 [aligned, transforms] = hyperalign(hyper_input{1:3});
 
-aligned_left = cellfun(@(x) x(1:3), aligned, 'UniformOutput', false);
-aligned_right = cellfun(@(x) x(4:6), aligned, 'UniformOutput', false);
+aligned_left = cellfun(@(x) x(:, 1:3), aligned, 'UniformOutput', false);
+aligned_right = cellfun(@(x) x(:, 4:6), aligned, 'UniformOutput', false);
 
 [~, ~, M{1}] = procrustes(aligned_right{1}', aligned_left{1}');
 predicted_R = cellfun(@(x) p_transform(M{1}, x), aligned_left, 'UniformOutput', false);
@@ -29,8 +29,8 @@ for i = 1:100
     end
     [s_aligned, s_transforms] = hyperalign(s_hyper_input{1:3});
 
-    s_aligned_left = cellfun(@(x) x(1:3), s_aligned, 'UniformOutput', false);
-    s_aligned_right = cellfun(@(x) x(4:6), s_aligned, 'UniformOutput', false);
+    s_aligned_left = cellfun(@(x) x(:, 1:3), s_aligned, 'UniformOutput', false);
+    s_aligned_right = cellfun(@(x) x(:, 4:6), s_aligned, 'UniformOutput', false);
     
     [~, ~, shuffle_M{1}] = procrustes(s_aligned_right{1}', s_aligned_left{1}');
     s_predicted_R = cellfun(@(x) p_transform(shuffle_M{1}, x), s_aligned_left, 'UniformOutput', false);
