@@ -46,20 +46,21 @@ end
 % Shuffle aligned Q matrix
 rand_dists  = cell(1, 3);
 for i = 1:100
-%     Shuffling the mean projected matrix (right)
-    for j = 1:length(aligned_right)
-        shuffle_indices{j} = randperm(NumComponents);
-        shuffled_right{j} = mean_proj_Q.right{j}(shuffle_indices{j}, :);
+% %     Shuffling the mean projected matrix (right)
+%     for j = 1:length(aligned_right)
+%         shuffle_indices{j} = randperm(NumComponents);
+%         shuffled_right{j} = mean_proj_Q.right{j}(shuffle_indices{j}, :);
 %         s_aligned{j} = p_transform(transforms{j}, [mean_proj_Q.left{j}, shuffled_right{j}]);
 %         rand_dists{j} = [rand_dists{j}, calculate_dist(predicted_R{j}, s_aligned{j}(:, t_len+1:end))];
-    end
-%     s_Q = {Q_42, Q_44, Q_64};
-%     for j = 1:length(s_Q)
-%         shuffle_indices{j} = randperm(size(s_Q{j}.right{j}.data, 1));
-%         for k = 1:length(s_Q{j}.right)
-%             s_Q{j}.right{k}.data = s_Q{j}.right{k}.data(shuffle_indices{j}, :);
-%         end
 %     end
+
+    s_Q = {Q_42, Q_44, Q_64};
+    for j = 1:length(s_Q)
+        shuffle_indices{j} = randperm(size(s_Q{j}.right{j}.data, 1));
+        for k = 1:length(s_Q{j}.right)
+            s_Q{j}.right{k}.data = s_Q{j}.right{k}.data(shuffle_indices{j}, :);
+        end
+    end
 
     % shift-shuffling the mean projected matrix (right)
     % for j = 1:length(aligned_right)
@@ -72,29 +73,29 @@ for i = 1:100
     %     rand_dists{j} = [rand_dists{j}, calculate_dist(predicted_R{j}, s_aligned_right{j})];
     % end
 
-%     % PCA
-%     for p_i = 1:length(Q)
-%         s_proj_Q{p_i} = perform_pca(s_Q{p_i}, NumComponents);
-%     end
-% 
-%     % Average across all left (and right) trials
-%     for a_i = 1:length(s_proj_Q)
-%         mean_s_proj_Q.left{a_i} = mean(cat(3, s_proj_Q{a_i}.left{:}), 3);
-%         mean_s_proj_Q.right{a_i} = mean(cat(3, s_proj_Q{a_i}.right{:}), 3);
-%     end
+    % PCA
+    for p_i = 1:length(Q)
+        s_proj_Q{p_i} = perform_pca(s_Q{p_i}, NumComponents);
+    end
+
+    % Average across all left (and right) trials
+    for a_i = 1:length(s_proj_Q)
+        mean_s_proj_Q.left{a_i} = mean(cat(3, s_proj_Q{a_i}.left{:}), 3);
+        mean_s_proj_Q.right{a_i} = mean(cat(3, s_proj_Q{a_i}.right{:}), 3);
+    end
 
 %     Perform hyperalignment on independently shuffled right Q matrix
     for h_i = 1:3
-        s_hyper_input{h_i} = [mean_proj_Q.left{h_i}, shuffled_right{h_i}];
+        s_hyper_input{h_i} = [mean_s_proj_Q.left{h_i}, mean_s_proj_Q.right{h_i}];
     end
     [s_aligned, s_transforms] = hyperalign(s_hyper_input{1:3});
     s_aligned_left = cellfun(@(x) x(:, 1:t_len), s_aligned, 'UniformOutput', false);
     s_aligned_right = cellfun(@(x) x(:, t_len+1:end), s_aligned, 'UniformOutput', false);
 
 %     Find the transform for first subject from left to right in the common space.
-%     [~, ~, shuffle_M_42] = procrustes(s_aligned_right{1}', s_aligned_left{1}');
-    s_predicted_R = cellfun(@(x) p_transform(M_42, x), s_aligned_left, 'UniformOutput', false);
-    
+    [~, ~, shuffle_M_42] = procrustes(s_aligned_right{1}', s_aligned_left{1}');
+    s_predicted_R = cellfun(@(x) p_transform(shuffle_M_42, x), s_aligned_left, 'UniformOutput', false);
+
     for d_i = 1:length(s_aligned_right)
         rand_dists{d_i} = [rand_dists{d_i}, calculate_dist(s_predicted_R{d_i}, s_aligned_right{d_i})];
     end
@@ -106,6 +107,6 @@ for i = 1:length(subj_list)
     subplot(3, 1, i)
     histogram(rand_dists{i})
     line([dist{i}, dist{i}], ylim, 'LineWidth', 2, 'Color', 'r')
-    line([dist_LR{i}, dist_LR{i}], ylim, 'LineWidth', 2, 'Color', 'g')
-    title(sprintf('Subject %d: Distance betweeen using transformation of 42 and its own aligned right trials', subj_list(i)))
+%     line([dist_LR{i}, dist_LR{i}], ylim, 'LineWidth', 2, 'Color', 'g')
+    title(sprintf('Subject %d: Distance betweeen using M42 and its own aligned right trials', subj_list(i)))
 end
