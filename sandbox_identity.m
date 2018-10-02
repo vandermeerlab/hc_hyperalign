@@ -11,8 +11,15 @@ Q_44 = get_processed_Q(cfg, '/R044-2013-12-21/');
 Q_64 = get_processed_Q(cfg, '/R064-2015-04-20/');
 Q = {Q_42, Q_44, Q_64};
 
+% Make all right trials identical to left ones as a control
+for i = 1:length(Q)
+    for j = 1:length(Q{i}.left)
+        Q{i}.right{j}.data = Q{i}.left{j}.data;
+    end
+end
+
 % PCA
-NumComponents = 15;
+NumComponents = 10;
 for i = 1:length(Q)
     proj_Q{i} = perform_pca(Q{i}, NumComponents);
 end
