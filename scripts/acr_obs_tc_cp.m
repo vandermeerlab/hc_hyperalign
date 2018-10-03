@@ -48,9 +48,9 @@ for i = 1:100
     % end
 
     s_TC = {TC_42, TC_44, TC_64};
-    for j = 1:length(s_TC)
-        shuffle_indices{j} = randperm(size(s_TC{j}.right.tc, 1));
-        s_TC{j}.right.tc = s_TC{j}.right.tc(shuffle_indices{j}, :);
+    for j = 1:length(TC)
+        shuffle_indices{j} = randperm(size(TC{j}.right.tc, 1));
+        s_TC{j}.right.tc = TC{j}.right.tc(shuffle_indices{j}, :);
     end
 
     % PCA
