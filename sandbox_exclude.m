@@ -70,10 +70,10 @@ for i = 1:100
 %     end
 
     s_Q = Q;
-    for j = 1:length(Q)
-        shuffle_indices{j} = randperm(size(Q{j}.right{j}.data, 1));
-        for k = 1:length(Q{j}.right)
-            s_Q{j}.right{k}.data = Q{j}.right{k}.data(shuffle_indices{j}, :);
+    for q_i = 1:length(Q)
+        shuffle_indices{q_i} = randperm(size(Q{q_i}.right{1}.data, 1));
+        for r_i = 1:length(Q{q_i}.right)
+            s_Q{q_i}.right{r_i}.data = Q{q_i}.right{r_i}.data(shuffle_indices{q_i}, :);
         end
     end
 
@@ -119,7 +119,7 @@ for i = 1:100
     [~, ~, shuffle_M_42] = procrustes(s_aligned_right{1}', s_aligned_left{1}');
     s_predicted_R = cellfun(@(x) p_transform(shuffle_M_42, x), s_aligned_left, 'UniformOutput', false);
 
-    for d_i = 1:length(s_aligned_right)
+    for d_i = 1:length(s_predicted_R)
         rand_dists{d_i} = [rand_dists{d_i}, calculate_dist(s_predicted_R{d_i}, s_aligned_right{d_i})];
     end
 end
