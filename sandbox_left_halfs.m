@@ -11,11 +11,10 @@ Q_44 = get_processed_Q(cfg, '/R044-2013-12-21/');
 Q_64 = get_processed_Q(cfg, '/R064-2015-04-20/');
 Q = {Q_42, Q_44, Q_64};
 
-% Make all right trials identical to left ones as a control
 for i = 1:length(Q)
-    for j = 1:length(Q{i}.left)
-        Q{i}.right{j}.data = Q{i}.left{j}.data;
-    end
+    left_trial_n = length(Q{i}.left);
+    Q{i}.right = Q{i}.left(ceil(left_trial_n/2)+1:end);    
+    Q{i}.left = Q{i}.left(1:ceil(left_trial_n/2));
 end
 
 % PCA
@@ -114,6 +113,6 @@ for i = 1:length(subj_list)
     subplot(3, 1, i)
     histogram(rand_dists{i})
     line([dist{i}, dist{i}], ylim, 'LineWidth', 2, 'Color', 'r')
-%     line([dist_LR{i}, dist_LR{i}], ylim, 'LineWidth', 2, 'Color', 'g')
+    line([dist_LR{i}, dist_LR{i}], ylim, 'LineWidth', 2, 'Color', 'g')
     title(sprintf('Subject %d: Distance betweeen using M42* and its own aligned right trials', subj_list(i)))
 end
