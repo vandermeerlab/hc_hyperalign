@@ -8,8 +8,8 @@ function set_hyper_path(varargin)
 %
 % INPUTS
 %
-% (optional cfg struct fields, values below are defaults)
-%   cfg_def.vandermeerlab = 1; % add vandermeerlab codebase
+% (optional cfg struct fields, values below are defaults)\
+%   cfg.vandermeerlab = 1; % add vandermeerlab codebase
 %
 % OUTPUTS
 %
@@ -37,16 +37,8 @@ end
 
 % get base file path where repo lives
 switch machinename
-
-    case {'ODYSSEUS'} % add case for your machine
-        base_fp = 'C:\Users\mvdm\Documents\GitHub\hc_hyperalign';
-    case {'mac'}
+    case {'mac'} % add case for your machine
         base_fp = '/Users/mac/Projects/hc_hyperalign';
-    case {'NILSDATOR'}
-        base_fp = 'C:\Users\Nils\Desktop\Resa\Git_hyper\hc_hyperalign';
-    case {'Justin-Shins-MacBook-Pro.local'}
-        base_fp = '/Users/justinshin/Desktop/hc_hyperalign';
-
 end
 
 % add to path
@@ -56,5 +48,4 @@ addpath(genpath(cat(2,base_fp,filesep,'hypertools_matlab_toolbox')));
 
 if cfg.vandermeerlab
    addpath(genpath(cat(2,'..',filesep,'vandermeerlab',filesep,'code-matlab',filesep,'shared')));
-%    addpath(genpath(cat(2,'..',filesep,'vandermeerlab',filesep,'code-matlab',filesep,'tasks',filesep,'Alyssa_Tmaze'))); % To get getTmazeDataPath
 end
