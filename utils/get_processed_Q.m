@@ -2,7 +2,10 @@ function [Q] = get_processed_Q(cfg, session_path)
     % Get the data
     cd(session_path);
     LoadMetadata();
-    S = LoadSpikes({});
+
+    cfg_spikes = {};
+    cfg_spikes.load_questionable_cells = 1;
+    S = LoadSpikes(cfg_spikes);
 
     % The end times of left and right trials.
     left_tend = metadata.taskvars.trial_iv_L.tend;
