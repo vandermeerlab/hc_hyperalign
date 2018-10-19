@@ -1,15 +1,9 @@
-% Common binning and windowing configurations.
-cfg = [];
-cfg.dt = 0.05;
-cfg.smooth = 'gauss';
-cfg.gausswin_size = 1;
-cfg.gausswin_sd = 0.02;
-
 % Get processed data
-cfg_in.paperSessions = 1;
-data_paths = getTmazeDataPath(cfg_in);
+cfg_data.paperSessions = 1;
+data_paths = getTmazeDataPath(cfg_data);
 restrictionLabels = get_restriction_types(data_paths);
 
+cfg.use_matched_trials = 1;
 Q = cell(1, length(data_paths));
 for p_i = 1:length(data_paths)
     Q{p_i} = get_processed_Q(cfg, data_paths{p_i});
@@ -40,8 +34,8 @@ aligned_right = cellfun(@(x) x(:, t_len+1:end), aligned, 'UniformOutput', false)
 dist_mat = zeros(length(Q));
 dist_LR_mat = zeros(length(Q));
 
-aligned_source = aligned_left;
-aligned_target = aligned_right;
+aligned_source = aligned_right;
+aligned_target = aligned_left;
 for sr_i = 1:length(Q)
     % Find the transform for source subject from left to right in the common space.
     [~, ~, M{sr_i}] = procrustes(aligned_target{sr_i}', aligned_source{sr_i}');
@@ -92,8 +86,8 @@ for i = 1:1000
     s_aligned_left = cellfun(@(x) x(:, 1:t_len), s_aligned, 'UniformOutput', false);
     s_aligned_right = cellfun(@(x) x(:, t_len+1:end), s_aligned, 'UniformOutput', false);
 
-    s_aligned_source = s_aligned_left;
-    s_aligned_target = s_aligned_right;
+    s_aligned_source = s_aligned_right;
+    s_aligned_target = s_aligned_left;
     for s_sr_id = 1:length(Q)
         [~, ~, shuffle_M{s_sr_id}] = procrustes(s_aligned_target{s_sr_id}', s_aligned_source{s_sr_id}');
         s_predicted = cellfun(@(x) p_transform(shuffle_M{s_sr_id}, x), s_aligned_source, 'UniformOutput', false);

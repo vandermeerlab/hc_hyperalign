@@ -28,6 +28,13 @@ title('Percentile of distances excluding within subjects')
 set(gca, 'XTick', 1:19, 'XTickLabel', restrictionLabels);
 set(gca, 'YTick', 1:19, 'YTickLabel', restrictionLabels);
 
+% Histoggram of z-scores and percentiles
+histogram(out_zscore_mat)
+title('Histogram of z-scores with matched trials')
+
+histogram(out_percent_mat)
+title('Histogram of percentiles with matched trials')
+
 % Plot shuffle distance histogram and true distance (by shuffling Q matrix)
 for i = 1:length(Q)
     subplot(length(Q), 1, i)
