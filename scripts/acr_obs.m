@@ -8,6 +8,7 @@ cfg.gausswin_sd = 0.02;
 % Get processed data
 cfg_in.paperSessions = 1;
 data_paths = getTmazeDataPath(cfg_in);
+restrictionLabels = get_restriction_types(data_paths);
 
 Q = cell(1, length(data_paths));
 for p_i = 1:length(data_paths)
@@ -38,15 +39,18 @@ aligned_right = cellfun(@(x) x(:, t_len+1:end), aligned, 'UniformOutput', false)
 
 dist_mat = zeros(length(Q));
 dist_LR_mat = zeros(length(Q));
-for source_i = 1:length(Q)
+
+aligned_source = aligned_left;
+aligned_target = aligned_right;
+for sr_i = 1:length(Q)
     % Find the transform for source subject from left to right in the common space.
-    [~, ~, M{source_i}] = procrustes(aligned_left{source_i}', aligned_right{source_i}');
-    predicted_L = cellfun(@(x) p_transform(M{source_i}, x), aligned_right, 'UniformOutput', false);
+    [~, ~, M{sr_i}] = procrustes(aligned_target{sr_i}', aligned_source{sr_i}');
+    predicted = cellfun(@(x) p_transform(M{sr_i}, x), aligned_source, 'UniformOutput', false);
 
     % Compare with its original aligned right
-    for i = 1:length(predicted_L)
-        dist_mat(source_i, i) = calculate_dist(predicted_L{i}, aligned_left{i});
-        dist_LR_mat(source_i, i) = calculate_dist(aligned_left{i}, aligned_right{i});
+    for i = 1:length(predicted)
+        dist_mat(sr_i, i) = calculate_dist(predicted{i}, aligned_target{i});
+        dist_LR_mat(sr_i, i) = calculate_dist(aligned_source{i}, aligned_target{i});
     end
 end
 
@@ -88,12 +92,14 @@ for i = 1:1000
     s_aligned_left = cellfun(@(x) x(:, 1:t_len), s_aligned, 'UniformOutput', false);
     s_aligned_right = cellfun(@(x) x(:, t_len+1:end), s_aligned, 'UniformOutput', false);
 
-    for s_source_id = 1:length(Q)
-        [~, ~, shuffle_M{s_source_id}] = procrustes(s_aligned_left{s_source_id}', s_aligned_right{s_source_id}');
-        s_predicted_L = cellfun(@(x) p_transform(shuffle_M{s_source_id}, x), s_aligned_right, 'UniformOutput', false);
+    s_aligned_source = s_aligned_left;
+    s_aligned_target = s_aligned_right;
+    for s_sr_id = 1:length(Q)
+        [~, ~, shuffle_M{s_sr_id}] = procrustes(s_aligned_target{s_sr_id}', s_aligned_source{s_sr_id}');
+        s_predicted = cellfun(@(x) p_transform(shuffle_M{s_sr_id}, x), s_aligned_source, 'UniformOutput', false);
 
-        for d_i = 1:length(s_aligned_left)
-            rand_dists_mat{s_source_id, d_i} = [rand_dists_mat{s_source_id, d_i}, calculate_dist(s_predicted_L{d_i}, s_aligned_left{d_i})];
+        for d_i = 1:length(s_predicted)
+            rand_dists_mat{s_sr_id, d_i} = [rand_dists_mat{s_sr_id, d_i}, calculate_dist(s_predicted{d_i}, s_aligned_target{d_i})];
         end
     end
 end
