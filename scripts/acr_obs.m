@@ -40,12 +40,12 @@ dist_mat = zeros(length(Q));
 dist_LR_mat = zeros(length(Q));
 for source_i = 1:length(Q)
     % Find the transform for source subject from left to right in the common space.
-    [~, ~, M{source_i}] = procrustes(aligned_right{source_i}', aligned_left{source_i}');
-    predicted_R = cellfun(@(x) p_transform(M{source_i}, x), aligned_left, 'UniformOutput', false);
+    [~, ~, M{source_i}] = procrustes(aligned_left{source_i}', aligned_right{source_i}');
+    predicted_L = cellfun(@(x) p_transform(M{source_i}, x), aligned_right, 'UniformOutput', false);
 
     % Compare with its original aligned right
-    for i = 1:length(predicted_R)
-        dist_mat(source_i, i) = calculate_dist(predicted_R{i}, aligned_right{i});
+    for i = 1:length(predicted_L)
+        dist_mat(source_i, i) = calculate_dist(predicted_L{i}, aligned_left{i});
         dist_LR_mat(source_i, i) = calculate_dist(aligned_left{i}, aligned_right{i});
     end
 end
@@ -63,9 +63,9 @@ for i = 1:1000
 
     s_Q = Q;
     for j = 1:length(Q)
-        shuffle_indices{j} = randperm(size(Q{j}.right{1}.data, 1));
-        for k = 1:length(Q{j}.right)
-            s_Q{j}.right{k}.data = Q{j}.right{k}.data(shuffle_indices{j}, :);
+        shuffle_indices{j} = randperm(size(Q{j}.left{1}.data, 1));
+        for k = 1:length(Q{j}.left)
+            s_Q{j}.left{k}.data = Q{j}.left{k}.data(shuffle_indices{j}, :);
         end
     end
 
@@ -89,11 +89,11 @@ for i = 1:1000
     s_aligned_right = cellfun(@(x) x(:, t_len+1:end), s_aligned, 'UniformOutput', false);
 
     for s_source_id = 1:length(Q)
-        [~, ~, shuffle_M{s_source_id}] = procrustes(s_aligned_right{s_source_id}', s_aligned_left{s_source_id}');
-        s_predicted_R = cellfun(@(x) p_transform(shuffle_M{s_source_id}, x), s_aligned_left, 'UniformOutput', false);
+        [~, ~, shuffle_M{s_source_id}] = procrustes(s_aligned_left{s_source_id}', s_aligned_right{s_source_id}');
+        s_predicted_L = cellfun(@(x) p_transform(shuffle_M{s_source_id}, x), s_aligned_right, 'UniformOutput', false);
 
-        for d_i = 1:length(s_aligned_right)
-            rand_dists_mat{s_source_id, d_i} = [rand_dists_mat{s_source_id, d_i}, calculate_dist(s_predicted_R{d_i}, s_aligned_right{d_i})];
+        for d_i = 1:length(s_aligned_left)
+            rand_dists_mat{s_source_id, d_i} = [rand_dists_mat{s_source_id, d_i}, calculate_dist(s_predicted_L{d_i}, s_aligned_left{d_i})];
         end
     end
 end
@@ -105,38 +105,3 @@ for mat_i = 1:numel(zscore_mat)
     zscore_mat(mat_i) = zs(end);
     percent_mat(mat_i) = get_percentile(dist_mat(mat_i), rand_dists_mat{mat_i});
 end
-
-imagesc(zscore_mat);
-colorbar;
-ylabel('Source Sessions');
-xlabel('Target Sessions');
-title('Z-score of distances including within subjects')
-
-imagesc(percent_mat);
-colorbar;
-ylabel('Source Sessions');
-xlabel('Target Sessions');
-title('Percentile of distances including within subjects')
-
-out_zscore_mat = set_withsubj_nan(zscore_mat);
-imagesc(out_zscore_mat,'AlphaData', ~isnan(out_zscore_mat));
-colorbar;
-ylabel('Source Sessions');
-xlabel('Target Sessions');
-title('Z-score of distances excluding within subjects')
-
-out_percent_mat = set_withsubj_nan(percent_mat);
-imagesc(out_percent_mat,'AlphaData', ~isnan(out_percent_mat));
-colorbar;
-ylabel('Source Sessions');
-xlabel('Target Sessions');
-title('Percentile of distances excluding within subjects')
-
-% % Plot shuffle distance histogram and true distance (by shuffling Q matrix)
-% for i = 1:length(Q)
-%     subplot(length(Q), 1, i)
-%     histogram(rand_dists{i})
-%     line([dist{i}, dist{i}], ylim, 'LineWidth', 2, 'Color', 'r')
-%     line([dist_LR{i}, dist_LR{i}], ylim, 'LineWidth', 2, 'Color', 'g')
-%     title('Distance betweeen using M* and its own aligned right trials')
-% end
