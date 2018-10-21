@@ -34,8 +34,8 @@ aligned_right = cellfun(@(x) x(:, t_len+1:end), aligned, 'UniformOutput', false)
 dist_mat = zeros(length(Q));
 dist_LR_mat = zeros(length(Q));
 
-aligned_source = aligned_right;
-aligned_target = aligned_left;
+aligned_source = aligned_left;
+aligned_target = aligned_right;
 for sr_i = 1:length(Q)
     % Find the transform for source subject from left to right in the common space.
     [~, ~, M{sr_i}] = procrustes(aligned_target{sr_i}', aligned_source{sr_i}');
@@ -86,8 +86,8 @@ for i = 1:1000
     s_aligned_left = cellfun(@(x) x(:, 1:t_len), s_aligned, 'UniformOutput', false);
     s_aligned_right = cellfun(@(x) x(:, t_len+1:end), s_aligned, 'UniformOutput', false);
 
-    s_aligned_source = s_aligned_right;
-    s_aligned_target = s_aligned_left;
+    s_aligned_source = s_aligned_left;
+    s_aligned_target = s_aligned_right;
     for s_sr_id = 1:length(Q)
         [~, ~, shuffle_M{s_sr_id}] = procrustes(s_aligned_target{s_sr_id}', s_aligned_source{s_sr_id}');
         s_predicted = cellfun(@(x) p_transform(shuffle_M{s_sr_id}, x), s_aligned_source, 'UniformOutput', false);
@@ -105,3 +105,12 @@ for mat_i = 1:numel(zscore_mat)
     zscore_mat(mat_i) = zs(end);
     percent_mat(mat_i) = get_percentile(dist_mat(mat_i), rand_dists_mat{mat_i});
 end
+
+unpred_zscore_mat = zeros(length(Q));
+unpred_percent_mat = zeros(length(Q));
+for mat_i = 1:numel(unpred_zscore_mat)
+    zs = zscore([rand_dists_mat{mat_i}, dist_LR_mat(mat_i)]);
+    unpred_zscore_mat(mat_i) = zs(end);
+    unpred_percent_mat(mat_i) = get_percentile(dist_LR_mat(mat_i), rand_dists_mat{mat_i});
+end
+
