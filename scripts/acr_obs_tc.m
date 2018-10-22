@@ -28,15 +28,12 @@ for i = 1:length(TC)
     proj_TC{i} = perform_pca(TC{i}, NumComponents);
 end
 
-% Hyperalignment
-for i = 1:length(TC)
-    hyper_input{i} = [proj_TC{i}.left, proj_TC{i}.right];
-end
-[aligned, transforms] = hyperalign(hyper_input{:});
+% Reformatting data structures
+re_proj_TC.left = cellfun(@(x) x.left, proj_TC, 'UniformOutput', false);
+re_proj_TC.right = cellfun(@(x) x.right, proj_TC, 'UniformOutput', false);
 
-w_len = size(proj_TC{1}.left, 2);
-aligned_left = cellfun(@(x) x(:, 1:w_len), aligned, 'UniformOutput', false);
-aligned_right = cellfun(@(x) x(:, w_len+1:end), aligned, 'UniformOutput', false);
+% Hyperalignment
+[aligned_left, aligned_right] = get_aligned_left_right(re_proj_TC);
 
 dist_mat = zeros(length(TC));
 dist_LR_mat = zeros(length(TC));
@@ -76,13 +73,12 @@ for i = 1:1000
         s_proj_TC{p_i} = perform_pca(s_TC{p_i}, NumComponents);
     end
 
+    % Reformatting data structures
+    s_re_proj_TC.left = cellfun(@(x) x.left, s_proj_TC, 'UniformOutput', false);
+    s_re_proj_TC.right = cellfun(@(x) x.right, s_proj_TC, 'UniformOutput', false);
+
     % Hyperalignment
-    for h_i = 1:length(TC)
-        s_hyper_input{h_i} = [s_proj_TC{h_i}.left, s_proj_TC{h_i}.right];
-    end
-    [s_aligned, s_transforms] = hyperalign(s_hyper_input{:});
-    s_aligned_left = cellfun(@(x) x(:, 1:w_len), s_aligned, 'UniformOutput', false);
-    s_aligned_right = cellfun(@(x) x(:, w_len+1:end), s_aligned, 'UniformOutput', false);
+    [s_aligned_left, s_aligned_right] = get_aligned_left_right(s_re_proj_TC);
 
     s_aligned_source = s_aligned_left;
     s_aligned_target = s_aligned_right;
@@ -94,20 +90,4 @@ for i = 1:1000
             rand_dists_mat{s_sr_id, d_i} = [rand_dists_mat{s_sr_id, d_i}, calculate_dist(s_predicted{d_i}, s_aligned_target{d_i})];
         end
     end
-end
-
-zscore_mat = zeros(length(TC));
-percent_mat = zeros(length(TC));
-for mat_i = 1:numel(zscore_mat)
-    zs = zscore([rand_dists_mat{mat_i}, dist_mat(mat_i)]);
-    zscore_mat(mat_i) = zs(end);
-    percent_mat(mat_i) = get_percentile(dist_mat(mat_i), rand_dists_mat{mat_i});
-end
-
-unpred_zscore_mat = zeros(length(TC));
-unpred_percent_mat = zeros(length(TC));
-for mat_i = 1:numel(unpred_zscore_mat)
-    zs = zscore([rand_dists_mat{mat_i}, dist_LR_mat(mat_i)]);
-    unpred_zscore_mat(mat_i) = zs(end);
-    unpred_percent_mat(mat_i) = get_percentile(dist_LR_mat(mat_i), rand_dists_mat{mat_i});
 end
