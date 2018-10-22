@@ -22,14 +22,7 @@ for i = 1:length(Q)
 end
 
 % Hyperalignment
-for i = 1:length(Q)
-    hyper_input{i} = [mean_proj_Q.left{i}, mean_proj_Q.right{i}];
-end
-[aligned, transforms] = hyperalign(hyper_input{:});
-
-t_len = size(mean_proj_Q.left{1}, 2);
-aligned_left = cellfun(@(x) x(:, 1:t_len), aligned, 'UniformOutput', false);
-aligned_right = cellfun(@(x) x(:, t_len+1:end), aligned, 'UniformOutput', false);
+[aligned_left, aligned_right] = get_aligned_left_right(mean_proj_Q);
 
 dist_mat = zeros(length(Q));
 dist_LR_mat = zeros(length(Q));
@@ -78,13 +71,8 @@ for i = 1:1000
         mean_s_proj_Q.right{a_i} = mean(cat(3, s_proj_Q{a_i}.right{:}), 3);
     end
 
-%     Perform hyperalignment on independently shuffled right Q matrix
-    for h_i = 1:length(Q)
-        s_hyper_input{h_i} = [mean_s_proj_Q.left{h_i}, mean_s_proj_Q.right{h_i}];
-    end
-    [s_aligned, s_transforms] = hyperalign(s_hyper_input{:});
-    s_aligned_left = cellfun(@(x) x(:, 1:t_len), s_aligned, 'UniformOutput', false);
-    s_aligned_right = cellfun(@(x) x(:, t_len+1:end), s_aligned, 'UniformOutput', false);
+    % Perform hyperalignment on independently shuffled right Q matrix
+    [aligned_left, aligned_right] = get_aligned_left_right(mean_s_proj_Q);
 
     s_aligned_source = s_aligned_left;
     s_aligned_target = s_aligned_right;
