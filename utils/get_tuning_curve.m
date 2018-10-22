@@ -1,11 +1,20 @@
-function [TC] = get_tuning_curve(session_name)
+function [TC] = get_tuning_curve(cfg_in, session_path)
     % Adapted from https://github.com/vandermeerlab/vandermeerlab/blob/master/code-matlab/example_workflows/WORKFLOW_PlotOrderedRaster.m
+
+    cfg_def.use_matched_trials = 0;
+
+    mfun = mfilename;
+    cfg = ProcessConfig(cfg_def,cfg_in,mfun);
+
     % Get the data
-    hc_hyperalign_path = '/Users/mac/Projects/hc_hyperalign';
-    load([hc_hyperalign_path '/Data' session_name 'metadata.mat'])
-    load([hc_hyperalign_path '/Data' session_name 'ExpKeys.mat'])
-    load([hc_hyperalign_path '/Data' session_name 'Spikes.mat'])
-    load([hc_hyperalign_path '/Data' session_name 'pos.mat'])
+    cd(session_path);
+    LoadMetadata();
+    LoadExpKeys();
+    pos = LoadPos([]);
+
+    cfg_spikes = {};
+    cfg_spikes.load_questionable_cells = 1;
+    S = LoadSpikes(cfg_spikes);
 
     %% set up data structs for 2 experimental conditions -- see lab wiki for this task at:
     % http://ctnsrv.uwaterloo.ca/vandermeerlab/doku.php?id=analysis:task:motivationalt
@@ -14,8 +23,14 @@ function [TC] = get_tuning_curve(session_name)
     expCond(1).label = 'left'; % this is a T-maze, we are interested in 'left' and 'right' trials
     expCond(2).label = 'right'; % these are just labels we can make up here to keep track of which condition means what
 
-    expCond(1).t = metadata.taskvars.trial_iv_L; % previously stored trial start and end times for left trials
-    expCond(2).t = metadata.taskvars.trial_iv_R;
+    if cfg.use_matched_trials
+        [matched_left, matched_right] = GetMatchedTrials({}, metadata, ExpKeys);
+        expCond(1).t = matched_left;
+        expCond(2).t = matched_right;
+    else
+        expCond(1).t = metadata.taskvars.trial_iv_L; % previously stored trial start and end times for left trials
+        expCond(2).t = metadata.taskvars.trial_iv_R;
+    end
 
     expCond(1).coord = metadata.coord.coordL; % previously user input idealized linear track
     expCond(2).coord = metadata.coord.coordR; % note, this is in units of "camera pixels", not cm
