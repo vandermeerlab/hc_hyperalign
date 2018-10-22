@@ -72,7 +72,7 @@ for i = 1:1000
     end
 
     % Perform hyperalignment on independently shuffled right Q matrix
-    [aligned_left, aligned_right] = get_aligned_left_right(mean_s_proj_Q);
+    [s_aligned_left, s_aligned_right] = get_aligned_left_right(mean_s_proj_Q);
 
     s_aligned_source = s_aligned_left;
     s_aligned_target = s_aligned_right;
@@ -85,20 +85,3 @@ for i = 1:1000
         end
     end
 end
-
-zscore_mat = zeros(length(Q));
-percent_mat = zeros(length(Q));
-for mat_i = 1:numel(zscore_mat)
-    zs = zscore([rand_dists_mat{mat_i}, dist_mat(mat_i)]);
-    zscore_mat(mat_i) = zs(end);
-    percent_mat(mat_i) = get_percentile(dist_mat(mat_i), rand_dists_mat{mat_i});
-end
-
-unpred_zscore_mat = zeros(length(Q));
-unpred_percent_mat = zeros(length(Q));
-for mat_i = 1:numel(unpred_zscore_mat)
-    zs = zscore([rand_dists_mat{mat_i}, dist_LR_mat(mat_i)]);
-    unpred_zscore_mat(mat_i) = zs(end);
-    unpred_percent_mat(mat_i) = get_percentile(dist_LR_mat(mat_i), rand_dists_mat{mat_i});
-end
-
