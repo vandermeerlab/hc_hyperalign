@@ -48,3 +48,54 @@ for sr_i = 1:length(Q)
         end
     end
 end
+
+% Shuffle aligned Q matrix
+rand_dists_mat  = cell(length(Q), length(Q));
+for i = 1:1000
+    s_Q = Q;
+    for j = 1:length(Q)
+        shuffle_indices{j} = randperm(size(Q{j}.right{1}.data, 1));
+        for k = 1:length(Q{j}.right)
+            s_Q{j}.right{k}.data = Q{j}.right{k}.data(shuffle_indices{j}, :);
+        end
+    end
+
+    % PCA
+    for p_i = 1:length(Q)
+        s_proj_Q{p_i} = perform_pca(s_Q{p_i}, NumComponents);
+    end
+
+    % Average across all left (and right) trials
+    for a_i = 1:length(Q)
+        mean_s_proj_Q.left{a_i} = mean(cat(3, s_proj_Q{a_i}.left{:}), 3);
+        mean_s_proj_Q.right{a_i} = mean(cat(3, s_proj_Q{a_i}.right{:}), 3);
+    end
+
+    % Perform hyperalignment on independently shuffled right Q matrix
+    for s_sr_i = 1:length(Q)
+        % Exclude the data from the sessions we try to predict
+        for s_ex_i = 1:length(Q)
+            if s_sr_i ~= s_ex_i
+                % Exclude the right trials (padded with zeros) for the target subject
+                ex_mean_s_proj_Q = mean_s_proj_Q;
+                ex_mean_s_proj_Q.right{s_ex_i} = zeros(size(mean_s_proj_Q.right{s_ex_i}));
+                % Perform hyperalignment with excluded data
+                [ex_s_aligned_left, ex_s_aligned_right] = get_aligned_left_right(ex_mean_s_proj_Q);
+                % Perform hyperalignment with original data (to get ground truth)
+                [s_aligned_left, s_aligned_right] = get_aligned_left_right(mean_s_proj_Q);
+
+                s_aligned_source = ex_s_aligned_left;
+                s_aligned_target = ex_s_aligned_right;
+                s_true_aligned_target = s_aligned_right;
+
+                % Find the transform for source subject from left to right in the common space.
+                [~, ~, shuffle_M{s_sr_i}] = procrustes(s_aligned_target{s_sr_i}', s_aligned_source{s_sr_i}');
+                s_predicted = cellfun(@(x) p_transform(shuffle_M{s_sr_i}, x), s_aligned_source, 'UniformOutput', false);
+                % Compare with its original aligned right
+                rand_dists_mat{s_sr_i, s_ex_i} = [rand_dists_mat{s_sr_i, s_ex_i}, calculate_dist(s_predicted{s_ex_i}, s_true_aligned_target{s_ex_i})];
+            else
+                rand_dists_mat{s_sr_i, s_ex_i} = NaN;
+            end
+        end
+    end
+end

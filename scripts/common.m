@@ -5,6 +5,8 @@ for mat_i = 1:numel(zscore_mat)
     zscore_mat(mat_i) = zs(end);
     percent_mat(mat_i) = get_percentile(dist_mat(mat_i), rand_dists_mat{mat_i});
 end
+out_zscore_mat = set_withsubj_nan(zscore_mat);
+out_percent_mat = set_withsubj_nan(percent_mat);
 
 unpred_zscore_mat = zeros(length(Q));
 unpred_percent_mat = zeros(length(Q));

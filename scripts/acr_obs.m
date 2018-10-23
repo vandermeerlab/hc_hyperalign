@@ -54,9 +54,9 @@ for i = 1:1000
 
     s_Q = Q;
     for j = 1:length(Q)
-        shuffle_indices{j} = randperm(size(Q{j}.left{1}.data, 1));
-        for k = 1:length(Q{j}.left)
-            s_Q{j}.left{k}.data = Q{j}.left{k}.data(shuffle_indices{j}, :);
+        shuffle_indices{j} = randperm(size(Q{j}.right{1}.data, 1));
+        for k = 1:length(Q{j}.right)
+            s_Q{j}.right{k}.data = Q{j}.right{k}.data(shuffle_indices{j}, :);
         end
     end
 
