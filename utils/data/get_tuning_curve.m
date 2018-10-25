@@ -45,9 +45,8 @@ function [TC] = get_tuning_curve(cfg_in, session_path)
         this_coord.coord = expCond(iCond).coord; this_coord.units = 'px'; this_coord.standardized = 0;
         expCond(iCond).linpos = LinearizePos([],pos,this_coord);
         % Compute the coordinate that the choice point corresponds
-        chp = tsd(0,metadata.coord.chp_cm,{'x','y'});
-        chp.units = 'cm';
-        chp.cfg.ExpKeys.convFact = ExpKeys.convFact;
+        chp = tsd(0,metadata.coord.chp,{'x','y'});
+        chp.units = 'px';
         expCond(iCond).cp = LinearizePos([],chp,this_coord);
     end
 
