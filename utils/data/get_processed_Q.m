@@ -24,6 +24,9 @@ function [Q] = get_processed_Q(cfg_in, session_path)
         right_tend = metadata.taskvars.trial_iv_R.tend;
     end
 
+    left_start = left_tend - 5;
+    right_start = right_tend - 5;
+
     % Common binning and windowing configurations.
     cfg_Q = [];
     cfg_Q.dt = 0.05;
@@ -33,10 +36,10 @@ function [Q] = get_processed_Q(cfg_in, session_path)
     % Do the left trials first.
     for i = 1:length(left_tend)
         % Regularize the trials
-        reg_S.left{i} = restrict(S, left_tend(i) - 5, left_tend(i));
+        reg_S.left{i} = restrict(S, left_start(i), left_tend(i));
 
         % Produce the Q matrix (Neuron by Time)
-        cfg_Q.tvec_edges = left_tend(i)-5:cfg_Q.dt:left_tend(i);
+        cfg_Q.tvec_edges = left_start(i):cfg_Q.dt:left_tend(i);
         Q.left{i} = MakeQfromS(cfg_Q, reg_S.left{i});
         % By z-score the smoothed binned spikes, we try to decorrelate the
         % absolute spike rate with the later PCAed space variables.
@@ -49,9 +52,9 @@ function [Q] = get_processed_Q(cfg_in, session_path)
 
     % Do the right trials.
     for i = 1:length(right_tend)
-        reg_S.right{i} = restrict(S, right_tend(i) - 5, right_tend(i));
+        reg_S.right{i} = restrict(S, right_start(i), right_tend(i));
 
-        cfg_Q.tvec_edges = right_tend(i)-5:cfg_Q.dt:right_tend(i);
+        cfg_Q.tvec_edges = right_start(i):cfg_Q.dt:right_tend(i);
         Q.right{i} = MakeQfromS(cfg_Q, reg_S.right{i});
         Q.right{i}.data = zscore(Q.right{i}.data, 0, 2);
     end

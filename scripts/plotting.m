@@ -33,6 +33,23 @@ title('Histogram of z-scores with matched trials')
 histogram(out_percent_mat)
 title('Histogram of percentiles with matched trials')
 
+% Plot example sessions
+s_plot = plot_3d_trajectory(aligned_source{1});
+hold on;
+t_plot = plot_3d_trajectory(aligned_target{1});
+grid on;
+legend([s_plot, t_plot], ["Source", "Target"]);
+title('Rat 1')
+
+s_plot = plot_3d_trajectory(aligned_source{8});
+hold on;
+t_plot = plot_3d_trajectory(aligned_target{8});
+hold on;
+p_plot = plot_3d_trajectory(predicted{8});
+grid on;
+legend([s_plot, t_plot, p_plot], ["Source", "Target", "Predicted"]);
+title('Rat 2 using transformation of 1 (different rat)')
+
 % % Plot shuffle distance histogram and true distance (by shuffling Q matrix)
 % for i = 1:length(Q)
 %     subplot(length(Q), 1, i)
@@ -43,42 +60,42 @@ title('Histogram of percentiles with matched trials')
 % end
 
 %% Plot the data
-% mat = proj_Q_42;
+% mat = proj_Q{1};
 % figinx = 101;
-%
+% 
 % colors = linspecer(2);
 % % need to fix the trial level
 % for i = 1: numel(mat.left)
 %     Q_left(:,:,i) = mat.left{i};
 %     figure(figinx);
-%     p1=plot3(Q_left(:,1,i), Q_left(:,2,i), Q_left(:,3,i), '-','color',[0 0 1],'LineWidth',3);
+%     p1=plot3(Q_left(1, :,i), Q_left(2, :,i), Q_left(3, :,i), '-','color',[0 0 1],'LineWidth',3);
 %     p1.Color(4) = 0.1;
 %     hold on;
 % end
 % grid on;
-%
+% 
 % for i = 1:numel(mat.right)
 %     Q_right(:,:,i) = mat.right{i};
 %     figure(figinx);
-%     p1=plot3(Q_right(:,1,i), Q_right(:,2,i), Q_right(:,3,i), '-','color',[1 0 0],'LineWidth',3);
+%     p1=plot3(Q_right(1, :,i), Q_right(2, :,i), Q_right(3, :,i), '-','color',[1 0 0],'LineWidth',3);
 %     p1.Color(4) = 0.1;
 %     hold on;
 % end
 % grid on;
-
-% plot the average
-% all_right = mean(Q_right,3);
+% 
+% % plot the average
+% all_right = mean(mean_proj_Q.right{1},3);
 % figure(figinx);
-% p1=plot3(all_right(:,1), all_right(:,2), all_right(:,3), '-','color',[1 0 0],'LineWidth',3);
+% p1=plot3(all_right(1, :), all_right(2, :), all_right(3, :), '-','color',[1 0 0],'LineWidth',3);
 % p1.Color(4) = 1;
 % xlabel('Component 1');ylabel('Component 2');zlabel('Component 3')
-
-% all_left = mean(Q_left,3);
+% 
+% all_left = mean(mean_proj_Q.left{1},3);
 % figure(figinx);hold on
-% p1=plot3(all_left(:,1), all_left(:,2), all_left(:,3), '-','color',[0 0 1],'LineWidth',3);
+% p1=plot3(all_left(1, :), all_left(2, :), all_left(3, :), '-','color',[0 0 1],'LineWidth',3);
 % p1.Color(4) = 1;
 % xlabel('Component 1');ylabel('Component 2');zlabel('Component 3')
-% title([datatoload ' : Blue - Left, Red - Right'])
+% title('Blue - Left, Red - Right')
 
 % Plot trajectory
 % left
