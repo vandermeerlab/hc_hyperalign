@@ -71,12 +71,16 @@ function [TC] = get_tuning_curve(cfg_in, session_path)
     % http://ctnsrv.uwaterloo.ca/vandermeerlab/doku.php?id=analysis:nsb2015:week12
     for iCond = 1:nCond
 
-        cfg_tc = [];
+        cfg_tc = []; cfg_tc.smoothingKernel = gausskernel(11, 1); cfg_tc.minOcc = 1;
         expCond(iCond).tc = TuningCurves(cfg_tc,expCond(iCond).S,expCond(iCond).linpos);
         [~,expCond(iCond).cp_bin] = histc(expCond(iCond).cp.data, expCond(iCond).tc.usr.binEdges);
 
+        keep = 11:90;
+        expCond(iCond).tc.tc = expCond(iCond).tc.tc(:,keep); 
+        expCond(iCond).occ_hist = expCond(iCond).tc.occ_hist(keep);
+        
     end
-
+    
     TC.left.tc = zscore(expCond(1).tc.tc, 0, 2);
     TC.right.tc = zscore(expCond(2).tc.tc, 0, 2);
     TC.left.cp_bin = expCond(1).cp_bin;
