@@ -33,6 +33,14 @@ title('Histogram of z-scores with matched trials')
 histogram(out_percent_mat)
 title('Histogram of percentiles with matched trials')
 
+aligned = [aligned_source{1}, aligned_target{1}];
+% NumComponents = 3;
+[eigvecs] = pca_egvecs(aligned, 3);
+pca_aligned = pca_project(aligned, eigvecs);
+
+pca_source = pca_aligned(:, 1:100);
+pca_target = pca_aligned(:, 101:end);
+
 % Plot example sessions
 s_plot = plot_3d_trajectory(aligned_source{1});
 hold on;
@@ -40,6 +48,15 @@ t_plot = plot_3d_trajectory(aligned_target{1});
 grid on;
 legend([s_plot, t_plot], ["Source", "Target"]);
 title('Rat 1')
+
+aligned = [s_aligned_source{8}, s_aligned_target{8}, s_predicted{8}];
+% NumComponents = 3;
+[eigvecs] = pca_egvecs(aligned, 3);
+pca_aligned = pca_project(aligned, eigvecs);
+
+pca_source = pca_aligned(:, 1:100);
+pca_target = pca_aligned(:, 101:200);
+pca_predict = pca_aligned(:, 201:end);
 
 s_plot = plot_3d_trajectory(aligned_source{8});
 hold on;
