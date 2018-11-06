@@ -58,15 +58,24 @@ pca_source = pca_aligned(:, 1:100);
 pca_target = pca_aligned(:, 101:200);
 pca_predict = pca_aligned(:, 201:end);
 
-s_plot = plot_3d_trajectory(aligned_source{8});
+s_plot = plot_3d_trajectory(s_aligned_source{8});
 hold on;
-t_plot = plot_3d_trajectory(aligned_target{8});
+t_plot = plot_3d_trajectory(s_aligned_target{8});
 hold on;
-p_plot = plot_3d_trajectory(predicted{8});
+p_plot = plot_3d_trajectory(s_predicted{8});
 grid on;
 legend([s_plot, t_plot, p_plot], ["Source", "Target", "Predicted"]);
 title('Rat 2 using transformation of 1 (different rat)')
 
+for p_i = 1:length(TC)
+    subplot(2, 1, 1)
+    imagesc(corrcoef(aligned_left{p_i}));
+    colorbar;
+    subplot(2, 1, 2)
+    imagesc(corrcoef(aligned_right{p_i}));
+    colorbar;
+    saveas(gcf, sprintf('TC_align_corrcoef_%d.jpg', p_i));
+end
 % % Plot shuffle distance histogram and true distance (by shuffling Q matrix)
 % for i = 1:length(Q)
 %     subplot(length(Q), 1, i)
