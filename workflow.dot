@@ -1,0 +1,77 @@
+digraph G {
+// resolution = 300;
+fontname = Helvetica;
+overlap = false;
+// concentrate = true;
+// rankdir = LR;
+
+node [fontname = "Helvetica",shape=rectangle];
+edge [fontname = "Helvetica"];
+
+subgraph cluster0 {
+
+  /* promoted data */
+
+  node [style=filled,fillcolor=white,color=black,fontsize=10];
+  style=filled;
+  color=lightgrey;
+  // label = "pre-processed (\"promoted\") data";
+
+  spk [label="Spikes"];
+  trial [shape=record,label="<f0>Left\nTrials|<f1>Right\nTrials"];
+
+  }
+
+/* MUA */
+
+mua [label="MUA"];
+spk -> mua;
+
+/* Q */
+
+Q [shape=record,label="<f0>Left Q\n(units x time)|<f1>Right Q\n(units x time)"];
+Q_temp [shape=circle,width=.01,height=.01,label=""];
+
+mua -> Q_temp [arrowhead=none,headport=n];
+trial -> Q_temp [arrowhead=none,headport=n,label=" last 2.4s"];
+
+Q_temp -> Q;
+
+Q:f1:n -> Q:f1:s [label="  SWAP shuffle", style=dashed,arrowhead=none];
+
+/* PCA */
+
+pca_Q [shape=record,label="<f0>Left proj_Q\n(PCs x time)|<f1>Right proj_Q\n(PCs x time)"];
+
+Q -> pca_Q [label="  PCA"];
+
+/* Hyperalignment */
+
+hyperalign [shape=record,label="<f0>Left alignment\n|<f1>Right alignment\n"];
+
+pca_Q -> hyperalign [label="  Hyperalignment"];
+
+/* Transformation */
+
+source [shape=record,label="<f0>Left source\n|<f1>Right source\n"];
+
+targets [shape=record,label="<f0>Left targets\n|<f1>Right targets\n"];
+
+hyperalign -> source;
+hyperalign -> targets;
+
+/* Prediction */
+
+predicts [label="Right predictions"];
+
+targets:f0 -> predicts;
+
+/* Distance */
+
+dists [label="Distance"]
+dis_temp [shape=circle,width=.01,height=.01,label=""];
+
+predicts -> dis_temp [arrowhead=none,headport=n];
+targets:f1 -> dis_temp [arrowhead=none,headport=n];
+dis_temp -> dists;
+}
