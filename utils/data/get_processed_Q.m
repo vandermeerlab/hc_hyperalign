@@ -24,8 +24,8 @@ function [Q] = get_processed_Q(cfg_in, session_path)
         right_tend = metadata.taskvars.trial_iv_R.tend;
     end
 
-    left_start = left_tend - 5;
-    right_start = right_tend - 5;
+    left_start = left_tend - 2.4;
+    right_start = right_tend - 2.4;
 
     % Common binning and windowing configurations.
     cfg_Q = [];

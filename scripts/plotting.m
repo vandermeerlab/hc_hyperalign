@@ -14,7 +14,8 @@ imagesc(out_zscore_mat,'AlphaData', ~isnan(out_zscore_mat));
 colorbar;
 ylabel('Source Sessions');
 xlabel('Target Sessions');
-title('Z-score of distances excluding within subjects')
+set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 24);
+% title('Z-score of distances excluding within subjects')
 
 imagesc(out_percent_mat,'AlphaData', ~isnan(out_percent_mat));
 colorbar;
@@ -33,49 +34,62 @@ title('Histogram of z-scores with matched trials')
 histogram(out_percent_mat)
 title('Histogram of percentiles with matched trials')
 
-aligned = [aligned_source{1}, aligned_target{1}];
-% NumComponents = 3;
-[eigvecs] = pca_egvecs(aligned, 3);
-pca_aligned = pca_project(aligned, eigvecs);
+for i = 1:length(aligned_source)
+    aligned = [aligned_source{i}, aligned_target{i}];
 
-pca_source = pca_aligned(:, 1:100);
-pca_target = pca_aligned(:, 101:end);
+    ali_source = aligned(:, 1:48);
+    ali_target = aligned(:, 49:end);
 
-% Plot example sessions
-s_plot = plot_3d_trajectory(aligned_source{1});
-hold on;
-t_plot = plot_3d_trajectory(aligned_target{1});
-grid on;
-legend([s_plot, t_plot], ["Source", "Target"]);
-title('Rat 1')
+    % Plot example sessions
+    figure;
+    s_plot = plot_3d_trajectory(ali_source);
+    hold on;
+    t_plot = plot_3d_trajectory(ali_target);
+    grid on;
+    lgd = legend([s_plot, t_plot], ["Rat 1 - Actual Left", "Rat 1 - Actual Right"]);
+    lgd.FontSize = 30;
+    legend boxoff;
+    
+    saveas(gcf, sprintf('without_pca_same_rat_%d.jpg', i));
+end
 
-aligned = [s_aligned_source{8}, s_aligned_target{8}, s_predicted{8}];
-% NumComponents = 3;
-[eigvecs] = pca_egvecs(aligned, 3);
-pca_aligned = pca_project(aligned, eigvecs);
+for i = 1:length(aligned_source)
+    aligned = [aligned_source{i}, aligned_target{i}, predicted{i}];
 
-pca_source = pca_aligned(:, 1:100);
-pca_target = pca_aligned(:, 101:200);
-pca_predict = pca_aligned(:, 201:end);
-
-s_plot = plot_3d_trajectory(s_aligned_source{8});
-hold on;
-t_plot = plot_3d_trajectory(s_aligned_target{8});
-hold on;
-p_plot = plot_3d_trajectory(s_predicted{8});
-grid on;
-legend([s_plot, t_plot, p_plot], ["Source", "Target", "Predicted"]);
-title('Rat 2 using transformation of 1 (different rat)')
+    ali_source = aligned(:, 1:48);
+    ali_target = aligned(:, 49:96);
+    ali_predict = aligned(:, 97:end);
+    
+    figure;
+    s_plot = plot_3d_trajectory(ali_source);
+    hold on;
+    t_plot = plot_3d_trajectory(ali_target);
+    hold on;
+    p_plot = plot_3d_trajectory(ali_predict);
+    grid on;
+    lgd = legend([s_plot, t_plot, p_plot], ["Rat 2 - Actual Left", "Rat 2 - Actual Right", "Rat 2 - Predicted Right"]);
+    lgd.FontSize = 30;
+    legend boxoff;
+    
+    saveas(gcf, sprintf('without_pca_diff_rat_%d.jpg', i));
+end
 
 for p_i = 1:length(TC)
     subplot(2, 1, 1)
-    imagesc(corrcoef(aligned_left{p_i}));
+    imagesc(corrcoef(aligned_left{p_i}(1:3, :)));
     colorbar;
     subplot(2, 1, 2)
-    imagesc(corrcoef(aligned_right{p_i}));
+    imagesc(corrcoef(aligned_right{p_i}(1:3, :)));
     colorbar;
-    saveas(gcf, sprintf('TC_align_corrcoef_%d.jpg', p_i));
+    saveas(gcf, sprintf('TC_align3_corrcoef_%d.jpg', p_i));
 end
+
+histogram(rand_dists_mat{15, 2})
+line([dist_mat(15, 2), dist_mat(15, 2)], ylim, 'LineWidth', 2, 'Color', 'r')
+line([dist_LR_mat(15, 2), dist_LR_mat(15, 2)], ylim, 'LineWidth', 2, 'Color', 'g')
+set(gca, 'LineWidth', 1, 'xticklabel', [], 'yticklabel',[], 'FontSize', 24);
+xlabel('Distances'); ylabel('Distribution');
+
 % % Plot shuffle distance histogram and true distance (by shuffling Q matrix)
 % for i = 1:length(Q)
 %     subplot(length(Q), 1, i)

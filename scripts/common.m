@@ -17,3 +17,8 @@ for mat_i = 1:numel(unpred_zscore_mat)
 end
 
 sum(sum(out_percent_mat < 0.05)) / sum(sum(~isnan(out_percent_mat)));
+
+for p_i = 1:length(TC)
+    [~, ~, shuffle_M{p_i}] = procrustes(s_aligned_target{p_i}', s_aligned_source{p_i}');
+    pre{p_i} = p_transform(shuffle_M{p_i}, s_aligned_source{8});
+end
