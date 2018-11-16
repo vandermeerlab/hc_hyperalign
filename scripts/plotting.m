@@ -14,8 +14,9 @@ imagesc(out_zscore_mat,'AlphaData', ~isnan(out_zscore_mat));
 colorbar;
 ylabel('Source Sessions');
 xlabel('Target Sessions');
-set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 24);
-% title('Z-score of distances excluding within subjects')
+title('Z-score of distances excluding within subjects')
+% set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 60);
+
 
 imagesc(out_percent_mat,'AlphaData', ~isnan(out_percent_mat));
 colorbar;
@@ -35,17 +36,17 @@ histogram(out_percent_mat)
 title('Histogram of percentiles with matched trials')
 
 for i = 1:length(aligned_source)
-    aligned = [aligned_source{i}, aligned_target{i}];
-
-    ali_source = aligned(:, 1:48);
-    ali_target = aligned(:, 49:end);
+    ali_source = aligned_source{ex_i};
+    ali_target = aligned_target{ex_i};
 
     % Plot example sessions
     figure;
     s_plot = plot_3d_trajectory(ali_source);
+    s_plot.Color = 'r';
     hold on;
     t_plot = plot_3d_trajectory(ali_target);
-    grid on;
+    t_plot.Color = 'b';
+    
     lgd = legend([s_plot, t_plot], ["Rat 1 - Actual Left", "Rat 1 - Actual Right"]);
     lgd.FontSize = 30;
     legend boxoff;
@@ -54,11 +55,9 @@ for i = 1:length(aligned_source)
 end
 
 for i = 1:length(aligned_source)
-    aligned = [aligned_source{i}, aligned_target{i}, predicted{i}];
-
-    ali_source = aligned(:, 1:48);
-    ali_target = aligned(:, 49:96);
-    ali_predict = aligned(:, 97:end);
+    ali_source = aligned_source{i};
+    ali_target = aligned_target{i};
+    ali_predict = predicted{i};
     
     figure;
     s_plot = plot_3d_trajectory(ali_source);
