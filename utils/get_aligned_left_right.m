@@ -1,4 +1,4 @@
-function [aligned_left, aligned_right] = get_aligned_left_right(pre_aligned)
+function [aligned_left, aligned_right, transforms] = get_aligned_left_right(pre_aligned)
     % Hyperalignment
     for i = 1:length(pre_aligned.left)
         hyper_input{i} = [pre_aligned.left{i}, pre_aligned.right{i}];
