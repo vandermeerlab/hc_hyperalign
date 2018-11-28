@@ -17,7 +17,6 @@ xlabel('Target Sessions');
 title('Z-score of distances excluding within subjects')
 % set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 60);
 
-
 imagesc(out_percent_mat,'AlphaData', ~isnan(out_percent_mat));
 colorbar;
 ylabel('Source Sessions');
@@ -35,6 +34,12 @@ title('Histogram of z-scores with matched trials')
 histogram(out_percent_mat)
 title('Histogram of percentiles with matched trials')
 
+imagesc(project_back_Q_right - ground_truth_Q);
+colorbar;
+mse = calculate_dist(project_back_Q_right, ground_truth_Q);
+mae = absolute_error(project_back_Q_right, ground_truth_Q);
+title(sprintf('Prediction - Original, SE: %.2f, AE: %.2f', mse, mae));
+
 for i = 1:length(aligned_source)
     ali_source = aligned_source{ex_i};
     ali_target = aligned_target{ex_i};
@@ -46,11 +51,11 @@ for i = 1:length(aligned_source)
     hold on;
     t_plot = plot_3d_trajectory(ali_target);
     t_plot.Color = 'b';
-    
+
     lgd = legend([s_plot, t_plot], ["Rat 1 - Actual Left", "Rat 1 - Actual Right"]);
     lgd.FontSize = 30;
     legend boxoff;
-    
+
     saveas(gcf, sprintf('without_pca_same_rat_%d.jpg', i));
 end
 
@@ -58,7 +63,7 @@ for i = 1:length(aligned_source)
     ali_source = aligned_source{i};
     ali_target = aligned_target{i};
     ali_predict = predicted{i};
-    
+
     figure;
     s_plot = plot_3d_trajectory(ali_source);
     hold on;
@@ -69,7 +74,7 @@ for i = 1:length(aligned_source)
     lgd = legend([s_plot, t_plot, p_plot], ["Rat 2 - Actual Left", "Rat 2 - Actual Right", "Rat 2 - Predicted Right"]);
     lgd.FontSize = 30;
     legend boxoff;
-    
+
     saveas(gcf, sprintf('without_pca_diff_rat_%d.jpg', i));
 end
 
@@ -101,7 +106,7 @@ xlabel('Distances'); ylabel('Distribution');
 %% Plot the data
 % mat = proj_Q{1};
 % figinx = 101;
-% 
+%
 % colors = linspecer(2);
 % % need to fix the trial level
 % for i = 1: numel(mat.left)
@@ -112,7 +117,7 @@ xlabel('Distances'); ylabel('Distribution');
 %     hold on;
 % end
 % grid on;
-% 
+%
 % for i = 1:numel(mat.right)
 %     Q_right(:,:,i) = mat.right{i};
 %     figure(figinx);
@@ -121,14 +126,14 @@ xlabel('Distances'); ylabel('Distribution');
 %     hold on;
 % end
 % grid on;
-% 
+%
 % % plot the average
 % all_right = mean(mean_proj_Q.right{1},3);
 % figure(figinx);
 % p1=plot3(all_right(1, :), all_right(2, :), all_right(3, :), '-','color',[1 0 0],'LineWidth',3);
 % p1.Color(4) = 1;
 % xlabel('Component 1');ylabel('Component 2');zlabel('Component 3')
-% 
+%
 % all_left = mean(mean_proj_Q.left{1},3);
 % figure(figinx);hold on
 % p1=plot3(all_left(1, :), all_left(2, :), all_left(3, :), '-','color',[0 0 1],'LineWidth',3);
