@@ -62,7 +62,7 @@ switch machinename
     case 'CALLISTO'
         base_fp = 'E:\data\promoted\';
     case 'mac'
-        base_fp = '/Users/mac/Projects/mvdmlab/data';
+        base_fp = '/Users/mac/Box Sync/Projects/mvdmlab/data';
     case 'USERDEFINED'
         base_fp = cfg.userpath;
 end

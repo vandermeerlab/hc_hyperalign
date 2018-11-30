@@ -38,7 +38,7 @@ end
 % get base file path where repo lives
 switch machinename
     case {'mac'} % add case for your machine
-        base_fp = '/Users/mac/Projects/hc_hyperalign';
+        base_fp = '/Users/mac/Box Sync/Projects/hc_hyperalign';
 end
 
 if cfg.vandermeerlab
