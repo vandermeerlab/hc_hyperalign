@@ -34,11 +34,12 @@ title('Histogram of z-scores with matched trials')
 histogram(out_percent_mat)
 title('Histogram of percentiles with matched trials')
 
-imagesc(project_back_Q_right - ground_truth_Q);
+x = s_project_back_Q_right;
+y = mean_s_Q{s_tar_i}.left;
+imagesc(x - y);
 colorbar;
-mse = calculate_dist(project_back_Q_right, ground_truth_Q);
-mae = absolute_error(project_back_Q_right, ground_truth_Q);
-title(sprintf('Prediction - Original, SE: %.2f, AE: %.2f', mse, mae));
+mse = calculate_dist(x, y);
+title(sprintf('(Shuffled) Difference between predicted and actual left in Q after projecting back, SE: %.2f', mse));
 
 for i = 1:length(aligned_source)
     ali_source = aligned_source{ex_i};
