@@ -40,23 +40,26 @@ for sr_i = 1:length(Q)
         project_back_pca = inv_p_transform(transforms{tar_i}, [aligned_source{tar_i}, predicted{tar_i}]);
         project_back_pca_id = inv_p_transform(transforms{tar_i}, [aligned_source{tar_i}, aligned_source{tar_i}]);
 
-        ground_truth_Q = mean_proj_Q{tar_i}.right;
-        project_back_pca_right = project_back_pca(:, 49:end);
-        project_back_pca_id_right = project_back_pca_id(:, 49:end);
+        % project_back_pca_right = project_back_pca(:, 49:end);
+        % project_back_pca_id_right = project_back_pca_id(:, 49:end);
         % Project prediction back to Q space.
         project_back_Q = eigvecs{tar_i} * project_back_pca;
         project_back_Q_right = project_back_Q(:, 49:end);
         % Project identity mapping back to Q space.
-%         project_back_Q_id = eigvecs{tar_i} * project_back_pca_id;
-%         project_back_Q_id_right = project_back_Q_id(:, 49:end);
+        project_back_Q_id = eigvecs{tar_i} * project_back_pca_id;
+        project_back_Q_id_right = project_back_Q_id(:, 49:end);
+
         % Compare with its original right Q
-        dist_mat(sr_i, tar_i) = calculate_dist(project_back_pca_right, ground_truth_Q);
-        dist_LR_mat(sr_i, tar_i) = calculate_dist(project_back_pca_id_right, ground_truth_Q);
+        ground_truth_Q = mean_Q{tar_i}.right;
+        dist_mat(sr_i, tar_i) = calculate_dist(project_back_Q_right, ground_truth_Q);
+        dist_LR_mat(sr_i, tar_i) = calculate_dist(project_back_Q_id_right, ground_truth_Q);
     end
 end
 
 % Shuffle aligned Q matrix
 rand_dists_mat  = cell(length(Q), length(Q));
+rand_dists_LR_mat  = cell(length(Q), length(Q));
+predicted_id_mat = zeros(length(Q));
 for i = 1:1000
 % %     Shuffling the mean projected matrix (right)
 %     for j = 1:length(aligned_right)
@@ -88,15 +91,26 @@ for i = 1:1000
         for s_tar_i = 1:length(Q)
             % Apply inverse procustes to project back to PCA space.
             s_project_back_pca = inv_p_transform(s_transforms{s_tar_i}, [s_aligned_source{s_tar_i}, s_predicted{s_tar_i}]);
+            s_project_back_pca_id = inv_p_transform(s_transforms{s_tar_i}, [s_aligned_source{s_tar_i}, s_aligned_source{s_tar_i}]);
 
-            s_ground_truth_Q = mean_s_proj_Q{s_tar_i}.right;
-            s_project_back_pca_right = s_project_back_pca(:, 49:end);
+            % s_project_back_pca_right = s_project_back_pca(:, 49:end);
+            % s_project_back_pca_id_right = s_project_back_pca_id(:, 49:end);
             % Project prediction back to Q space.
             s_project_back_Q = s_eigvecs{s_tar_i} * s_project_back_pca;
             s_project_back_Q_right = s_project_back_Q(:, 49:end);
+            % Project identity mapping back to Q space.
+            s_project_back_Q_id = s_eigvecs{s_tar_i} * s_project_back_pca_id;
+            s_project_back_Q_id_right = s_project_back_Q_id(:, 49:end);
 
             % Compare with its shuffled right Q
-            rand_dists_mat{s_sr_i, s_tar_i} = [rand_dists_mat{s_sr_i, s_tar_i}, calculate_dist(s_project_back_pca_right, s_ground_truth_Q)];
+            s_ground_truth_Q = mean_s_Q{s_tar_i}.right;
+            s_predicted_dist = calculate_dist(s_project_back_Q_right, s_ground_truth_Q);
+            s_id_dist = calculate_dist(s_project_back_Q_id_right, s_ground_truth_Q);
+            rand_dists_mat{s_sr_i, s_tar_i} = [rand_dists_mat{s_sr_i, s_tar_i}, s_predicted_dist];
+            rand_dists_LR_mat{s_sr_i, s_tar_i} = [rand_dists_LR_mat{s_sr_i, s_tar_i}, s_id_dist];
+            if s_predicted_dist < s_id_dist
+                predicted_id_mat(s_sr_i, s_tar_i) = predicted_id_mat(s_sr_i, s_tar_i) + 1;
+            end
         end
     end
 end
