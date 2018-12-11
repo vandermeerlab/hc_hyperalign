@@ -14,7 +14,7 @@ for i = 1:length(Q)
     Q_left = cellfun(@(x) x.data, Q{i}.left, 'UniformOutput', false);
     Q_right = cellfun(@(x) x.data, Q{i}.right, 'UniformOutput', false);
     mean_Q{i}.left = mean(cat(3, Q_left{:}), 3);
-    mean_Q{i}.right =  mean(cat(3, Q_right{:}), 3);
+    mean_Q{i}.right = mean(cat(3, Q_right{:}), 3);
 end
 
 % PCA
@@ -57,8 +57,8 @@ for sr_i = 1:length(Q)
 end
 
 % Shuffle aligned Q matrix
-rand_dists_mat  = cell(length(Q), length(Q));
-rand_dists_LR_mat  = cell(length(Q), length(Q));
+rand_dists_mat = cell(length(Q), length(Q));
+rand_dists_LR_mat = cell(length(Q), length(Q));
 predicted_id_mat = zeros(length(Q));
 for i = 1:1000
 % %     Shuffling the mean projected matrix (right)
@@ -103,7 +103,7 @@ for i = 1:1000
             s_project_back_Q_id_right = s_project_back_Q_id(:, 49:end);
 
             % Compare with its shuffled right Q
-            s_ground_truth_Q = mean_s_Q{s_tar_i}.right;
+            s_ground_truth_Q = mean_Q{s_tar_i}.right;
             s_predicted_dist = calculate_dist(s_project_back_Q_right, s_ground_truth_Q);
             s_id_dist = calculate_dist(s_project_back_Q_id_right, s_ground_truth_Q);
             rand_dists_mat{s_sr_i, s_tar_i} = [rand_dists_mat{s_sr_i, s_tar_i}, s_predicted_dist];
