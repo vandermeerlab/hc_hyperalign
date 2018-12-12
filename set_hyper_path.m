@@ -48,5 +48,6 @@ end
 
 % add to path
 addpath(genpath(cat(2,base_fp,filesep,'scripts')));
+addpath(genpath(cat(2,base_fp,filesep,'sandbox')));
 addpath(genpath(cat(2,base_fp,filesep,'utils')));
 addpath(genpath(cat(2,base_fp,filesep,'hypertools_matlab_toolbox')));
