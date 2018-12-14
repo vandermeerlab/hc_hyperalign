@@ -24,7 +24,7 @@ actual_sf_mat = zeros(length(Q));
 id_sf_mat = zeros(length(Q));
 
 % Project [L, R] to PCA space.
-NumComponents = 10;
+ NumComponents = 10;
 for p_i = 1:length(Q)
     [mean_proj_Q{p_i}, eigvecs{p_i}] = perform_pca(mean_Q{p_i}, NumComponents);
 end
@@ -33,11 +33,19 @@ end
 % hyper_input = mean_proj_Q;
 % [aligned_left, aligned_right, transforms] = get_aligned_left_right(hyper_input);
 
+% Exclude right Q from target session that we try to predict.
+for ex_i = 1:length(Q)
+    ex_mean_Q = mean_Q;
+    ex_mean_Q{ex_i}.right = zeros(size(mean_Q{ex_i}.right));
+    % PCA
+    [ex_mean_proj_Q{ex_i}, ex_eigvecs{ex_i}] = perform_pca(ex_mean_Q{ex_i}, NumComponents);
+end
+
 for sr_i = 1:length(Q)
     for tar_i = 1:length(Q)
         if sr_i ~= tar_i
             % Perform hyperalignment on concatenated [L, R] in PCA.
-            hyper_input = {mean_proj_Q{sr_i}, mean_proj_Q{tar_i}};
+            hyper_input = {mean_proj_Q{sr_i}, ex_mean_proj_Q{tar_i}};
             [aligned_left, aligned_right, transforms] = get_aligned_left_right(hyper_input);
             % Estimate M from L to R using source session.
             [~, ~, M] = procrustes(aligned_right{1}', aligned_left{1}');
@@ -51,8 +59,8 @@ for sr_i = 1:length(Q)
             project_back_pca_id = inv_p_transform(transforms{2}, [padding, id_predicted]);
             % Project back to Q space.
             w_len = size(mean_proj_Q{1}.left, 2);
-            project_back_Q_right = eigvecs{tar_i} * project_back_pca(:, w_len+1:end);
-            project_back_Q_id_right = eigvecs{tar_i} * project_back_pca_id(:, w_len+1:end);
+            project_back_Q_right = ex_eigvecs{tar_i} * project_back_pca(:, w_len+1:end);
+            project_back_Q_id_right = ex_eigvecs{tar_i} * project_back_pca_id(:, w_len+1:end);
             % Compare prediction using M with ground truth
             ground_truth_Q = mean_Q{tar_i}.right;
             actual_dists_mat(sr_i, tar_i) = calculate_dist(project_back_Q_right, ground_truth_Q);
@@ -70,8 +78,9 @@ for i = 1:1000
     end
 
     % Project [L, R'] to PCA space.
+     NumComponents = 10;
     for p_i = 1:length(Q)
-        [mean_s_proj_Q{p_i}] = perform_pca(mean_s_Q{p_i}, NumComponents);
+        [mean_s_proj_Q{p_i}, s_eigvecs{p_i}] = perform_pca(mean_s_Q{p_i}, NumComponents);
     end
 
     for sr_i = 1:length(Q)
@@ -82,7 +91,7 @@ for i = 1:1000
         for tar_i = 1:length(Q)
             if sr_i ~= tar_i
                 % Perform hyperalignment on concatenated [L, R'] in PCA.
-                s_hyper_input = {mean_s_proj_Q{sr_i}, mean_proj_Q{tar_i}};
+                s_hyper_input = {mean_s_proj_Q{sr_i}, ex_mean_proj_Q{tar_i}};
                 [s_aligned_left, s_aligned_right, s_transforms] = get_aligned_left_right(s_hyper_input);
                 % Estimate M' from L to R' using source session.
                 [~, ~, sf_M] = procrustes(s_aligned_right{1}', s_aligned_left{1}');
@@ -91,7 +100,7 @@ for i = 1:1000
                 % Project back to PCA space
                 s_project_back_pca = inv_p_transform(s_transforms{2}, [padding, s_predicted]);
                 % Project back to Q space.
-                s_project_back_Q_right = eigvecs{tar_i} * s_project_back_pca(:, w_len+1:end);
+                s_project_back_Q_right = ex_eigvecs{tar_i} * s_project_back_pca(:, w_len+1:end);
                 % Compare prediction using M' with ground truth
                 ground_truth_Q = mean_Q{tar_i}.right;
                 sf_dist = calculate_dist(s_project_back_Q_right, ground_truth_Q);
