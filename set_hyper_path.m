@@ -39,6 +39,8 @@ end
 switch machinename
     case {'mac'} % add case for your machine
         base_fp = '/Users/mac/Box Sync/Projects/hc_hyperalign';
+    case {'PROMETHEUS'}
+        base_fp = 'C:\Users\mvdmlab\Documents\GitHub\hc_hyperalign';
 end
 
 if cfg.vandermeerlab
