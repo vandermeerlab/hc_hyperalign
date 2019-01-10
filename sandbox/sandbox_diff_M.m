@@ -29,6 +29,7 @@ for i = 1:1000
     for s_i = 1:length(Q)
         shuffle_indices{s_i} = randperm(size(Q{s_i}.right{1}.data, 1));
         mean_s_Q{s_i}.right = mean_Q{s_i}.right(shuffle_indices{s_i}, :);
+        % mean_s_Q{s_i}.right = zscore(randn(size(mean_Q{s_i}.right)), 0, 2);
     end
 
      % PCA
@@ -60,17 +61,16 @@ for i = 1:1000
                 % Project back to PCA space.
                 padding = zeros(size(aligned_left{1}));
                 project_back_pca = inv_p_transform(transforms{2}, [padding, predicted, padding]);
-                s_project_back_pca = inv_p_transform(transforms{2}, [padding, padding, s_predicted]);
+                s_project_back_pca = inv_p_transform(transforms{2}, [padding, s_predicted, padding]);
                 % Project back to Q space.
                 w_len = size(mean_proj_Q{1}.left, 2);
                 project_back_Q_right = eigvecs{tar_i} * project_back_pca(:, w_len+1:2*w_len);
-                s_project_back_Q_right = eigvecs{tar_i} * s_project_back_pca(:, 2*w_len+1:end);
+                s_project_back_Q_right = eigvecs{tar_i} * s_project_back_pca(:, w_len+1:2*w_len);
                 % Compare prediction using M and M' with ground truth respectively.
                 ground_truth_Q = mean_Q{tar_i}.right;
-                s_ground_truth_Q = mean_s_Q{tar_i}.right;
 
                 actual_dist = calculate_dist(project_back_Q_right, ground_truth_Q);
-                shuffled_dist = calculate_dist(s_project_back_Q_right, s_ground_truth_Q);
+                shuffled_dist = calculate_dist(s_project_back_Q_right, ground_truth_Q);
 
                 actual_dists_mat{sr_i, tar_i} = [actual_dists_mat{sr_i, tar_i}, actual_dist];
                 sf_dists_mat{sr_i, tar_i} = [sf_dists_mat{sr_i, tar_i}, shuffled_dist];
