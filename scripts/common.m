@@ -1,9 +1,9 @@
 zscore_mat = zeros(length(Q));
 percent_mat = zeros(length(Q));
 for mat_i = 1:numel(zscore_mat)
-    zs = zscore([rand_dists_mat{mat_i}, dist_mat(mat_i)]);
+    zs = zscore([sf_dists_mat{mat_i}, actual_dists_mat(mat_i)]);
     zscore_mat(mat_i) = zs(end);
-    percent_mat(mat_i) = get_percentile(dist_mat(mat_i), rand_dists_mat{mat_i});
+    percent_mat(mat_i) = get_percentile(actual_dists_mat(mat_i), sf_dists_mat{mat_i});
 end
 out_zscore_mat = set_withsubj_nan(zscore_mat);
 out_percent_mat = set_withsubj_nan(percent_mat);
