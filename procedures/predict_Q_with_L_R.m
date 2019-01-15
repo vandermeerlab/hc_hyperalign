@@ -1,4 +1,4 @@
-function [actual_dist, id_dist] = hyperalign_L_R(sr_Q, tar_Q)
+function [actual_dist, id_dist] = predict_Q_with_L_R(sr_Q, tar_Q)
     % Project [L, R] to PCA space.
     NumComponents = 10;
     [sr_proj_Q, sr_eigvecs] = perform_pca(sr_Q, NumComponents);

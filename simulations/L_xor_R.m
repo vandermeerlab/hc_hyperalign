@@ -26,7 +26,7 @@ id_sf_mat = zeros(length(Q));
 for sr_i = 1:length(Q)
     for tar_i = 1:length(Q)
         if sr_i ~= tar_i
-            [actual_dist, id_dist] = hyperalign_L_R(Q{sr_i}, Q{tar_i});
+            [actual_dist, id_dist] = predict_Q_with_L_R(Q{sr_i}, Q{tar_i});
             actual_dists_mat(sr_i, tar_i) = actual_dist;
             id_dists_mat(sr_i, tar_i) = id_dist;
         end
@@ -44,7 +44,7 @@ for shuffle_i = 1:1000
     for sr_i = 1:length(Q)
         for tar_i = 1:length(Q)
             if sr_i ~= tar_i
-                [sf_dist] = hyperalign_L_R(s_Q{sr_i}, Q{tar_i});
+                [sf_dist] = predict_Q_with_L_R(s_Q{sr_i}, Q{tar_i});
                 sf_dists_mat{sr_i, tar_i}  = [sf_dists_mat{sr_i, tar_i}, sf_dist];
 
                 if actual_dists_mat(sr_i, tar_i) < sf_dist

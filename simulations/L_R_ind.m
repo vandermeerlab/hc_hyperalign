@@ -8,14 +8,14 @@ for q_i = 1:19
     Q{q_i}.right = zeros(n_units, w_len);
     p_has_field = 0.5;
     for n_i = 1:n_units
-        % mu = rand() * w_len;
+        mu = rand() * w_len;
         if rand() < p_has_field
-            left_mu = rand() * w_len;
-            Q{q_i}.left(n_i, :) = gaussian_1d(w_len, 5, left_mu, 5);
+%             left_mu = rand() * w_len;
+            Q{q_i}.left(n_i, :) = gaussian_1d(w_len, 5, mu, 5);
         end
         if rand() < p_has_field
-            right_mu = rand() * w_len;
-            Q{q_i}.right(n_i, :) = gaussian_1d(w_len, 5, right_mu, 5);
+%             right_mu = rand() * w_len;
+            Q{q_i}.right(n_i, :) = gaussian_1d(w_len, 5, mu, 5);
         end
     end
 end
@@ -29,7 +29,7 @@ id_sf_mat = zeros(length(Q));
 for sr_i = 1:length(Q)
     for tar_i = 1:length(Q)
         if sr_i ~= tar_i
-            [actual_dist, id_dist] = hyperalign_L_R(Q{sr_i}, Q{tar_i});
+            [actual_dist, id_dist] = predict_Q_with_L_R(Q{sr_i}, Q{tar_i});
             actual_dists_mat(sr_i, tar_i) = actual_dist;
             id_dists_mat(sr_i, tar_i) = id_dist;
         end
@@ -47,7 +47,7 @@ for shuffle_i = 1:1000
     for sr_i = 1:length(Q)
         for tar_i = 1:length(Q)
             if sr_i ~= tar_i
-                [sf_dist] = hyperalign_L_R(s_Q{sr_i}, Q{tar_i});
+                [sf_dist] = predict_Q_with_L_R(s_Q{sr_i}, Q{tar_i});
                 sf_dists_mat{sr_i, tar_i}  = [sf_dists_mat{sr_i, tar_i}, sf_dist];
 
                 if actual_dists_mat(sr_i, tar_i) < sf_dist
