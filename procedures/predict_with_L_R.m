@@ -1,5 +1,7 @@
 function [actual_dists_mat, id_dists_mat] = predict_with_L_R(cfg_in, Q)
-    % Perform PCA, hyperalignment (with either two or all sessions) and predict target Q matrices.
+    % Perform PCA, hyperalignment (with either two or all sessions)
+    % and predict target (either trajectory in common space or Q matrix).
+    % The way that this function performs hyperalignment is concatenate left(L) and right(R) into [L, R].
     cfg_def.hyperalign_all = false;
     cfg_def.predict_Q = true;
     cfg_def.NumComponents = 10;
@@ -44,7 +46,7 @@ function [actual_dists_mat, id_dists_mat] = predict_with_L_R(cfg_in, Q)
                 predicted_aligned = p_transform(M, aligned_left_tar);
                 % Estimate using L (identity mapping).
                 id_predicted_aligned = aligned_left_tar;
-                if ~predict_Q
+                if ~cfg.predict_Q
                     p_target = predicted_aligned;
                     id_p_target = id_predicted_aligned;
                     % Compare prediction using M with ground truth
