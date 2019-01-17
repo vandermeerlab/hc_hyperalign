@@ -1,21 +1,6 @@
-% Get processed data
-cfg_data.paperSessions = 1;
-data_paths = getTmazeDataPath(cfg_data);
-restrictionLabels = get_restriction_types(data_paths);
-
-cfg.use_matched_trials = 1;
-Q = cell(1, length(data_paths));
-for p_i = 1:length(data_paths)
-    Q{p_i} = get_processed_Q(cfg, data_paths{p_i});
-end
-
-% Average across all left (and right) trials
-for i = 1:length(Q)
-    Q_left = cellfun(@(x) x.data, Q{i}.left, 'UniformOutput', false);
-    Q_right = cellfun(@(x) x.data, Q{i}.right, 'UniformOutput', false);
-    mean_Q{i}.left = mean(cat(3, Q_left{:}), 3);
-    mean_Q{i}.right =  mean(cat(3, Q_right{:}), 3);
-end
+% Get Q inputs
+cfg_data = [];
+mean_Q = prepare_all_Q(cfg_data);
 
 cfg_pre = [];
 cfg_pre.hyperalign_all = false;

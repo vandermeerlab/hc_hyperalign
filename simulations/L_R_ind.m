@@ -20,44 +20,14 @@ for q_i = 1:19
     end
 end
 
-actual_dists_mat  = zeros(length(Q));
-id_dists_mat  = zeros(length(Q));
-sf_dists_mat  = cell(length(Q));
-actual_sf_mat = zeros(length(Q));
-id_sf_mat = zeros(length(Q));
+cfg_pre = [];
+[actual_dists_mat, id_dists_mat] = predict_with_L_R(cfg_pre, Q);
 
-for sr_i = 1:length(Q)
-    for tar_i = 1:length(Q)
-        if sr_i ~= tar_i
-            [actual_dist, id_dist] = predict_with_L_R(Q{sr_i}, Q{tar_i});
-            actual_dists_mat(sr_i, tar_i) = actual_dist;
-            id_dists_mat(sr_i, tar_i) = id_dist;
-        end
-    end
+n_shuffles = 1000;
+sf_dists_mat  = zeros(length(Q), length(Q), n_shuffles);
+
+for i = 1:n_shuffles
+    cfg_pre.shuffled = 1;
+    [s_actual_dists_mat] = predict_with_L_R(cfg_pre, Q);
+    sf_dists_mat(:, :, i) = s_actual_dists_mat;
 end
-
-for shuffle_i = 1:1000
-    % Shuffle right Q matrix
-    s_Q = Q;
-    for s_i = 1:length(Q)
-        shuffle_indices{s_i} = randperm(size(Q{s_i}.right, 1));
-        s_Q{s_i}.right = Q{s_i}.right(shuffle_indices{s_i}, :);
-    end
-
-    for sr_i = 1:length(Q)
-        for tar_i = 1:length(Q)
-            if sr_i ~= tar_i
-                [sf_dist] = predict_with_L_R(s_Q{sr_i}, Q{tar_i});
-                sf_dists_mat{sr_i, tar_i}  = [sf_dists_mat{sr_i, tar_i}, sf_dist];
-
-                if actual_dists_mat(sr_i, tar_i) < sf_dist
-                    actual_sf_mat(sr_i, tar_i) = actual_sf_mat(sr_i, tar_i) + 1;
-                end
-                if id_dists_mat(sr_i, tar_i) < sf_dist
-                    id_sf_mat(sr_i, tar_i) = id_sf_mat(sr_i, tar_i) + 1;
-                end
-            end
-        end
-    end
-end
-
