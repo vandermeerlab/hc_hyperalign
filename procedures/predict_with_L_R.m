@@ -4,6 +4,8 @@ function [actual_dists_mat, id_dists_mat] = predict_with_L_R(cfg_in, Q)
     % The way that this function performs hyperalignment is concatenate left(L) and right(R) into [L, R].
     cfg_def.hyperalign_all = false;
     cfg_def.predict_Q = true;
+    % If shuffled is specified, source session would be identity shuffled.
+    cfg_def.shuffled = 0;
     cfg_def.NumComponents = 10;
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);
@@ -13,15 +15,28 @@ function [actual_dists_mat, id_dists_mat] = predict_with_L_R(cfg_in, Q)
         [proj_Q{p_i}, eigvecs{p_i}] = perform_pca(Q{p_i}, cfg.NumComponents);
     end
 
+    if cfg.shuffled
+        % Shuffle right Q matrix
+        s_Q = Q;
+        for s_i = 1:length(Q)
+            shuffle_indices = randperm(size(Q{s_i}.right, 1));
+            s_Q{s_i}.right = Q{s_i}.right(shuffle_indices, :);
+            [s_proj_Q{s_i}] = perform_pca(s_Q{s_i}, cfg.NumComponents);
+        end
+    end
+
     actual_dists_mat  = zeros(length(Q));
     id_dists_mat  = zeros(length(Q));
-    if cfg.hyperalign_all
-        % Hyperalign using all sessions then source will be chosen to predict target.
-        % Perform hyperalignment on concatenated [L, R] in PCA.
-        hyper_input = proj_Q;
-        [aligned_left, aligned_right, transforms] = get_aligned_left_right(hyper_input);
-    end
     for sr_i = 1:length(Q)
+        if cfg.hyperalign_all
+            % Hyperalign using all sessions then source will be chosen to predict target.
+            % Perform hyperalignment on concatenated [L, R] in PCA.
+            hyper_input = proj_Q;
+            if cfg.shuffled
+                hyper_input{sr_i} = s_proj_Q{sr_i};
+            end
+            [aligned_left, aligned_right, transforms] = get_aligned_left_right(hyper_input);
+        end
         for tar_i = 1:length(Q)
             if sr_i ~= tar_i
                 if cfg.hyperalign_all
@@ -32,7 +47,11 @@ function [actual_dists_mat, id_dists_mat] = predict_with_L_R(cfg_in, Q)
                     transforms_tar = transforms{tar_i};
                 else
                     % Perform hyperalignment on concatenated [L, R] in PCA for every source-target pair.
-                    hyper_input = {proj_Q{sr_i}, proj_Q{tar_i}};
+                    if cfg.shuffled
+                        hyper_input = {s_proj_Q{sr_i}, proj_Q{tar_i}};
+                    else
+                        hyper_input = {proj_Q{sr_i}, proj_Q{tar_i}};
+                    end
                     [aligned_left, aligned_right, transforms] = get_aligned_left_right(hyper_input);
                     aligned_left_sr = aligned_left{1};
                     aligned_right_sr = aligned_right{1};
@@ -49,7 +68,6 @@ function [actual_dists_mat, id_dists_mat] = predict_with_L_R(cfg_in, Q)
                 if ~cfg.predict_Q
                     p_target = predicted_aligned;
                     id_p_target = id_predicted_aligned;
-                    % Compare prediction using M with ground truth
                     ground_truth = aligned_right_tar;
                 else
                     % Project back to PCA space
@@ -60,10 +78,12 @@ function [actual_dists_mat, id_dists_mat] = predict_with_L_R(cfg_in, Q)
                     w_len = size(aligned_left_sr, 2);
                     project_back_Q_right = eigvecs{tar_i} * project_back_pca(:, w_len+1:end);
                     project_back_Q_id_right = eigvecs{tar_i} * project_back_pca_id(:, w_len+1:end);
+
                     p_target = project_back_Q_right;
                     id_p_target = project_back_Q_id_right;
                     ground_truth = Q{tar_i}.right;
                 end
+                % Compare prediction using M with ground truth
                 actual_dist = calculate_dist(p_target, ground_truth);
                 id_dist = calculate_dist(id_p_target, ground_truth);
                 actual_dists_mat(sr_i, tar_i) = actual_dist;
