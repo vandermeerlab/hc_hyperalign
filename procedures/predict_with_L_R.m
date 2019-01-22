@@ -1,7 +1,7 @@
 function [actual_dists_mat, id_dists_mat] = predict_with_L_R(cfg_in, Q)
     % Perform PCA, hyperalignment (with either two or all sessions)
     % and predict target (either trajectory in common space or Q matrix).
-    % The way that this function performs hyperalignment is concatenate left(L) and right(R) into [L, R].
+    % The way that this function performs hyperalignment is concatenating left(L) and right(R) into [L, R].
     cfg_def.hyperalign_all = false;
     cfg_def.predict_Q = true;
     % If shuffled is specified, source session would be identity shuffled.
