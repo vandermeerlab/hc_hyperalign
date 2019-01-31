@@ -1,7 +1,7 @@
-zscore_mat = zeros(length(Q));
-percent_mat = zeros(length(Q));
-for i = 1:length(Q)
-    for j = 1:length(Q)
+zscore_mat = zeros(length(data));
+percent_mat = zeros(length(data));
+for i = 1:length(data)
+    for j = 1:length(data)
         sf_dists = squeeze(sf_dists_mat(i, j, :))';
         zs = zscore([sf_dists, actual_dists_mat(i, j)]);
         zscore_mat(i, j) = zs(end);
@@ -11,7 +11,7 @@ end
 out_zscore_mat = set_withsubj_nan(zscore_mat);
 out_percent_mat = set_withsubj_nan(percent_mat);
 
-sum(sum(out_percent_mat < 0.5)) / sum(sum(~isnan(out_percent_mat)))
+sum(sum(out_percent_mat < 0.05)) / sum(sum(~isnan(out_percent_mat)))
 
 % Proportion of actual distance and identity distance smaller than shuffled distances
 actual_sf_mat = sum(actual_dists_mat < sf_dists_mat, 3);
