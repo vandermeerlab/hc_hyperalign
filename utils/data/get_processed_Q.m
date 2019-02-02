@@ -1,18 +1,23 @@
 function [Q] = get_processed_Q(cfg_in, session_path)
 
     cfg_def.use_matched_trials = 0;
+    cfg_def.use_adr_data = 0;
 
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);
 
     % Get the data
     cd(session_path);
-    LoadMetadata();
-    LoadExpKeys();
+    if cfg.use_adr_data
+        load_adrlab_data();
+    else
+        LoadMetadata();
+        LoadExpKeys();
 
-    cfg_spikes = {};
-    cfg_spikes.load_questionable_cells = 1;
-    S = LoadSpikes(cfg_spikes);
+        cfg_spikes = {};
+        cfg_spikes.load_questionable_cells = 1;
+        S = LoadSpikes(cfg_spikes);
+    end
 
     % The end times of left and right trials.
     if cfg.use_matched_trials
