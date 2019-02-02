@@ -62,4 +62,4 @@ metadata.taskvars.trial_iv_R = trial_iv_R;
 metadata.taskvars.sequence = sequence;
 
 ExpKeys.badTrials = [];
-[left,right] = GetMatchedTrials([], metadata, ExpKeys)
+[left,right] = GetMatchedTrials([], metadata, ExpKeys);

@@ -51,7 +51,7 @@ end
 switch machinename
 
     case {'ISIDRO','MVDMLAB-PERSEUS','ODYSSEUS', 'PROMETHEUS'}
-        base_fp = 'C:\data\';
+        base_fp = 'C:\data\Adrlab';
     case {'EQUINOX','BERGKAMP'}
         base_fp = 'D:\data\';
     case 'MVDMLAB-ATHENA'
