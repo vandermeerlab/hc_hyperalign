@@ -3,9 +3,10 @@ function [mean_Q, restrictionLabels] = prepare_all_Q(cfg_in)
     cfg_def.paperSessions = 1;
     cfg_def.use_matched_trials = 1;
     cfg_def.use_adr_data = 0;
+    cfg_def.removeInterneurons = 0;
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);
-    
+
     if cfg.use_adr_data
         data_paths = getAdrDataPath(cfg);
     else

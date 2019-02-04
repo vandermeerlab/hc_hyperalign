@@ -2,6 +2,7 @@ function [Q] = get_processed_Q(cfg_in, session_path)
 
     cfg_def.use_matched_trials = 0;
     cfg_def.use_adr_data = 0;
+    cfg_def.removeInterneurons = 0;
 
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);
@@ -17,6 +18,10 @@ function [Q] = get_processed_Q(cfg_in, session_path)
         cfg_spikes = {};
         cfg_spikes.load_questionable_cells = 1;
         S = LoadSpikes(cfg_spikes);
+        if cfg.removeInterneurons
+            csc = LoadCSC([]);
+            S = RemoveInterneuronsHC([],S,csc);
+        end
     end
 
     % The end times of left and right trials.
