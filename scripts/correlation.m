@@ -1,5 +1,6 @@
 % Get Q inputs
 cfg_data = [];
+cfg_data.removeInterneurons = 1;
 mean_Q = prepare_all_Q(cfg_data);
 
 max_coefs = zeros(length(mean_Q), 2);
