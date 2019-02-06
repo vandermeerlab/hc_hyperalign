@@ -1,7 +1,7 @@
 function [TC] = get_tuning_curve(cfg_in, session_path)
     % Adapted from https://github.com/vandermeerlab/vandermeerlab/blob/master/code-matlab/example_workflows/WORKFLOW_PlotOrderedRaster.m
 
-    cfg_def.use_matched_trials = 0;
+    cfg_def.use_matched_trials = 1;
 
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);
@@ -53,8 +53,8 @@ function [TC] = get_tuning_curve(cfg_in, session_path)
     %% find intervals where rat is running
     spd = getLinSpd([],pos); % get speed (in "camera pixels per second")
 
-    cfg_spd = []; cfg_spd.method = 'raw'; cfg_spd.threshold = 10;
-    run_iv = TSDtoIV(cfg_spd,spd); % intervals with speed above 10 pix/s
+    cfg_spd = []; cfg_spd.method = 'raw'; cfg_spd.threshold = 5;
+    run_iv = TSDtoIV(cfg_spd,spd); % intervals with speed above 5 pix/s
 
     %% restrict (linearized) position data and spike data to desired intervals
     for iCond = 1:nCond
@@ -71,18 +71,15 @@ function [TC] = get_tuning_curve(cfg_in, session_path)
     % http://ctnsrv.uwaterloo.ca/vandermeerlab/doku.php?id=analysis:nsb2015:week12
     for iCond = 1:nCond
 
-        cfg_tc = []; cfg_tc.smoothingKernel = gausskernel(11, 1); cfg_tc.minOcc = 1;
+        cfg_tc = []; cfg_tc.smoothingKernel = gausskernel(11, 1); cfg_tc.minOcc = 0.25;
         expCond(iCond).tc = TuningCurves(cfg_tc,expCond(iCond).S,expCond(iCond).linpos);
         [~,expCond(iCond).cp_bin] = histc(expCond(iCond).cp.data, expCond(iCond).tc.usr.binEdges);
 
-        keep = 11:90;
-        expCond(iCond).tc.tc = expCond(iCond).tc.tc(:,keep); 
-        expCond(iCond).occ_hist = expCond(iCond).tc.occ_hist(keep);
-        
     end
-    
-    TC.left.tc = zscore(expCond(1).tc.tc, 0, 2);
-    TC.right.tc = zscore(expCond(2).tc.tc, 0, 2);
+
+    TC.left.tc = expCond(1).tc.tc;
+    TC.right.tc = expCond(2).tc.tc;
+
     TC.left.cp_bin = expCond(1).cp_bin;
     TC.right.cp_bin = expCond(2).cp_bin;
 end

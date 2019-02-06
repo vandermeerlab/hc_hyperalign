@@ -79,14 +79,17 @@ for i = 1:length(aligned_source)
     saveas(gcf, sprintf('without_pca_diff_rat_%d.jpg', i));
 end
 
+keep = 11:90;
 for p_i = 1:length(TC)
+    z_TC_left = zscore(TC{p_i}.left, 0, 2);
+    z_TC_right = zscore(TC{p_i}.right, 0, 2);
     subplot(2, 1, 1)
-    imagesc(corrcoef(aligned_left{p_i}(1:3, :)));
+    imagesc([TC{p_i}.left(:, keep), TC{p_i}.right(:, keep)]);
     colorbar;
     subplot(2, 1, 2)
-    imagesc(corrcoef(aligned_right{p_i}(1:3, :)));
+    imagesc([z_TC_left(:, keep), z_TC_right(:, keep)]);
     colorbar;
-    saveas(gcf, sprintf('TC_align3_corrcoef_%d.jpg', p_i));
+    saveas(gcf, sprintf('TC_%d.jpg', p_i));
 end
 
 histogram(sf_dists)

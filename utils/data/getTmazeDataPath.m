@@ -28,7 +28,7 @@ cfg_def.requireCandidates = 0;
 cfg_def.requireEvents = 0;
 cfg_def.verbose = 1;
 cfg_def.userpath = '';
-cfg_def.paperSessions = 0; % if 1, preselect sessions used in van der Meer et al. (2017)
+cfg_def.paperSessions = 1; % if 1, preselect sessions used in van der Meer et al. (2017)
 
 mfun = mfilename;
 cfg = ProcessConfig(cfg_def,cfg_in,mfun);

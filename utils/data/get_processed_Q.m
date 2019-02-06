@@ -1,6 +1,6 @@
 function [Q] = get_processed_Q(cfg_in, session_path)
 
-    cfg_def.use_matched_trials = 0;
+    cfg_def.use_matched_trials = 1;
     cfg_def.use_adr_data = 0;
     cfg_def.removeInterneurons = 0;
 

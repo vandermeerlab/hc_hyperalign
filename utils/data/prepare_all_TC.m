@@ -1,7 +1,5 @@
 function [TC, restrictionLabels] = prepare_all_TC(cfg_in)
     % Get processed data
-    cfg_def.paperSessions = 1;
-    cfg_def.use_matched_trials = 1;
     cfg_def.only_use_cp = 1;
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);
@@ -21,8 +19,8 @@ function [TC, restrictionLabels] = prepare_all_TC(cfg_in)
         max_cp_bin = max([left_cp_bins, right_cp_bins]);
         % Use data that is after the choice point
         for i = 1:length(TC)
-            TC{i}.left = TC{i}.left.tc(:, max_cp_bin+1:end);
-            TC{i}.right = TC{i}.right.tc(:, max_cp_bin+1:end);
+            TC{i}.left = TC{i}.left.tc(:, max_cp_bin-10+1:end);
+            TC{i}.right = TC{i}.right.tc(:, max_cp_bin-10+1:end);
         end
     else
         for i = 1:length(TC)
