@@ -79,26 +79,43 @@ for i = 1:length(aligned_source)
     saveas(gcf, sprintf('without_pca_diff_rat_%d.jpg', i));
 end
 
-keep = 11:90;
-for p_i = 1:length(TC)
-    z_TC_left = zscore(TC{p_i}.left, 0, 2);
-    z_TC_right = zscore(TC{p_i}.right, 0, 2);
+%% Create Q figures
+for p_i = 1:length(Q)
     subplot(2, 1, 1)
-    imagesc([TC{p_i}.left(:, keep), TC{p_i}.right(:, keep)]);
+    imagesc([Q{p_i}.left, Q{p_i}.right]);
     colorbar;
     subplot(2, 1, 2)
-    imagesc([z_TC_left(:, keep), z_TC_right(:, keep)]);
+    imagesc([Q_norm{p_i}.left, Q_norm{p_i}.right]);
+    colorbar;
+    saveas(gcf, sprintf('Q_%d.jpg', p_i));
+end
+
+%% Create TC figures
+keep = 1:100;
+for p_i = 1:length(TC)
+    TC{p_i}.left = TC{p_i}.left(:, keep);
+    TC{p_i}.right = TC{p_i}.right(:, keep);
+    
+    zscore_TC = zscore([TC{p_i}.left, TC{p_i}.right], 0, 2);
+    w_len = size(zscore_TC, 2) / 2;
+
+    subplot(2, 1, 1)
+    imagesc([TC{p_i}.left, TC{p_i}.right]);
+    colorbar;
+    subplot(2, 1, 2)
+    imagesc([zscore_TC(:, 1:w_len), zscore_TC(:, w_len+1:end)]);
     colorbar;
     saveas(gcf, sprintf('TC_%d.jpg', p_i));
 end
 
+%%
 histogram(sf_dists)
 line([actual_dist, actual_dist], ylim, 'LineWidth', 2, 'Color', 'r')
 % line([id_dist, id_dist], ylim, 'LineWidth', 2, 'Color', 'g')
 set(gca, 'LineWidth', 1, 'xticklabel', [], 'yticklabel',[], 'FontSize', 24);
 xlabel('Distances'); ylabel('Distribution');
 
-% Plot example sessions
+%% Plot example sessions
 figure;
 s_plot_L = plot_3d_trajectory(aligned_left{1});
 s_plot_L.Color = 'r';
