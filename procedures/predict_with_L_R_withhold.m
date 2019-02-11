@@ -1,9 +1,9 @@
-function [actual_dists_mat, id_dists_mat, Q_right_mat] = predict_with_L_R(cfg_in, Q)
+function [actual_dists_mat, id_dists_mat, Q_right_mat] = predict_with_L_R_withhold(cfg_in, Q)
     % Perform PCA, hyperalignment (with either two or all sessions)
-    % and predict target (either trajectory in common space or Q matrix).
+    % and predict target matirx (only Q or TC matrix).
+    % Note that target matrix would be excluded from the analysis and only used as ground truth.
     % The way that this function performs hyperalignment is concatenating left(L) and right(R) into [L, R].
     cfg_def.hyperalign_all = false;
-    cfg_def.predict_Q = true;
     % If shuffled is specified, source session would be identity shuffled.
     cfg_def.shuffled = 0;
     cfg_def.NumComponents = 10;
@@ -29,18 +29,24 @@ function [actual_dists_mat, id_dists_mat, Q_right_mat] = predict_with_L_R(cfg_in
     id_dists_mat  = zeros(length(Q));
     Q_right_mat = cell(length(Q));
     for sr_i = 1:length(Q)
-        if cfg.hyperalign_all
-            % Hyperalign using all sessions then source will be chosen to predict target.
-            % Perform hyperalignment on concatenated [L, R] in PCA.
-            hyper_input = proj_Q;
-            if cfg.shuffled
-                hyper_input{sr_i} = s_proj_Q{sr_i};
-            end
-            [aligned_left, aligned_right, transforms] = get_aligned_left_right(hyper_input);
-        end
         for tar_i = 1:length(Q)
             if sr_i ~= tar_i
+                % Exclude target to be predicted
+                ex_Q = Q;
+                ex_Q{tar_i}.right = zeros(size(Q{tar_i}.right));
+                % PCA
+                ex_proj_Q = proj_Q;
+                ex_eigvecs = eigvecs;
+                [ex_proj_Q{tar_i}, ex_eigvecs{tar_i}] = perform_pca(ex_Q{tar_i}, cfg.NumComponents);
                 if cfg.hyperalign_all
+                    % Hyperalign using all sessions then source will be chosen to predict target.
+                    % Perform hyperalignment on concatenated [L, R] in PCA.
+                    hyper_input = ex_proj_Q;
+                    if cfg.shuffled
+                        hyper_input{sr_i} = s_proj_Q{sr_i};
+                    end
+                    [aligned_left, aligned_right, transforms] = get_aligned_left_right(hyper_input);
+
                     aligned_left_sr = aligned_left{sr_i};
                     aligned_right_sr = aligned_right{sr_i};
                     aligned_left_tar = aligned_left{tar_i};
@@ -49,9 +55,9 @@ function [actual_dists_mat, id_dists_mat, Q_right_mat] = predict_with_L_R(cfg_in
                 else
                     % Perform hyperalignment on concatenated [L, R] in PCA for every source-target pair.
                     if cfg.shuffled
-                        hyper_input = {s_proj_Q{sr_i}, proj_Q{tar_i}};
+                        hyper_input = {s_proj_Q{sr_i}, ex_proj_Q{tar_i}};
                     else
-                        hyper_input = {proj_Q{sr_i}, proj_Q{tar_i}};
+                        hyper_input = {proj_Q{sr_i}, ex_proj_Q{tar_i}};
                     end
                     [aligned_left, aligned_right, transforms] = get_aligned_left_right(hyper_input);
                     aligned_left_sr = aligned_left{1};
@@ -66,24 +72,19 @@ function [actual_dists_mat, id_dists_mat, Q_right_mat] = predict_with_L_R(cfg_in
                 predicted_aligned = p_transform(M, aligned_left_tar);
                 % Estimate using L (identity mapping).
                 id_predicted_aligned = aligned_left_tar;
-                if ~cfg.predict_Q
-                    p_target = predicted_aligned;
-                    id_p_target = id_predicted_aligned;
-                    ground_truth = aligned_right_tar;
-                else
-                    % Project back to PCA space
-                    padding = zeros(size(aligned_left_sr));
-                    project_back_pca = inv_p_transform(transforms_tar, [padding, predicted_aligned]);
-                    project_back_pca_id = inv_p_transform(transforms_tar, [padding, id_predicted_aligned]);
-                    % Project back to Q space.
-                    w_len = size(aligned_left_sr, 2);
-                    project_back_Q_right = eigvecs{tar_i} * project_back_pca(:, w_len+1:end);
-                    project_back_Q_id_right = eigvecs{tar_i} * project_back_pca_id(:, w_len+1:end);
 
-                    p_target = project_back_Q_right;
-                    id_p_target = project_back_Q_id_right;
-                    ground_truth = Q{tar_i}.right;
-                end
+                % Project back to PCA space
+                padding = zeros(size(aligned_left_sr));
+                project_back_pca = inv_p_transform(transforms_tar, [padding, predicted_aligned]);
+                project_back_pca_id = inv_p_transform(transforms_tar, [padding, id_predicted_aligned]);
+                % Project back to Q space.
+                w_len = size(aligned_left_sr, 2);
+                project_back_Q_right = ex_eigvecs{tar_i} * project_back_pca(:, w_len+1:end);
+                project_back_Q_id_right = ex_eigvecs{tar_i} * project_back_pca_id(:, w_len+1:end);
+                p_target = project_back_Q_right;
+                id_p_target = project_back_Q_id_right;
+                ground_truth = Q{tar_i}.right;
+
                 % Compare prediction using M with ground truth
                 actual_dist = calculate_dist(p_target, ground_truth);
                 id_dist = calculate_dist(id_p_target, ground_truth);

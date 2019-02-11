@@ -1,6 +1,7 @@
 function [Q_norm, Q, restrictionLabels] = prepare_all_Q(cfg_in)
     % Get processed data
     cfg_def = [];
+    cfg_def.use_adr_data = 0;
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);
 
