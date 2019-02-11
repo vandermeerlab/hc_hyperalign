@@ -2,6 +2,7 @@ function [TC] = get_tuning_curve(cfg_in, session_path)
     % Adapted from https://github.com/vandermeerlab/vandermeerlab/blob/master/code-matlab/example_workflows/WORKFLOW_PlotOrderedRaster.m
 
     cfg_def.use_matched_trials = 1;
+    cfg_def.minSpikes = 25;
 
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);
@@ -27,13 +28,25 @@ function [TC] = get_tuning_curve(cfg_in, session_path)
         [matched_left, matched_right] = GetMatchedTrials({}, metadata, ExpKeys);
         expCond(1).t = matched_left;
         expCond(2).t = matched_right;
+        tstart = [matched_left.tstart; matched_right.tstart];
+        tend = [matched_left.tend; matched_right.tend];
     else
         expCond(1).t = metadata.taskvars.trial_iv_L; % previously stored trial start and end times for left trials
         expCond(2).t = metadata.taskvars.trial_iv_R;
+        tstart = metadata.taskvars.trial_iv.tstart;
+        tend = metadata.taskvars.trial_iv.tend;
     end
 
     expCond(1).coord = metadata.coord.coordL; % previously user input idealized linear track
     expCond(2).coord = metadata.coord.coordR; % note, this is in units of "camera pixels", not cm
+
+    % Remove cells with insufficient spikes
+    S_matched = restrict(S, tstart, tend);
+
+    spk_count = getSpikeCount([], S_matched);
+    cell_keep_idx = spk_count >= cfg.minSpikes;
+
+    S = SelectTS([], S, cell_keep_idx);
 
     expCond(1).S = S;
     expCond(2).S = S;
@@ -64,7 +77,6 @@ function [TC] = get_tuning_curve(cfg_in, session_path)
 
         fh = @(x) restrict(x,expCond(iCond).t); % restrict S and linpos to specific trials (left/right)
         expCond(iCond) = structfunS(fh,expCond(iCond),{'S','linpos'});
-
     end
 
     %% get tuning curves, see lab wiki at:

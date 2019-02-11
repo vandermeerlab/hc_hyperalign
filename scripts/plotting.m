@@ -91,19 +91,12 @@ for p_i = 1:length(Q)
 end
 
 %% Create TC figures
-keep = 1:100;
 for p_i = 1:length(TC)
-    TC{p_i}.left = TC{p_i}.left(:, keep);
-    TC{p_i}.right = TC{p_i}.right(:, keep);
-    
-    zscore_TC = zscore([TC{p_i}.left, TC{p_i}.right], 0, 2);
-    w_len = size(zscore_TC, 2) / 2;
-
     subplot(2, 1, 1)
     imagesc([TC{p_i}.left, TC{p_i}.right]);
     colorbar;
     subplot(2, 1, 2)
-    imagesc([zscore_TC(:, 1:w_len), zscore_TC(:, w_len+1:end)]);
+    imagesc([TC_norm{p_i}.left, TC_norm{p_i}.right]);
     colorbar;
     saveas(gcf, sprintf('TC_%d.jpg', p_i));
 end
