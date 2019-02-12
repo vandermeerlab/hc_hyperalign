@@ -14,12 +14,8 @@ function [TC_norm, TC, restrictionLabels] = prepare_all_TC(cfg_in)
     end
 
     if cfg.only_use_cp
-        % Use data that is after the choice point
-        % Find the time bin that the max of choice points among all trials correspond to
-        left_cp_bins = cellfun(@(x) (x.left.cp_bin), TC);
-        right_cp_bins = cellfun(@(x) (x.right.cp_bin), TC);
-        max_cp_bin = max([left_cp_bins, right_cp_bins]);
-        keep_idx = max_cp_bin+1:100;
+        % Use data that is after the choice point, which is estimately at 55.
+        keep_idx = 55+1:100;
     else
         keep_idx = 1:100;
     end

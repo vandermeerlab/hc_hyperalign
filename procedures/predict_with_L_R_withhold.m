@@ -39,19 +39,6 @@ function [actual_dists_mat, id_dists_mat, predicted_Q_mat, pca_mean] = predict_w
                 ex_eigvecs = eigvecs;
                 ex_pca_mean = pca_mean;
                 [ex_proj_Q{tar_i}, ex_eigvecs{tar_i}, ex_pca_mean{tar_i}] = perform_pca(ex_Q{tar_i}, cfg.NumComponents);
-                % % Replace target to be predicted with others' (excluding source and target) average
-                % % Exclude right Q from target first.
-                % ex_Q = Q;
-                % ex_Q{tar_i}.right = zeros(size(Q{tar_i}.right));
-                % [ex_proj_Q{tar_i}] = perform_pca(ex_Q{tar_i}, cfg.NumComponents);
-                % % Obtain average of other trajectories in PCA space.
-                % others_Q = proj_Q;
-                % others_Q(sr_i) = []; others_Q(tar_i) = [];
-                % others_Q_right = cellfun(@(x) x.right, others_Q, 'UniformOutput', false);
-                % others_Q_right_avg = mean(cat(3, others_Q_right{:}), 3);
-                % % Replace target
-                % ex_proj_Q = proj_Q;
-                % % ex_proj_Q{tar_i}.right = zeros(size(ex_proj_Q{tar_i}.right));
                 if cfg.hyperalign_all
                     % Hyperalign using all sessions then source will be chosen to predict target.
                     % Perform hyperalignment on concatenated [L, R] in PCA.
