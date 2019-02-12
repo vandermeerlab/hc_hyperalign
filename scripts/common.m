@@ -22,4 +22,4 @@ out_actual_sf_mat = set_withsubj_nan(actual_sf_mat) / 1000;
 % Proportion of distance obtained from M smaller than identity mapping
 out_actual_dists = set_withsubj_nan(actual_dists_mat);
 out_id_dists = set_withsubj_nan(id_dists_mat);
-sum(out_actual_dists < out_id_dists, 'all') / sum(~isnan(out_actual_dists), 'all')
+sum(sum(out_actual_dists < out_id_dists)) / sum(sum(~isnan(out_actual_dists)))

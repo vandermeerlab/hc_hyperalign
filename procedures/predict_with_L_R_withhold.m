@@ -1,4 +1,4 @@
-function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R_withhold(cfg_in, Q)
+function [actual_dists_mat, id_dists_mat, predicted_Q_mat, pca_mean] = predict_with_L_R_withhold(cfg_in, Q)
     % Perform PCA, hyperalignment (with either two or all sessions)
     % and predict target matirx (only Q or TC matrix).
     % Note that target matrix would be excluded from the analysis and only used as ground truth.
@@ -37,7 +37,21 @@ function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R_wi
                 % PCA
                 ex_proj_Q = proj_Q;
                 ex_eigvecs = eigvecs;
-                [ex_proj_Q{tar_i}, ex_eigvecs{tar_i}] = perform_pca(ex_Q{tar_i}, cfg.NumComponents);
+                ex_pca_mean = pca_mean;
+                [ex_proj_Q{tar_i}, ex_eigvecs{tar_i}, ex_pca_mean{tar_i}] = perform_pca(ex_Q{tar_i}, cfg.NumComponents);
+                % % Replace target to be predicted with others' (excluding source and target) average
+                % % Exclude right Q from target first.
+                % ex_Q = Q;
+                % ex_Q{tar_i}.right = zeros(size(Q{tar_i}.right));
+                % [ex_proj_Q{tar_i}] = perform_pca(ex_Q{tar_i}, cfg.NumComponents);
+                % % Obtain average of other trajectories in PCA space.
+                % others_Q = proj_Q;
+                % others_Q(sr_i) = []; others_Q(tar_i) = [];
+                % others_Q_right = cellfun(@(x) x.right, others_Q, 'UniformOutput', false);
+                % others_Q_right_avg = mean(cat(3, others_Q_right{:}), 3);
+                % % Replace target
+                % ex_proj_Q = proj_Q;
+                % % ex_proj_Q{tar_i}.right = zeros(size(ex_proj_Q{tar_i}.right));
                 if cfg.hyperalign_all
                     % Hyperalign using all sessions then source will be chosen to predict target.
                     % Perform hyperalignment on concatenated [L, R] in PCA.
@@ -78,9 +92,9 @@ function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R_wi
                 project_back_pca_id = inv_p_transform(transforms_tar, [aligned_left_tar, id_predicted_aligned]);
                 % Project back to Q space.
                 w_len = size(aligned_left_sr, 2);
-                project_back_Q = eigvecs{tar_i} * project_back_pca + pca_mean{tar_i};
+                project_back_Q = ex_eigvecs{tar_i} * project_back_pca + ex_pca_mean{tar_i};
                 project_back_Q_right = project_back_Q(:, w_len+1:end);
-                project_back_Q_id = eigvecs{tar_i} * project_back_pca_id + pca_mean{tar_i};
+                project_back_Q_id = ex_eigvecs{tar_i} * project_back_pca_id + ex_pca_mean{tar_i};
                 project_back_Q_id_right = project_back_Q_id(:, w_len+1:end);
 
                 p_target = project_back_Q_right;
@@ -92,7 +106,7 @@ function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R_wi
                 id_dist = calculate_dist(id_p_target, ground_truth);
                 actual_dists_mat(sr_i, tar_i) = actual_dist;
                 id_dists_mat(sr_i, tar_i) = id_dist;
-                predicted_Q_mat{sr_i, tar_i} = project_back_Q_right;
+                predicted_Q_mat{sr_i, tar_i} = project_back_Q;
             end
         end
     end
