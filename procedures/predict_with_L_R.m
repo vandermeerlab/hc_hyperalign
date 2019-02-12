@@ -1,4 +1,4 @@
-function [actual_dists_mat, id_dists_mat, Q_right_mat] = predict_with_L_R(cfg_in, Q)
+function [actual_dists_mat, id_dists_mat, predicted_Q_mat, pca_mean] = predict_with_L_R(cfg_in, Q)
     % Perform PCA, hyperalignment (with either two or all sessions)
     % and predict target (either trajectory in common space or Q matrix).
     % The way that this function performs hyperalignment is concatenating left(L) and right(R) into [L, R].
@@ -12,7 +12,7 @@ function [actual_dists_mat, id_dists_mat, Q_right_mat] = predict_with_L_R(cfg_in
 
     % Project [L, R] to PCA space.
     for p_i = 1:length(Q)
-        [proj_Q{p_i}, eigvecs{p_i}] = perform_pca(Q{p_i}, cfg.NumComponents);
+        [proj_Q{p_i}, eigvecs{p_i}, pca_mean{p_i}] = perform_pca(Q{p_i}, cfg.NumComponents);
     end
 
     if cfg.shuffled
@@ -27,7 +27,7 @@ function [actual_dists_mat, id_dists_mat, Q_right_mat] = predict_with_L_R(cfg_in
 
     actual_dists_mat  = zeros(length(Q));
     id_dists_mat  = zeros(length(Q));
-    Q_right_mat = cell(length(Q));
+    predicted_Q_mat = cell(length(Q));
     for sr_i = 1:length(Q)
         if cfg.hyperalign_all
             % Hyperalign using all sessions then source will be chosen to predict target.
@@ -72,13 +72,14 @@ function [actual_dists_mat, id_dists_mat, Q_right_mat] = predict_with_L_R(cfg_in
                     ground_truth = aligned_right_tar;
                 else
                     % Project back to PCA space
-                    padding = zeros(size(aligned_left_sr));
-                    project_back_pca = inv_p_transform(transforms_tar, [padding, predicted_aligned]);
-                    project_back_pca_id = inv_p_transform(transforms_tar, [padding, id_predicted_aligned]);
+                    project_back_pca = inv_p_transform(transforms_tar, [aligned_left_tar, predicted_aligned]);
+                    project_back_pca_id = inv_p_transform(transforms_tar, [aligned_left_tar, id_predicted_aligned]);
                     % Project back to Q space.
                     w_len = size(aligned_left_sr, 2);
-                    project_back_Q_right = eigvecs{tar_i} * project_back_pca(:, w_len+1:end);
-                    project_back_Q_id_right = eigvecs{tar_i} * project_back_pca_id(:, w_len+1:end);
+                    project_back_Q = eigvecs{tar_i} * project_back_pca + pca_mean{tar_i};
+                    project_back_Q_right = project_back_Q(:, w_len+1:end);
+                    project_back_Q_id = eigvecs{tar_i} * project_back_pca_id + pca_mean{tar_i};
+                    project_back_Q_id_right = project_back_Q_id(:, w_len+1:end);
 
                     p_target = project_back_Q_right;
                     id_p_target = project_back_Q_id_right;
@@ -89,7 +90,7 @@ function [actual_dists_mat, id_dists_mat, Q_right_mat] = predict_with_L_R(cfg_in
                 id_dist = calculate_dist(id_p_target, ground_truth);
                 actual_dists_mat(sr_i, tar_i) = actual_dist;
                 id_dists_mat(sr_i, tar_i) = id_dist;
-                Q_right_mat{sr_i, tar_i} = project_back_Q_right;
+                predicted_Q_mat{sr_i, tar_i} = project_back_Q;
             end
         end
     end
