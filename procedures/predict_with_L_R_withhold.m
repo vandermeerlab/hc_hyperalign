@@ -47,7 +47,6 @@ function [actual_dists_mat, id_dists_mat, predicted_Q_mat, pca_mean] = predict_w
                         hyper_input{sr_i} = s_proj_Q{sr_i};
                     end
                     [aligned_left, aligned_right, transforms] = get_aligned_left_right(hyper_input);
-
                     aligned_left_sr = aligned_left{sr_i};
                     aligned_right_sr = aligned_right{sr_i};
                     aligned_left_tar = aligned_left{tar_i};

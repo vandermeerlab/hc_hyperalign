@@ -1,15 +1,14 @@
-% % Get Q inputs.
-% cfg_data = [];
-% cfg_data.use_adr_data = 0;
-% cfg_data.normalization = 'concat';
-% [Q_norm, Q] = prepare_all_Q(cfg_data);
-
-% Get TC inputs.
+% Make R be a copy of L plus some noise, identity mapping should be better than random.
+% Test the hypothesis in this link: https://mvdmlab.slack.com/archives/C21EB2MUJ/p1549656542130200
+% Get Q inputs.
 cfg_data = [];
-cfg_data.only_use_cp = 1;
-[TC_norm, TC] = prepare_all_TC(cfg_data);
+cfg_data.use_adr_data = 0;
+[Q_norm, Q] = prepare_all_Q(cfg_data);
+for q_i = 1:length(Q)
+    Q_norm{q_i}.right = Q_norm{q_i}.left + zscore(rand(size(Q_norm{q_i}.right)), 0, 2);
+end
 
-data = TC_norm;
+data = Q_norm;
 cfg_pre = [];
 cfg_pre.hyperalign_all = false;
 cfg_pre.predict_Q = true;
