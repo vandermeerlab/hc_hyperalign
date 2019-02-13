@@ -9,11 +9,11 @@ cfg_data = [];
 cfg_data.only_use_cp = 1;
 [TC_norm, TC] = prepare_all_TC(cfg_data);
 
-data = TC_norm;
+data = TC;
 cfg_pre = [];
 cfg_pre.hyperalign_all = false;
 cfg_pre.predict_Q = true;
-[actual_dists_mat, id_dists_mat, predicted_Q_mat, pca_mean] = predict_with_L_R(cfg_pre, data);
+[actual_dists_mat, id_dists_mat, predicted_mat, pca_mean] = predict_with_L_R(cfg_pre, data);
 
 n_shuffles = 1000;
 sf_dists_mat  = zeros(length(data), length(data), n_shuffles);
