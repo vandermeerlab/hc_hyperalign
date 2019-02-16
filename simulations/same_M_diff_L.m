@@ -1,34 +1,39 @@
-% Last 2.4 second, dt = 50ms
+% Last 2.4 second, dt = 50ms for Q
+% w_len = 48;
 % Or last 41 bins (after all choice points) for TC
 w_len = 41;
 rng(mean('cosyne'));
+sim_data = cell(1, 2);
+n_units{1} = 75;
+n_units{2} = 90;
 % Make two Qs - first: source, second: target
-for q_i = 1:2
+for s_i = 1:length(sim_data)
     % Number of neurons
-    n_units = randi([30, 120]);
-    sim_data{q_i}.left = zeros(n_units, w_len);
-    sim_data{q_i}.right = zeros(n_units, w_len);
+    sim_data{s_i}.left = zeros(n_units{s_i}, w_len);
     p_has_field = 0.25;
-    for n_i = 1:n_units
+    for n_i = 1:n_units{s_i}
         if rand() < p_has_field
             left_mu = rand() * w_len;
-            sim_data{q_i}.left(n_i, :) = gaussian_1d(w_len, 5, left_mu, 5);
+            sim_data{s_i}.left(n_i, :) = gaussian_1d(w_len, 5, left_mu, 5);
         end
     end
-    sim_data_concat{q_i} = zscore([sim_data{q_i}.left, sim_data{q_i}.right], 0, 2);
-    sim_data{q_i}.left = sim_data_concat{q_i}(:, 1:w_len);
-    sim_data{q_i}.right = sim_data_concat{q_i}(:, w_len+1:end);
+    sim_data{s_i}.left = zscore(sim_data{s_i}.left, 0, 2);
 end
 
 NumComponents = 10;
 % Project [L, R] to PCA space.
 for p_i = 1:length(sim_data)
-    [sim_proj_Q{p_i}, sim_eigvecs{p_i}, sim_pca_mean{p_i}] = perform_pca(sim_data{p_i}, NumComponents);
+    pca_input = [sim_data{p_i}.left];
+    sim_pca_mean{p_i} = mean(pca_input, 2);
+    pca_input = pca_input - sim_pca_mean{p_i};
+    [sim_eigvecs{p_i}] = pca_egvecs(pca_input, NumComponents);
+    %  project all other trials (both left and right trials) to the same dimension
+    sim_proj_Q{p_i} = pca_project(pca_input, sim_eigvecs{p_i});
 end
 
 % Perform hyperalignment on concatenated [L, R] in PCA.
 hyper_input = {sim_proj_Q{1}, sim_proj_Q{2}};
-[sim_aligned_left, sim_aligned_right, sim_transforms] = get_aligned_left_right(hyper_input);
+[sim_aligned_left, sim_transforms] = hyperalign(hyper_input{:});
 
 % Use M from real data
 % Get real Q inputs.
@@ -43,8 +48,8 @@ data = TC_norm;
 
 % PCA
 NumComponents = 10;
-for rq_i = 1:length(data)
-    proj_data{rq_i} = perform_pca(data{rq_i}, NumComponents);
+for rd_i = 1:length(data)
+    proj_data{rd_i} = perform_pca(data{rd_i}, NumComponents);
 end
 
 % Hyperalignment
@@ -53,20 +58,28 @@ end
 % Disable scaling
 M.b = 1;
 
-for q_i = 1:length(sim_data)
-    predicted{q_i} = p_transform(M, sim_aligned_left{q_i});
-    project_back_pca{q_i} = inv_p_transform(sim_transforms{q_i}, [sim_aligned_left{q_i}, predicted{q_i}]);
-    sim_data{q_i}.right = sim_eigvecs{q_i} * project_back_pca{q_i}(:, w_len+1:end) + sim_pca_mean{q_i};
+for r_i = 1:length(sim_data)
+    predicted{r_i} = p_transform(M, sim_aligned_left{r_i});
+    project_back_pca{r_i} = inv_p_transform(sim_transforms{r_i}, predicted{r_i});
+    sim_data{r_i}.right = sim_eigvecs{r_i} * project_back_pca{r_i} + sim_pca_mean{r_i};
 end
 
 %% Set the same color scale for hyper pair and create a polished figure
+sim_data_concat{1} = [sim_data{1}.left, sim_data{1}.right];
+sim_data_concat{2} = [sim_data{2}.left, sim_data{2}.right];
 min_val = min(min(min(sim_data_concat{1})), min(min(sim_data_concat{2})));
 max_val = max(max(max(sim_data_concat{1})), max(max(sim_data_concat{2})));
 
 subplot(1, 2, 1)
 imagesc(sim_data_concat{1});
 caxis([min_val, max_val]);
+ylabel('Neurons');
+xlabel('Locations');
+set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 60);
 
 subplot(1, 2, 2)
 imagesc(sim_data_concat{2});
 caxis([min_val, max_val]);
+ylabel('Neurons');
+xlabel('Locations');
+set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 60);
