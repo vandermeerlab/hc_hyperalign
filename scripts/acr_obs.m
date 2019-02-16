@@ -6,7 +6,6 @@
 
 % Get TC inputs.
 cfg_data = [];
-cfg_data.only_use_cp = 1;
 [TC_norm, TC] = prepare_all_TC(cfg_data);
 
 data = TC;
