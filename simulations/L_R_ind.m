@@ -1,23 +1,29 @@
 % Last 2.4 second, dt = 50ms
 w_len = 48;
+% Or last 41 bins (after all choice points) for TC
+w_len = 41;
+rng(mean('mvdmlab'));
 % Make two Qs - first: source, second: target
 for q_i = 1:19
     % Number of neurons
-    n_units = randi([40, 160]);
+    n_units = randi([30, 120]);
     Q{q_i}.left = zeros(n_units, w_len);
     Q{q_i}.right = zeros(n_units, w_len);
     p_has_field = 0.5;
     for n_i = 1:n_units
-        mu = rand() * w_len;
+        % mu = rand() * w_len;
         if rand() < p_has_field
-%             left_mu = rand() * w_len;
+            left_mu = rand() * w_len;
             Q{q_i}.left(n_i, :) = gaussian_1d(w_len, 5, mu, 5);
         end
         if rand() < p_has_field
-%             right_mu = rand() * w_len;
+            right_mu = rand() * w_len;
             Q{q_i}.right(n_i, :) = gaussian_1d(w_len, 5, mu, 5);
         end
     end
+    Q_norm_concat = zscore([Q{q_i}.left, Q{q_i}.right], 0, 2);
+    Q{q_i}.left = Q_norm_concat(:, 1:w_len);
+    Q{q_i}.right = Q_norm_concat(:, w_len+1:end);
 end
 
 cfg_pre = [];
