@@ -17,11 +17,11 @@ xlabel('Target Sessions');
 title('Z-score of distances excluding within subjects')
 % set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 60);
 
-imagesc(out_percent_mat,'AlphaData', ~isnan(out_percent_mat));
+imagesc(out_actual_sf_mat,'AlphaData', ~isnan(out_actual_sf_mat));
 colorbar;
 ylabel('Source Sessions');
 xlabel('Target Sessions');
-title('Percentile of distances excluding within subjects')
+set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 60);
 
 % Set Labels as Restrction Types
 set(gca, 'XTick', 1:19, 'XTickLabel', restrictionLabels);
@@ -31,8 +31,10 @@ set(gca, 'YTick', 1:19, 'YTickLabel', restrictionLabels);
 histogram(out_zscore_mat, 20)
 title('Histogram of z-scores with matched trials')
 
-histogram(out_percent_mat, 20)
-title('Histogram of percentiles with matched trials')
+histogram(out_actual_sf_mat, 20)
+ylabel('Counts');
+xlabel('Proportions');
+set(gca, 'yticklabel', [], 'FontSize', 60)
 
 x = s_project_back_Q_right;
 y = mean_s_Q{s_tar_i}.left;
