@@ -4,12 +4,6 @@ ylabel('Source Sessions');
 xlabel('Target Sessions');
 title('Z-score of distances including within subjects')
 
-imagesc(percent_mat);
-colorbar;
-ylabel('Source Sessions');
-xlabel('Target Sessions');
-title('Percentile of distances including within subjects')
-
 imagesc(out_zscore_mat,'AlphaData', ~isnan(out_zscore_mat));
 colorbar;
 ylabel('Source Sessions');
@@ -17,15 +11,14 @@ xlabel('Target Sessions');
 title('Z-score of distances excluding within subjects')
 % set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 60);
 
+% Histoggram of z-scores
+histogram(out_zscore_mat, 20)
+
 % Set Labels as Restrction Types
 set(gca, 'XTick', 1:19, 'XTickLabel', restrictionLabels);
 set(gca, 'YTick', 1:19, 'YTickLabel', restrictionLabels);
 
-% Histoggram of z-scores and percentiles
-histogram(out_zscore_mat, 20)
-title('Histogram of z-scores with matched trials')
-
-% Create polished imagesc and histogram as in main result
+%% Create polished imagesc and histogram as in main result
 subplot(1, 2, 1);
 imagesc(out_actual_sf_mat,'AlphaData', ~isnan(out_actual_sf_mat));
 colorbar;
@@ -38,37 +31,6 @@ histogram(out_actual_sf_mat, 20)
 ylabel('# of pairs');
 xlabel('Proportion > shuffled');
 set(gca, 'yticklabel', [], 'FontSize', 35)
-
-
-ali_source = aligned_source{ex_i};
-ali_target = aligned_target{ex_i};
-
-% Plot example sessions
-figure;
-s_plot = plot_3d_trajectory(ali_source);
-s_plot.Color = 'r';
-hold on;
-t_plot = plot_3d_trajectory(ali_target);
-t_plot.Color = 'b';
-
-for i = 1:length(aligned_source)
-    ali_source = aligned_source{i};
-    ali_target = aligned_target{i};
-    ali_predict = predicted{i};
-
-    figure;
-    s_plot = plot_3d_trajectory(ali_source);
-    hold on;
-    t_plot = plot_3d_trajectory(ali_target);
-    hold on;
-    p_plot = plot_3d_trajectory(ali_predict);
-    grid on;
-    lgd = legend([s_plot, t_plot, p_plot], ["Rat 2 - Actual Left", "Rat 2 - Actual Right", "Rat 2 - Predicted Right"]);
-    lgd.FontSize = 30;
-    legend boxoff;
-
-    saveas(gcf, sprintf('without_pca_diff_rat_%d.jpg', i));
-end
 
 %% Create Q figures
 for p_i = 1:length(Q)

@@ -11,8 +11,6 @@ end
 out_zscore_mat = set_withsubj_nan(zscore_mat);
 out_percent_mat = set_withsubj_nan(percent_mat);
 
-sum(sum(out_percent_mat < 0.05)) / sum(sum(~isnan(out_percent_mat)))
-
 % Proportion of actual distance and identity distance smaller than shuffled distances
 actual_sf_mat = sum(actual_dists_mat < sf_dists_mat, 3);
 id_sf_mat = sum(id_dists_mat < sf_dists_mat, 3);
@@ -23,3 +21,11 @@ out_actual_sf_mat = set_withsubj_nan(actual_sf_mat) / 1000;
 out_actual_dists = set_withsubj_nan(actual_dists_mat);
 out_id_dists = set_withsubj_nan(id_dists_mat);
 sum(sum(out_actual_dists < out_id_dists)) / sum(sum(~isnan(out_actual_dists)))
+
+% Test correlations within data
+for i = 1:length(TC)
+    [coef, p] = corrcoef(TC_norm{i}.left, TC_norm{i}.right);
+    coefs(i, 1) = coef(1, 2);
+    coefs(i, 2) = p(1, 2);
+end
+bar(1:19, [coefs]);
