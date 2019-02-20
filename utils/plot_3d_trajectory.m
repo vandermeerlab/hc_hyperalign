@@ -14,7 +14,7 @@ function [plot_obj] = plot_3d_trajectory(a)
 
     % Mark start and end
     t_start = {c(1, 1), c(2, 1), c(3, 1)};
-    plot3(t_start{:}, 'g.', 'MarkerSize', 30);
+    plot3(t_start{:}, 'g.', 'MarkerSize', 120);
     hold on;
 
 %     t_end = {c(1, end), c(2, end), c(3, end)};

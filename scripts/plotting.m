@@ -39,31 +39,17 @@ ylabel('# of pairs');
 xlabel('Proportion > shuffled');
 set(gca, 'yticklabel', [], 'FontSize', 35)
 
-x = s_project_back_Q_right;
-y = mean_s_Q{s_tar_i}.left;
-imagesc(x - y);
-colorbar;
-mse = calculate_dist(x, y);
-title(sprintf('(Shuffled) Difference between predicted and actual left in Q after projecting back, SE: %.2f', mse));
 
-for i = 1:length(aligned_source)
-    ali_source = aligned_source{ex_i};
-    ali_target = aligned_target{ex_i};
+ali_source = aligned_source{ex_i};
+ali_target = aligned_target{ex_i};
 
-    % Plot example sessions
-    figure;
-    s_plot = plot_3d_trajectory(ali_source);
-    s_plot.Color = 'r';
-    hold on;
-    t_plot = plot_3d_trajectory(ali_target);
-    t_plot.Color = 'b';
-
-    lgd = legend([s_plot, t_plot], ["Rat 1 - Actual Left", "Rat 1 - Actual Right"]);
-    lgd.FontSize = 30;
-    legend boxoff;
-
-    saveas(gcf, sprintf('without_pca_same_rat_%d.jpg', i));
-end
+% Plot example sessions
+figure;
+s_plot = plot_3d_trajectory(ali_source);
+s_plot.Color = 'r';
+hold on;
+t_plot = plot_3d_trajectory(ali_target);
+t_plot.Color = 'b';
 
 for i = 1:length(aligned_source)
     ali_source = aligned_source{i};
