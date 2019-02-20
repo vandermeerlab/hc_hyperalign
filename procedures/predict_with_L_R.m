@@ -1,4 +1,4 @@
-function [actual_dists_mat, id_dists_mat, predicted_Q_mat, pca_mean] = predict_with_L_R(cfg_in, Q)
+function [actual_dists_mat, id_dists_mat, proj_Q, predicted_Q_mat] = predict_with_L_R(cfg_in, Q)
     % Perform PCA, hyperalignment (with either two or all sessions)
     % and predict target (either trajectory in common space or Q matrix).
     % The way that this function performs hyperalignment is concatenating left(L) and right(R) into [L, R].

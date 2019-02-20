@@ -17,12 +17,6 @@ xlabel('Target Sessions');
 title('Z-score of distances excluding within subjects')
 % set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 60);
 
-imagesc(out_actual_sf_mat,'AlphaData', ~isnan(out_actual_sf_mat));
-colorbar;
-ylabel('Source Sessions');
-xlabel('Target Sessions');
-set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 60);
-
 % Set Labels as Restrction Types
 set(gca, 'XTick', 1:19, 'XTickLabel', restrictionLabels);
 set(gca, 'YTick', 1:19, 'YTickLabel', restrictionLabels);
@@ -31,10 +25,19 @@ set(gca, 'YTick', 1:19, 'YTickLabel', restrictionLabels);
 histogram(out_zscore_mat, 20)
 title('Histogram of z-scores with matched trials')
 
+% Create polished imagesc and histogram as in main result
+subplot(1, 2, 1);
+imagesc(out_actual_sf_mat,'AlphaData', ~isnan(out_actual_sf_mat));
+colorbar;
+ylabel('Source Sessions');
+xlabel('Target Sessions');
+set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 35);
+
+subplot(1, 2, 2);
 histogram(out_actual_sf_mat, 20)
-ylabel('Counts');
-xlabel('Proportions');
-set(gca, 'yticklabel', [], 'FontSize', 60)
+ylabel('# of pairs');
+xlabel('Proportion > shuffled');
+set(gca, 'yticklabel', [], 'FontSize', 35)
 
 x = s_project_back_Q_right;
 y = mean_s_Q{s_tar_i}.left;

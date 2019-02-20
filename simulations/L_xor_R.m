@@ -34,3 +34,20 @@ for i = 1:n_shuffles
     [s_actual_dists_mat] = predict_with_L_R(cfg_pre, Q);
     sf_dists_mat(:, :, i) = s_actual_dists_mat;
 end
+
+hold on;
+subplot(2, 3, 1)
+imagesc([Q{1}.left, Q{1}.right]);
+ylabel('Neurons');
+xlabel('Locations');
+set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 40);
+title('L xor R')
+
+% Proportion of actual distance and identity distance smaller than shuffled distances
+actual_sf_mat = sum(actual_dists_mat < sf_dists_mat, 3);
+out_actual_sf_mat = set_withsubj_nan(actual_sf_mat) / 1000;
+subplot(2, 3, 4)
+histogram(out_actual_sf_mat, 20)
+ylabel('# of pairs');
+xlabel('Proportion > shuffled');
+set(gca, 'yticklabel', [], 'FontSize', 40)
