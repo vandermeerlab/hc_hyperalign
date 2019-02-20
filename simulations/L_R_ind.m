@@ -6,7 +6,7 @@ rng(mean('hyperalignment'));
 % Make two Qs - first: source, second: target
 for q_i = 1:19
     % Number of neurons
-    n_units = randi([30, 120]);
+    n_units = randi([60, 120]);
     Q{q_i}.left = zeros(n_units, w_len);
     Q{q_i}.right = zeros(n_units, w_len);
     p_has_field = 0.5;
@@ -15,12 +15,14 @@ for q_i = 1:19
         if rand() < p_has_field
             left_mu = rand() * w_len;
             left_peak = rand() * 20;
-            Q{q_i}.left(n_i, :) = gaussian_1d(w_len, left_peak, left_mu, 5);
+            left_sig = rand() * 5 + 2;
+            Q{q_i}.left(n_i, :) = gaussian_1d(w_len, left_peak, left_mu, left_sig);
         end
         if rand() < p_has_field
             right_mu = rand() * w_len;
             right_peak = rand() * 20;
-            Q{q_i}.right(n_i, :) = gaussian_1d(w_len, right_peak, right_mu, 5);
+            right_sig = rand() * 5 + 2;
+            Q{q_i}.right(n_i, :) = gaussian_1d(w_len, right_peak, right_mu, right_sig);
         end
     end
     % Different normalization.
@@ -30,8 +32,8 @@ for q_i = 1:19
     
     % Concat. normalization
     Q_norm_concat = zscore([Q{q_i}.left, Q{q_i}.right], 0, 2);
-    Q_norm_concat{q_i}.left = Q_norm_concat(:, 1:w_len);
-    Q_norm_concat{q_i}.right = Q_norm_concat(:, w_len+1:end);
+    Q_norm_con{q_i}.left = Q_norm_concat(:, 1:w_len);
+    Q_norm_con{q_i}.right = Q_norm_concat(:, w_len+1:end);
 end
 
 % Plot example input
@@ -63,14 +65,14 @@ set(gca, 'yticklabel', [], 'FontSize', 40)
 
 % Hyperalignment for concat. norm
 cfg_pre = [];
-[actual_dists_mat, id_dists_mat] = predict_with_L_R(cfg_pre, Q_norm_concat);
+[actual_dists_mat, id_dists_mat] = predict_with_L_R(cfg_pre, Q_norm_con);
 
 n_shuffles = 1000;
 sf_dists_mat  = zeros(length(Q), length(Q), n_shuffles);
 
 for i = 1:n_shuffles
     cfg_pre.shuffled = 1;
-    [s_actual_dists_mat] = predict_with_L_R(cfg_pre, Q_norm_concat);
+    [s_actual_dists_mat] = predict_with_L_R(cfg_pre, Q_norm_con);
     sf_dists_mat(:, :, i) = s_actual_dists_mat;
 end
 
