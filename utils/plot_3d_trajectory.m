@@ -7,14 +7,14 @@ function [plot_obj] = plot_3d_trajectory(a)
     end
 %     c = b;
     plot_obj = plot3(c(1, :), c(2, :), c(3, :));
-    set(plot_obj, 'LineWidth', 5);
+    set(plot_obj, 'LineWidth', 3);
     set(gca, 'LineWidth', 1, 'XTick', [], 'YTick',[], 'ZTick', [], 'FontSize', 24);
 %     xlabel('PC1'); ylabel('PC2'); zlabel('PC3');
     hold on;
 
     % Mark start and end
     t_start = {c(1, 1), c(2, 1), c(3, 1)};
-    plot3(t_start{:}, 'g.', 'MarkerSize', 120);
+    plot3(t_start{:}, 'g.', 'MarkerSize', 60);
     hold on;
 
 %     t_end = {c(1, end), c(2, end), c(3, end)};
