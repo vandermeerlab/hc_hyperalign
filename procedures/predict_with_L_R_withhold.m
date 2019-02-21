@@ -67,7 +67,7 @@ function [actual_dists_mat, id_dists_mat, predicted_mat, pca_mean] = predict_wit
                     transforms_tar = transforms{2};
                 end
                 % Estimate M from L to R using source session.
-                [~, ~, M] = procrustes(aligned_right_sr', aligned_left_sr');
+                [~, ~, M] = procrustes(aligned_right_sr', aligned_left_sr', 'scaling', false);
                 % Apply M to L of target session to predict.
                 predicted_aligned = p_transform(M, aligned_left_tar);
                 % Estimate using L (identity mapping).
