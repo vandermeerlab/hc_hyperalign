@@ -7,7 +7,7 @@ function [plot_obj] = plot_3d_trajectory(a)
     end
 %     c = b;
     plot_obj = plot3(c(1, :), c(2, :), c(3, :));
-    set(plot_obj, 'LineWidth', 2);
+    set(plot_obj, 'LineWidth', 5);
     set(gca, 'LineWidth', 1, 'XTick', [], 'YTick',[], 'ZTick', [], 'FontSize', 24);
 %     xlabel('PC1'); ylabel('PC2'); zlabel('PC3');
     hold on;

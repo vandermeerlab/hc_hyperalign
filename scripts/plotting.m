@@ -61,25 +61,72 @@ line([actual_dist, actual_dist], ylim, 'LineWidth', 2, 'Color', 'r')
 set(gca, 'LineWidth', 1, 'xticklabel', [], 'yticklabel',[], 'FontSize', 24);
 xlabel('Distances'); ylabel('Distribution');
 
-%% Plot example sessions
-figure;
+%% Plot example sessions for procedure
+sr_i = 7;
+tar_i = 11;
+idx = {sr_i, tar_i};
+data = TC;
+%% Input and PCA
+for i = 1:length(idx)
+    subplot(2, 2, 2*i-1);
+    imagesc([data{idx{i}}.left, data{idx{i}}.right]);
+    ylabel('Neurons');
+    xlabel('Locations');
+    set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 40);
+
+    subplot(2, 2, 2*i);
+    plot_L = plot_3d_trajectory(proj_Q{idx{i}}.left);
+    plot_L.Color = 'r';
+    hold on;
+    plot_R = plot_3d_trajectory(proj_Q{idx{i}}.right);
+    plot_R.Color = 'b';
+    if i == 1
+        plot_L.Color(4) = 0.5;
+        plot_R.Color(4) = 0.5;
+    end
+    hold on;
+end
+%% Common space
+hyper_input = {proj_Q{sr_i}, proj_Q{tar_i}};
+[aligned_left, aligned_right, transforms] = get_aligned_left_right(hyper_input);
+[~, ~, M] = procrustes(aligned_right{1}', aligned_left{1}');
+predicted_aligned = p_transform(M, aligned_left{2});
+
 s_plot_L = plot_3d_trajectory(aligned_left{1});
 s_plot_L.Color = 'r';
+s_plot_L.Color(4) = 0.5;
 hold on;
 s_plot_R = plot_3d_trajectory(aligned_right{1});
 s_plot_R.Color = 'b';
+s_plot_R.Color(4) = 0.5;
 hold on;
 t_plot_L = plot_3d_trajectory(aligned_left{2});
 t_plot_L.Color = 'r';
-t_plot_L.Color(4) = 0.5;
 hold on;
 t_plot_R = plot_3d_trajectory(aligned_right{2});
 t_plot_R.Color = 'b';
-t_plot_R.Color(4) = 0.5;
 hold on;
-p_plot_R = plot_3d_trajectory(predicted);
+p_plot_R = plot_3d_trajectory(predicted_aligned);
 p_plot_R.Color = 'g';
-lgd = legend([s_plot_L, s_plot_R, t_plot_L, t_plot_R, p_plot_R], ...
-    ["Rat 1 - L", "Rat 1 - R", "Rat 2 - L", "Rat 2 - R", "Rat 2 - Predicted R"]);
-lgd.FontSize = 30;
-legend boxoff;
+
+%% Project back to PCA space and input space
+project_back_pca = inv_p_transform(transforms{2}, [aligned_left{2}, predicted_aligned]);
+w_len = size(aligned_left{2}, 2);
+pca_left = project_back_pca(:, 1:w_len);
+pca_right = project_back_pca(:, w_len+1:end);
+subplot(1, 2, 1);
+plot_L = plot_3d_trajectory(pca_left);
+plot_L.Color = 'r';
+hold on;
+plot_R = plot_3d_trajectory(proj_Q{tar_i}.right);
+plot_R.Color = 'b';
+hold on;
+p_plot_R = plot_3d_trajectory(pca_right);
+p_plot_R.Color = 'g';
+hold on;
+
+subplot(1, 2, 2);
+imagesc([predicted_Q_mat{sr_i, tar_i}(:, 1:w_len), predicted_Q_mat{sr_i, tar_i}(:, w_len+1:end)]);
+ylabel('Neurons');
+xlabel('Locations');
+set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 40);
