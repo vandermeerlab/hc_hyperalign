@@ -6,7 +6,7 @@ function [Q_norm, Q] = get_processed_Q(cfg_in, session_path)
     cfg_def.removeInterneurons = 0;
     cfg_def.minSpikes = 25;
     % Using z-score to decorrelate the absolute firing rate with the later PCA laten variables.
-    cfg_def.normalization = 'concat';
+    cfg_def.normalization = 'ind';
 
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);

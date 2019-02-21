@@ -1,6 +1,8 @@
 function [TC_norm, TC, restrictionLabels] = prepare_all_TC(cfg_in)
     % Get processed data
     cfg_def.only_use_cp = 1;
+    % Using z-score to decorrelate the absolute firing rate with the later PCA laten variables.
+    cfg_def.normalization = 'ind';
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);
 
@@ -27,9 +29,14 @@ function [TC_norm, TC, restrictionLabels] = prepare_all_TC(cfg_in)
     for i = 1:length(TC)
         TC{i}.left = TC{i}.left.tc(:, keep_idx);
         TC{i}.right = TC{i}.right.tc(:, keep_idx);
-        TC_norm_concat = zscore([TC{i}.left, TC{i}.right], 0, 2);
-        w_len = size(TC{i}.left, 2);
-        TC_norm{i}.left = TC_norm_concat(:, 1:w_len);
-        TC_norm{i}.right = TC_norm_concat(:, w_len+1:end);
+        if strcmp(cfg.normalization, 'ind')
+            TC_norm{i}.left = zscore(TC{i}.left, 0, 2);
+            TC_norm{i}.right = zscore(TC{i}.right, 0, 2);
+        elseif strcmp(cfg.normalization, 'concat')
+            TC_norm_concat = zscore([TC{i}.left, TC{i}.right], 0, 2);
+            w_len = size(TC{i}.left, 2);
+            TC_norm{i}.left = TC_norm_concat(:, 1:w_len);
+            TC_norm{i}.right = TC_norm_concat(:, w_len+1:end);
+        end
     end
 end
