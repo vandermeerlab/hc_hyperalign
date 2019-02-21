@@ -2,7 +2,7 @@
 % w_len = 48;
 % Or last 41 bins (after all choice points) for TC
 w_len = 41;
-rng(mean('mvdmlab'));
+rng(mean('hyperalignment'));
 sim_data = cell(1, 2);
 n_units{1} = 50;
 n_units{2} = 65;

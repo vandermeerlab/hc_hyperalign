@@ -11,17 +11,19 @@ for q_i = 1:19
     Q{q_i}.right = zeros(n_units, w_len);
     p_has_field = 0.5;
     for n_i = 1:n_units
-%         mu = rand() * w_len;
+        mu = rand() * w_len;
+        peak = rand() * 20;
+        sig = rand() * 5 + 2;
         if rand() < p_has_field
             left_mu = rand() * w_len;
             left_peak = rand() * 20;
-            left_sig = rand() * 5 + 2;
+            left_sig = sig;
             Q{q_i}.left(n_i, :) = gaussian_1d(w_len, left_peak, left_mu, left_sig);
         end
         if rand() < p_has_field
             right_mu = rand() * w_len;
             right_peak = rand() * 20;
-            right_sig = rand() * 5 + 2;
+            right_sig = sig;
             Q{q_i}.right(n_i, :) = gaussian_1d(w_len, right_peak, right_mu, right_sig);
         end
     end
@@ -38,10 +40,30 @@ end
 
 % Plot example input
 hold on;
-subplot(3, 3, 2)
+subplot(4, 1, 1)
 imagesc([Q{1}.left, Q{1}.right]);
 set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 40);
-title('L R ind.')
+title('L R ind.(same sig)')
+
+% Hyperalignment for raw input
+cfg_pre = [];
+[actual_dists_mat, id_dists_mat] = predict_with_L_R(cfg_pre, Q);
+
+n_shuffles = 1000;
+sf_dists_mat  = zeros(length(Q), length(Q), n_shuffles);
+
+for i = 1:n_shuffles
+    cfg_pre.shuffled = 1;
+    [s_actual_dists_mat] = predict_with_L_R(cfg_pre, Q);
+    sf_dists_mat(:, :, i) = s_actual_dists_mat;
+end
+
+% Proportion of actual distance and identity distance smaller than shuffled distances
+actual_sf_mat = sum(actual_dists_mat < sf_dists_mat, 3);
+out_actual_sf_mat = set_withsubj_nan(actual_sf_mat) / 1000;
+subplot(4, 1, 2)
+histogram(out_actual_sf_mat, 20)
+set(gca, 'yticklabel', [], 'FontSize', 40)
 
 % Hyperalignment for ind. norm
 cfg_pre = [];
@@ -59,7 +81,7 @@ end
 % Proportion of actual distance and identity distance smaller than shuffled distances
 actual_sf_mat = sum(actual_dists_mat < sf_dists_mat, 3);
 out_actual_sf_mat = set_withsubj_nan(actual_sf_mat) / 1000;
-subplot(3, 3, 5)
+subplot(4, 1, 3)
 histogram(out_actual_sf_mat, 20)
 set(gca, 'yticklabel', [], 'FontSize', 40)
 
@@ -79,6 +101,6 @@ end
 % Proportion of actual distance and identity distance smaller than shuffled distances
 actual_sf_mat = sum(actual_dists_mat < sf_dists_mat, 3);
 out_actual_sf_mat = set_withsubj_nan(actual_sf_mat) / 1000;
-subplot(3, 3, 8)
+subplot(4, 1, 4)
 histogram(out_actual_sf_mat, 20)
 set(gca, 'yticklabel', [], 'FontSize', 40)
