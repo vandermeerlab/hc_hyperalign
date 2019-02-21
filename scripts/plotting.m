@@ -62,11 +62,18 @@ set(gca, 'LineWidth', 1, 'xticklabel', [], 'yticklabel',[], 'FontSize', 24);
 xlabel('Distances'); ylabel('Distribution');
 
 %% Plot example sessions for procedure
-sr_i = 7;
-tar_i = 11;
+sr_i = 1;
+tar_i = 10;
 idx = {sr_i, tar_i};
 data = TC;
+
+% Project [L, R] to PCA space.
+NumComponents = 10;
+for p_i = 1:length(data)
+    [proj_Q{p_i}, eigvecs{p_i}, pca_mean{p_i}] = perform_pca(data{p_i}, NumComponents);
+end
 %% Input and PCA
+figure;
 for i = 1:length(idx)
     subplot(2, 2, 2*i-1);
     imagesc([data{idx{i}}.left, data{idx{i}}.right]);
@@ -87,9 +94,10 @@ for i = 1:length(idx)
     hold on;
 end
 %% Common space
+figure;
 hyper_input = {proj_Q{sr_i}, proj_Q{tar_i}};
 [aligned_left, aligned_right, transforms] = get_aligned_left_right(hyper_input);
-[~, ~, M] = procrustes(aligned_right{1}', aligned_left{1}');
+[~, ~, M] = procrustes(aligned_right{1}', aligned_left{1}', 'scaling', false);
 predicted_aligned = p_transform(M, aligned_left{2});
 
 s_plot_L = plot_3d_trajectory(aligned_left{1});
@@ -110,23 +118,28 @@ p_plot_R = plot_3d_trajectory(predicted_aligned);
 p_plot_R.Color = 'g';
 
 %% Project back to PCA space and input space
+figure;
 project_back_pca = inv_p_transform(transforms{2}, [aligned_left{2}, predicted_aligned]);
 w_len = size(aligned_left{2}, 2);
-pca_left = project_back_pca(:, 1:w_len);
-pca_right = project_back_pca(:, w_len+1:end);
+pro_pca_left = project_back_pca(:, 1:w_len);
+pro_pca_right = project_back_pca(:, w_len+1:end);
 subplot(1, 2, 1);
-plot_L = plot_3d_trajectory(pca_left);
+plot_L = plot_3d_trajectory(pro_pca_left);
 plot_L.Color = 'r';
 hold on;
 plot_R = plot_3d_trajectory(proj_Q{tar_i}.right);
 plot_R.Color = 'b';
 hold on;
-p_plot_R = plot_3d_trajectory(pca_right);
+p_plot_R = plot_3d_trajectory(pro_pca_right);
 p_plot_R.Color = 'g';
 hold on;
 
+project_back_Q = eigvecs{tar_i} * project_back_pca + pca_mean{tar_i};
+pro_Q_left = project_back_Q(:, 1:w_len);
+pro_Q_right = project_back_Q(:, w_len+1:end);
+
 subplot(1, 2, 2);
-imagesc([predicted_Q_mat{sr_i, tar_i}(:, 1:w_len), predicted_Q_mat{sr_i, tar_i}(:, w_len+1:end)]);
+imagesc([pro_Q_left, pro_Q_right]);
 ylabel('Neurons');
 xlabel('Locations');
 set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 40);
