@@ -1,12 +1,10 @@
-function [Q_norm, Q] = get_processed_Q(cfg_in, session_path)
+function [Q] = get_processed_Q(cfg_in, session_path)
 
     cfg_def.last_n_sec = 2.4;
     cfg_def.use_matched_trials = 1;
     cfg_def.use_adr_data = 0;
     cfg_def.removeInterneurons = 0;
     cfg_def.minSpikes = 25;
-    % Using z-score to decorrelate the absolute firing rate with the later PCA laten variables.
-    cfg_def.normalization = 'ind';
 
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);
@@ -63,20 +61,12 @@ function [Q_norm, Q] = get_processed_Q(cfg_in, session_path)
     Q_matched = restrict(Q_whole, tstart, tend);
     [Q_L, Q_R] = get_last_n_sec_LR(Q_matched, L_tend, R_tend, cfg.last_n_sec);
     Q = aver_Q_acr_trials(Q_L, Q_R);
-    if strcmp(cfg.normalization, 'all')
-        Q_norm = Q_matched;
-        Q_norm.data = zscore(Q_matched.data, 0, 2);
-        [Q_norm_L, Q_norm_R] = get_last_n_sec_LR(Q_norm, L_tend, R_tend, cfg.last_n_sec);
-        Q_norm = aver_Q_acr_trials(Q_norm_L, Q_norm_R);
-    elseif strcmp(cfg.normalization, 'concat')
-        Q_norm_concat = zscore([Q.left, Q.right], 0, 2);
-        w_len = size(Q.left, 2);
-        Q_norm.left = Q_norm_concat(:, 1:w_len);
-        Q_norm.right = Q_norm_concat(:, w_len+1:end);
-    elseif strcmp(cfg.normalization, 'ind')
-        Q_norm.left = zscore(Q.left, 0, 2);
-        Q_norm.right = zscore(Q.right, 0, 2);
-    end
+    % if strcmp(cfg.normalization, 'all')
+    %     Q_norm = Q_matched;
+    %     Q_norm.data = zscore(Q_matched.data, 0, 2);
+    %     [Q_norm_L, Q_norm_R] = get_last_n_sec_LR(Q_norm, L_tend, R_tend, cfg.last_n_sec);
+    %     Q_norm = aver_Q_acr_trials(Q_norm_L, Q_norm_R);
+    % end
 end
 
 % Keep only last few seconds for left and right trials

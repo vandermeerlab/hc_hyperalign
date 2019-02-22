@@ -1,4 +1,4 @@
-function [actual_dists_mat, id_dists_mat, proj_Q, predicted_Q_mat] = predict_with_L_R(cfg_in, Q)
+function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R(cfg_in, Q)
     % Perform PCA, hyperalignment (with either two or all sessions)
     % and predict target (either trajectory in common space or Q matrix).
     % The way that this function performs hyperalignment is concatenating left(L) and right(R) into [L, R].
@@ -6,13 +6,21 @@ function [actual_dists_mat, id_dists_mat, proj_Q, predicted_Q_mat] = predict_wit
     cfg_def.predict_Q = true;
     % If shuffled is specified, source session would be identity shuffled.
     cfg_def.shuffled = 0;
+    % Using z-score to decorrelate the absolute firing rate with the later PCA laten variables if not none.
+    cfg_def.normalization = 'none';
     cfg_def.NumComponents = 10;
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);
 
     % Project [L, R] to PCA space.
     for p_i = 1:length(Q)
-        [proj_Q{p_i}, eigvecs{p_i}, pca_mean{p_i}] = perform_pca(Q{p_i}, cfg.NumComponents);
+        if strcmp(cfg.normalization, 'none')
+            pca_input = Q{p_i};
+        else
+            Q_norm{p_i} = normalize_Q(cfg.normalization, Q{p_i});
+            pca_input = Q_norm{p_i};
+        end
+        [proj_Q{p_i}, eigvecs{p_i}, pca_mean{p_i}] = perform_pca(pca_input, cfg.NumComponents);
     end
 
     if cfg.shuffled
@@ -21,7 +29,14 @@ function [actual_dists_mat, id_dists_mat, proj_Q, predicted_Q_mat] = predict_wit
         for s_i = 1:length(Q)
             shuffle_indices = randperm(size(Q{s_i}.right, 1));
             s_Q{s_i}.right = Q{s_i}.right(shuffle_indices, :);
-            [s_proj_Q{s_i}] = perform_pca(s_Q{s_i}, cfg.NumComponents);
+
+            if strcmp(cfg.normalization, 'none')
+                s_pca_input = s_Q{s_i};
+            else
+                s_Q_norm = normalize_Q(cfg.normalization, s_Q{s_i});
+                s_pca_input = s_Q_norm;
+            end
+            [s_proj_Q{s_i}] = perform_pca(s_pca_input, cfg.NumComponents);
         end
     end
 
@@ -83,7 +98,11 @@ function [actual_dists_mat, id_dists_mat, proj_Q, predicted_Q_mat] = predict_wit
 
                     p_target = project_back_Q_right;
                     id_p_target = project_back_Q_id_right;
-                    ground_truth = Q{tar_i}.right;
+                    if strcmp(cfg.normalization, 'none')
+                        ground_truth = Q{tar_i}.right;
+                    else
+                        ground_truth = Q_norm{tar_i}.right;
+                    end
                 end
                 % Compare prediction using M with ground truth
                 actual_dist = calculate_dist(p_target, ground_truth);
