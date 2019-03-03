@@ -21,3 +21,6 @@ Before you try to do anything below. Use `set_hyper_path` and check for path set
 `L_xor_R` is for the `x-or` simulation
 
 `same_M_diff_L` is for the generation of hyper-pair.
+
+### Plots
+You can find figure producing scrtips in `scripts/plotting`. Before that, for preparing the data structure, check `scripts/common`.
