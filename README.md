@@ -3,7 +3,10 @@
 This is a project started at 2018 [MIND](https://summer-mind.github.io/) hackthon. The purpose of this project is to investigate correlation in ensemble hippocampal (place) cells neural activity between different experimental conditions using hyperalignment.
 
 ## Entry points
-Before you try to do anything below. Use `set_hyper_path` and check for path setup, and `getTmazeDataPath` (may need to edit these to add you local path).
+
+Clone and check out the `hyperalignment` branch of the vandermeerlab main codebase.
+
+Before you try to do anything below. Use `set_hyper_path` and check for path setup, and `getTmazeDataPath` for data setup (may need to edit these to add you local path).
 
 ### Scripts
 `scripts/acr_obs` is the file for analysis for current procedure.
@@ -18,3 +21,6 @@ Before you try to do anything below. Use `set_hyper_path` and check for path set
 `L_xor_R` is for the `x-or` simulation
 
 `same_M_diff_L` is for the generation of hyper-pair.
+
+### Plots
+You can find figure producing scrtips in `scripts/plotting`. Before that, for preparing the data structure, check `scripts/common`.
