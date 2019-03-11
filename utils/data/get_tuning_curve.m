@@ -40,13 +40,13 @@ function [TC] = get_tuning_curve(cfg_in, session_path)
     expCond(1).coord = metadata.coord.coordL; % previously user input idealized linear track
     expCond(2).coord = metadata.coord.coordR; % note, this is in units of "camera pixels", not cm
 
-    % Remove cells with insufficient spikes
-    S_matched = restrict(S, tstart, tend);
+    % % Remove cells with insufficient spikes
+    % S_matched = restrict(S, tstart, tend);
 
-    spk_count = getSpikeCount([], S_matched);
-    cell_keep_idx = spk_count >= cfg.minSpikes;
+    % spk_count = getSpikeCount([], S_matched);
+    % cell_keep_idx = spk_count >= cfg.minSpikes;
 
-    S = SelectTS([], S, cell_keep_idx);
+    % S = SelectTS([], S, cell_keep_idx);
 
     expCond(1).S = S;
     expCond(2).S = S;

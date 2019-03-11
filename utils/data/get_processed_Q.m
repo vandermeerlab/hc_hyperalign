@@ -40,13 +40,13 @@ function [Q] = get_processed_Q(cfg_in, session_path)
     tstart = [L_tstart; R_tstart];
     tend = [L_tend; R_tend];
 
-    % Remove cells with insufficient spikes
-    S_matched = restrict(S, tstart, tend);
+    % % Remove cells with insufficient spikes
+    % S_matched = restrict(S, tstart, tend);
 
-    spk_count = getSpikeCount([], S_matched);
-    cell_keep_idx = spk_count >= cfg.minSpikes;
+    % spk_count = getSpikeCount([], S_matched);
+    % cell_keep_idx = spk_count >= cfg.minSpikes;
 
-    S = SelectTS([], S, cell_keep_idx);
+    % S = SelectTS([], S, cell_keep_idx);
 
     % Common binning and windowing configurations.
     cfg_Q = [];

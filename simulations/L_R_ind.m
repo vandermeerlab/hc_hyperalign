@@ -36,7 +36,7 @@ imagesc([Q{1}.left, Q{1}.right]);
 set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 40);
 title('L R ind.')
 
-norm_methods = {'none', 'ind', 'concat'};
+norm_methods = {'concat'};
 for nm_i = 1:length(norm_methods)
     cfg_pre = [];
     cfg_pre.normalization = norm_methods{nm_i};

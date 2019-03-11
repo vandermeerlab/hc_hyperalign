@@ -86,11 +86,11 @@ template = sizes{1};
 assert(all(cellfun(@(s)(all(s == template)), sizes)), 'all patterns must have same dimensionality');
 
 %step 1: compute common template
-for s = 1:length(varargin)        
+for s = 1:length(varargin)
     if s == 1
         template = varargin{s};
     else
-        [~, next] = procrustes((template./(s - 1))', varargin{s}', 'scaling', false);
+        [~, next] = procrustes((template./(s - 1))', varargin{s}');
         template = template + next';
     end
 end
@@ -100,7 +100,7 @@ template = template./length(varargin);
 %new common template
 template2 = zeros(size(template));
 for s = 1:length(varargin)
-    [~, next] = procrustes(template', varargin{s}', 'scaling', false);
+    [~, next] = procrustes(template', varargin{s}');
     template2 = template2 + next';
 end
 template2 = template2./length(varargin);
@@ -109,6 +109,6 @@ template2 = template2./length(varargin);
 %save the transformation parameters
 [aligned, transforms] = deal(cell(size(varargin)));
 for s = 1:length(varargin)
-    [~, next, transforms{s}] = procrustes(template2', varargin{s}', 'scaling', false);
+    [~, next, transforms{s}] = procrustes(template2', varargin{s}');
     aligned{s} = next';
 end

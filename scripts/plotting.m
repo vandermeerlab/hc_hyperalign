@@ -38,6 +38,7 @@ for p_i = 1:length(Q)
     imagesc([Q{p_i}.left, Q{p_i}.right]);
     colorbar;
     subplot(2, 1, 2)
+    Q_norm{p_i} = normalize_Q('concat', Q{p_i});
     imagesc([Q_norm{p_i}.left, Q_norm{p_i}.right]);
     colorbar;
     saveas(gcf, sprintf('Q_%d.jpg', p_i));
