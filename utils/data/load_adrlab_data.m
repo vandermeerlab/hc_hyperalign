@@ -1,6 +1,9 @@
 LoadExpKeys;
 
 evt = LoadEvents([]);
+% Quick check to remove empty label
+non_empty_idx = ~cellfun(@isempty, evt.label);
+evt.label = evt.label(non_empty_idx);
 
 % keep only hippocampus cells
 hc_tt = find(strcmp(ExpKeys.Target, 'Hippocampus'));
@@ -47,12 +50,12 @@ all_times = cat(2, reward_t.L, reward_t.R);
 sequence = all_labels(sort_idx);
 
 %% convert reward times into trial ivs
-trial_len = 2.4;
+trial_len = [-1.2 1.2]; % start and end are these many seconds relaive to feeder fire
 
-trial_iv_L = iv(reward_t.L - trial_len, reward_t.L);
-trial_iv_R = iv(reward_t.R - trial_len, reward_t.R);
+trial_iv_L = iv(reward_t.L + trial_len(1), reward_t.L + trial_len(2));
+trial_iv_R = iv(reward_t.R + trial_len(1), reward_t.R + trial_len(2));
 
-trial_iv = iv(all_times - trial_len, all_times);
+trial_iv = iv(all_times + trial_len(1), all_times + trial_len(2));
 
 %% should now be able to use GetMatchedTrials()
 metadata = [];
@@ -62,4 +65,15 @@ metadata.taskvars.trial_iv_R = trial_iv_R;
 metadata.taskvars.sequence = sequence;
 
 ExpKeys.badTrials = [];
-[left,right] = GetMatchedTrials([], metadata, ExpKeys);
+
+%% Plot some example trajectories
+pos = LoadPos([]);
+figure;
+plot(getd(pos,'x'),getd(pos,'y'));
+hold on;
+res_pos = restrict(pos,metadata.taskvars.trial_iv); % restricted interval only
+plot(getd(res_pos,'x'),getd(res_pos,'y'),'r.');
+
+sess_path = strsplit(pwd, '\');
+sess_name = sess_path{end};
+saveas(gcf, fullfile('C:\Users\mvdmlab\Desktop\adr_trajectories', sess_name), 'jpeg');

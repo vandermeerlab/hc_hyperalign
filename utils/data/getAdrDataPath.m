@@ -106,10 +106,11 @@ for iRat = 1:length(cfg.rats)
                continue;
            end
         end
-
-        % accept
-        fd = cat(1,fd,pwd);
-
+        
+        if pass_include_criterion()
+            % accept
+            fd = cat(1,fd,pwd);
+        end
         cd .. % return to rat folder
 
     end % of session folders
@@ -117,3 +118,62 @@ for iRat = 1:length(cfg.rats)
 end
 
 cd(curr_pwd) % return to starting folder
+
+end
+
+function [pass] = pass_include_criterion()
+    pass = true;
+    LoadExpKeys;
+
+    evt = LoadEvents([]);
+    % Quick check to remove empty label
+    non_empty_idx = ~cellfun(@isempty, evt.label);
+    evt.label = evt.label(non_empty_idx);
+
+    % keep only hippocampus cells
+    hc_tt = find(strcmp(ExpKeys.Target, 'Hippocampus'));
+    if isfield(ExpKeys,'TetrodeTargets')
+        hc_tt = find(ExpKeys.TetrodeTargets == hc_tt);
+    else
+        pass = false;
+        fprintf('WARNING: no TetrodeTargets defined\n');
+    end
+
+    please = []; please.load_questionable_cells = 1; please.getTTnumbers = 1;
+    S = LoadSpikes(please);
+
+    keep_idx = ismember(S.usr.tt_num, hc_tt);
+    S = SelectTS([], S, keep_idx);
+    
+    min_trial_len = 1; % in seconds, used to remove multiple feeder fires
+    if isfield(ExpKeys,'FeederL1') % feeder IDs defined, use them
+
+        feeders = cat(2, ExpKeys.FeederL1, ExpKeys.FeederR1);
+        feeder_labels = {'L', 'R'};
+        reward_t = [];
+        ll = @(x) x(end); % function to get last character of input
+        for iF = 1:length(feeders)
+            keep_idx = find(num2str(feeders(iF)) == cellfun(ll, evt.label));
+            % Check if no L or R trial at all.
+            if isempty(keep_idx)
+                pass = false;
+            else
+                reward_t.(feeder_labels{iF}) = evt.t{keep_idx};
+                % remove multiple feeder fires
+                ifi = cat(2, Inf, diff(reward_t.(feeder_labels{iF})));
+                reward_t.(feeder_labels{iF}) = reward_t.(feeder_labels{iF})(ifi >= min_trial_len);
+                % Exclude current session if # of L or R trials < 5.
+                if length(reward_t.(feeder_labels{iF})) < 5
+                    pass = false;
+                end
+                % Exclude current session if # of cells < 40;
+                if length(S.t) < 40
+                    pass = false;
+                end
+            end
+        end
+
+    else
+        error('no left/right feeder IDs defined');
+    end
+end
