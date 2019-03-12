@@ -1,4 +1,4 @@
-function [actual_dists_mat, id_dists_mat, predicted_mat, pca_mean] = predict_with_L_R_withhold(cfg_in, Q)
+function [actual_dists_mat, id_dists_mat, predicted_mat] = predict_with_L_R_withhold(cfg_in, Q)
     % Perform PCA, hyperalignment (with either two or all sessions)
     % and predict target matirx (only Q or TC matrix).
     % Note that target matrix would be excluded from the analysis and only used as ground truth.
