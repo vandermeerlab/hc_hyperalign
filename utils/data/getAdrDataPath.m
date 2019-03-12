@@ -116,6 +116,8 @@ for iRat = 1:length(cfg.rats)
     end % of session folders
 
 end
+% Feeders fire incorrectly in Session R156-2008-10-15
+fd = fd([1:10 12:end]);
 
 cd(curr_pwd) % return to starting folder
 
@@ -130,20 +132,16 @@ function [pass] = pass_include_criterion()
     non_empty_idx = ~cellfun(@isempty, evt.label);
     evt.label = evt.label(non_empty_idx);
 
-    % keep only hippocampus cells
-    hc_tt = find(strcmp(ExpKeys.Target, 'Hippocampus'));
-    if isfield(ExpKeys,'TetrodeTargets')
-        hc_tt = find(ExpKeys.TetrodeTargets == hc_tt);
-    else
-        pass = false;
-        fprintf('WARNING: no TetrodeTargets defined\n');
-    end
-
     please = []; please.load_questionable_cells = 1; please.getTTnumbers = 1;
     S = LoadSpikes(please);
-
-    keep_idx = ismember(S.usr.tt_num, hc_tt);
-    S = SelectTS([], S, keep_idx);
+    
+    if isfield(ExpKeys,'TetrodeTargets')
+        % keep only hippocampus cells
+        hc_tt = find(strcmp(ExpKeys.Target, 'Hippocampus'));
+        hc_tt = find(ExpKeys.TetrodeTargets == hc_tt);
+        keep_idx = ismember(S.usr.tt_num, hc_tt);
+        S = SelectTS([], S, keep_idx);
+    end
     
     min_trial_len = 1; % in seconds, used to remove multiple feeder fires
     if isfield(ExpKeys,'FeederL1') % feeder IDs defined, use them
