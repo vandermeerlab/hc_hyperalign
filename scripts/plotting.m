@@ -30,7 +30,7 @@ subplot(1, 2, 2);
 histogram(out_actual_sf_mat, 20)
 ylabel('# of pairs');
 xlabel('Proportion > shuffled');
-title(sprintf('M > ID: %.2f', out_id_prop * 100));
+title(sprintf('M > ID: %.2f %%', out_id_prop * 100));
 % set(gca, 'yticklabel', [], 'FontSize', 35)
 
 %% Create Q figures

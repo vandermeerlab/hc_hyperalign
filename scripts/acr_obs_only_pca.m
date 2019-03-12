@@ -1,16 +1,16 @@
-% % Get Q inputs.
-% cfg_data = [];
-% cfg_data.use_adr_data = 0;
-% cfg_data.normalization = 'concat';
-% [Q_norm, Q] = prepare_all_Q(cfg_data);
-
-% Get TC inputs.
+% Get Q inputs.
 cfg_data = [];
-cfg_data.only_use_cp = 1;
-[TC_norm, TC] = prepare_all_TC(cfg_data);
+cfg_data.use_adr_data = 1;
+[Q] = prepare_all_Q(cfg_data);
 
-data = TC;
+% % Get TC inputs.
+% cfg_data = [];
+% cfg_data.only_use_cp = 1;
+% [TC_norm, TC] = prepare_all_TC(cfg_data);
+
+data = Q;
 cfg_pre = [];
+cfg_pre.normalization = 'none';
 [actual_dists_mat, id_dists_mat] = predict_with_L_R_pca(cfg_pre, data);
 
 n_shuffles = 1000;
