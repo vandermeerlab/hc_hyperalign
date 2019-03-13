@@ -2,13 +2,16 @@ function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R(cf
     % Perform PCA, hyperalignment (with either two or all sessions)
     % and predict target (either trajectory in common space or Q matrix).
     % The way that this function performs hyperalignment is concatenating left(L) and right(R) into [L, R].
+    cfg_def.NumComponents = 10;
     cfg_def.hyperalign_all = false;
     cfg_def.predict_Q = true;
     % If shuffled is specified, source session would be identity shuffled.
     cfg_def.shuffled = 0;
     % Using z-score to decorrelate the absolute firing rate with the later PCA laten variables if not none.
     cfg_def.normalization = 'none';
-    cfg_def.NumComponents = 10;
+    % Use 'all' to calculate a squared error (scalar) between predicted and actual.
+    % Use 1 to sum across PCs (or units) and obtain a vector of squared errors.
+    cfg_def.dist_dim = 'all';
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);
 
@@ -40,8 +43,8 @@ function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R(cf
         end
     end
 
-    actual_dists_mat  = zeros(length(Q));
-    id_dists_mat  = zeros(length(Q));
+    actual_dists_mat  = cell(length(Q));
+    id_dists_mat  = cell(length(Q));
     predicted_Q_mat = cell(length(Q));
     for sr_i = 1:length(Q)
         if cfg.hyperalign_all
@@ -105,12 +108,20 @@ function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R(cf
                     end
                 end
                 % Compare prediction using M with ground truth
-                actual_dist = calculate_dist(p_target, ground_truth);
-                id_dist = calculate_dist(id_p_target, ground_truth);
-                actual_dists_mat(sr_i, tar_i) = actual_dist;
-                id_dists_mat(sr_i, tar_i) = id_dist;
+                actual_dist = calculate_dist(cfg.dist_dim, p_target, ground_truth);
+                id_dist = calculate_dist(cfg.dist_dim, id_p_target, ground_truth);
+                actual_dists_mat{sr_i, tar_i} = actual_dist;
+                id_dists_mat{sr_i, tar_i} = id_dist;
                 predicted_Q_mat{sr_i, tar_i} = project_back_Q;
+            else
+                actual_dists_mat{sr_i, tar_i} = NaN;
+                id_dists_mat{sr_i, tar_i} = NaN;
+                predicted_Q_mat{sr_i, tar_i} = NaN;
             end
         end
+    end
+    if strcmp(cfg.dist_dim, 'all')
+        actual_dists_mat  = cell2mat(actual_dists_mat);
+        id_dists_mat  = cell2mat(id_dists_mat);
     end
 end
