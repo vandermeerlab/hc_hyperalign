@@ -1,14 +1,15 @@
-% % Get Q inputs.
-% cfg_data = [];
-% cfg_data.use_adr_data = 1;
-% [Q] = prepare_all_Q(cfg_data);
+%% Get Q inputs.
+cfg_data = [];
+cfg_data.use_adr_data = 0;
+[Q] = prepare_all_Q(cfg_data);
 
-% Get TC inputs.
+%% Get TC inputs.
 cfg_data = [];
 cfg_data.only_use_cp = 1;
 [TC] = prepare_all_TC(cfg_data);
 
-data = TC;
+%% Main Procedure
+data = Q;
 cfg_pre = [];
 cfg_pre.hyperalign_all = false;
 cfg_pre.predict_Q = true;
