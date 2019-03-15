@@ -3,10 +3,13 @@ function [actual_dists_mat, id_dists_mat] = predict_with_L_R_pca(cfg_in, Q)
     % and predict target (trajectory of Q matrix).
     % The way that this function obtains procrustes is concatenating left(L) and right(R) into [L, R].
     % If shuffled is specified, source session would be identity shuffled.
+    cfg_def.NumComponents = 10;
     cfg_def.shuffled = 0;
     % Using z-score to decorrelate the absolute firing rate with the later PCA laten variables if not none.
     cfg_def.normalization = 'none';
-    cfg_def.NumComponents = 10;
+    % Use 'all' to calculate a squared error (scalar) between predicted and actual.
+    % Use 1 to sum across PCs (or units) and obtain a vector of squared errors.
+    cfg_def.dist_dim = 'all';
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);
 
@@ -73,8 +76,8 @@ function [actual_dists_mat, id_dists_mat] = predict_with_L_R_pca(cfg_in, Q)
                 end
 
                 % Compare prediction using M with ground truth
-                actual_dist = calculate_dist(p_target, ground_truth);
-                id_dist = calculate_dist(id_p_target, ground_truth);
+                actual_dist = calculate_dist(cfg.dist_dim, p_target, ground_truth);
+                id_dist = calculate_dist(cfg.dist_dim, id_p_target, ground_truth);
                 actual_dists_mat(sr_i, tar_i) = actual_dist;
                 id_dists_mat(sr_i, tar_i) = id_dist;
             end

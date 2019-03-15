@@ -3,12 +3,15 @@ function [actual_dists_mat, id_dists_mat, predicted_mat] = predict_with_L_R_with
     % and predict target matirx (only Q or TC matrix).
     % Note that target matrix would be excluded from the analysis and only used as ground truth.
     % The way that this function performs hyperalignment is concatenating left(L) and right(R) into [L, R].
+    cfg_def.NumComponents = 10;
     cfg_def.hyperalign_all = false;
     % If shuffled is specified, source session would be identity shuffled.
     cfg_def.shuffled = 0;
     % Using z-score to decorrelate the absolute firing rate with the later PCA laten variables if not none.
     cfg_def.normalization = 'none';
-    cfg_def.NumComponents = 10;
+    % Use 'all' to calculate a squared error (scalar) between predicted and actual.
+    % Use 1 to sum across PCs (or units) and obtain a vector of squared errors.
+    cfg_def.dist_dim = 'all';
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);
 
@@ -106,8 +109,8 @@ function [actual_dists_mat, id_dists_mat, predicted_mat] = predict_with_L_R_with
                 end
 
                 % Compare prediction using M with ground truth
-                actual_dist = calculate_dist(p_target, ground_truth);
-                id_dist = calculate_dist(id_p_target, ground_truth);
+                actual_dist = calculate_dist(cfg.dist_dim, p_target, ground_truth);
+                id_dist = calculate_dist(cfg.dist_dim, id_p_target, ground_truth);
                 actual_dists_mat(sr_i, tar_i) = actual_dist;
                 id_dists_mat(sr_i, tar_i) = id_dist;
                 predicted_mat{sr_i, tar_i} = project_back_Q;

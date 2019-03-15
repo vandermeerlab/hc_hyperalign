@@ -23,6 +23,7 @@ out_actual_sf_mat = set_withsubj_nan(cfg, actual_sf_mat) / 1000;
 out_actual_dists = set_withsubj_nan(cfg, actual_dists_mat);
 out_id_dists = set_withsubj_nan(cfg, id_dists_mat);
 out_id_prop = sum(sum(out_actual_dists < out_id_dists)) / sum(sum(~isnan(out_actual_dists)));
+binocdf(sum(sum(out_actual_dists < out_id_dists)), sum(sum(~isnan(out_actual_dists))), 0.5)
 
 %% Test correlations within data
 for i = 1:length(TC)

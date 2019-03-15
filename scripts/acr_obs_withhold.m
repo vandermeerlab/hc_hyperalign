@@ -1,19 +1,21 @@
-% Get Q inputs.
+%$ Get Q inputs.
 cfg_data = [];
 cfg_data.use_adr_data = 1;
 [Q] = prepare_all_Q(cfg_data);
 
-% % Get TC inputs.
-% cfg_data = [];
-% cfg_data.only_use_cp = 1;
-% [TC_norm, TC] = prepare_all_TC(cfg_data);
+%% Get TC inputs.
+cfg_data = [];
+cfg_data.only_use_cp = 1;
+[TC_norm, TC] = prepare_all_TC(cfg_data);
 
+%% Main Procedure
 data = Q;
 cfg_pre = [];
 cfg_pre.hyperalign_all = false;
 cfg_pre.normalization = 'none';
-[actual_dists_mat, id_dists_mat, predicted_mat, pca_mean] = predict_with_L_R_withhold(cfg_pre, data);
+[actual_dists_mat, id_dists_mat, predicted_mat] = predict_with_L_R_withhold(cfg_pre, data);
 
+%% Shuffling operations
 n_shuffles = 1000;
 sf_dists_mat  = zeros(length(data), length(data), n_shuffles);
 
