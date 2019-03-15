@@ -11,7 +11,7 @@ end
 data = Q_norm;
 cfg_pre = [];
 cfg_pre.hyperalign_all = false;
-cfg_pre.predict_Q = true;
+cfg_pre.predict_target = 'Q';
 [actual_dists_mat, id_dists_mat, predicted_mat, pca_mean] = predict_with_L_R(cfg_pre, data);
 
 n_shuffles = 1000;

@@ -1,10 +1,11 @@
 function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R(cfg_in, Q)
     % Perform PCA, hyperalignment (with either two or all sessions)
-    % and predict target (either trajectory in common space or Q matrix).
+    % and predict target (either trajectory in common space, PCA space or Q matrix).
     % The way that this function performs hyperalignment is concatenating left(L) and right(R) into [L, R].
     cfg_def.NumComponents = 10;
     cfg_def.hyperalign_all = false;
-    cfg_def.predict_Q = true;
+    % Could be 'common', 'pca', or 'Q'.
+    cfg_def.predict_target = 'Q';
     % If shuffled is specified, source session would be identity shuffled.
     cfg_def.shuffled = 0;
     % Using z-score to decorrelate the absolute firing rate with the later PCA laten variables if not none.
@@ -84,23 +85,25 @@ function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R(cf
                 predicted_aligned = p_transform(M, aligned_left_tar);
                 % Estimate using L (identity mapping).
                 id_predicted_aligned = aligned_left_tar;
-                if ~cfg.predict_Q
+                % Project back to PCA space
+                project_back_pca = inv_p_transform(transforms_tar, [aligned_left_tar, predicted_aligned]);
+                project_back_pca_id = inv_p_transform(transforms_tar, [aligned_left_tar, id_predicted_aligned]);
+                % Project back to Q space.
+                project_back_Q = eigvecs{tar_i} * project_back_pca + pca_mean{tar_i};
+                project_back_Q_id = eigvecs{tar_i} * project_back_pca_id + pca_mean{tar_i};
+
+                w_len = size(aligned_left_sr, 2);
+                if strcmp(cfg.predict_target, 'common')
                     p_target = predicted_aligned;
                     id_p_target = id_predicted_aligned;
                     ground_truth = aligned_right_tar;
-                else
-                    % Project back to PCA space
-                    project_back_pca = inv_p_transform(transforms_tar, [aligned_left_tar, predicted_aligned]);
-                    project_back_pca_id = inv_p_transform(transforms_tar, [aligned_left_tar, id_predicted_aligned]);
-                    % Project back to Q space.
-                    w_len = size(aligned_left_sr, 2);
-                    project_back_Q = eigvecs{tar_i} * project_back_pca + pca_mean{tar_i};
-                    project_back_Q_right = project_back_Q(:, w_len+1:end);
-                    project_back_Q_id = eigvecs{tar_i} * project_back_pca_id + pca_mean{tar_i};
-                    project_back_Q_id_right = project_back_Q_id(:, w_len+1:end);
-
-                    p_target = project_back_Q_right;
-                    id_p_target = project_back_Q_id_right;
+                elseif strcmp(cfg.predict_target, 'pca')
+                    p_target = project_back_pca(:, w_len+1:end);
+                    id_p_target = project_back_pca_id(:, w_len+1:end);
+                    ground_truth = proj_Q{tar_i}.right;
+                elseif strcmp(cfg.predict_target, 'Q')
+                    p_target = project_back_Q(:, w_len+1:end);
+                    id_p_target = project_back_Q_id(:, w_len+1:end);
                     if strcmp(cfg.normalization, 'none')
                         ground_truth = Q{tar_i}.right;
                     else

@@ -12,11 +12,12 @@ cfg_data.only_use_cp = 1;
 data = Q;
 cfg_pre = [];
 cfg_pre.hyperalign_all = false;
-cfg_pre.predict_Q = true;
+cfg_pre.predict_target = 'common';
 cfg_pre.normalization = 'none';
-cfg_pre.dist_dim = 1;
+cfg_pre.dist_dim = 'all';
 [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R(cfg_pre, data);
 
+%% Shuffle
 n_shuffles = 1000;
 sf_dists_mat  = zeros(length(data), length(data), n_shuffles);
 
