@@ -17,7 +17,7 @@ cfg_pre.normalization = 'none';
 cfg_pre.dist_dim = 'all';
 [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R(cfg_pre, data);
 
-%% Shuffle
+%% Shuffling operations
 n_shuffles = 1000;
 sf_dists_mat  = zeros(length(data), length(data), n_shuffles);
 
