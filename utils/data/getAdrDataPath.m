@@ -117,7 +117,8 @@ for iRat = 1:length(cfg.rats)
 
 end
 % Feeders fire incorrectly in Session R156-2008-10-15
-fd = fd([1:10 12:end]);
+% Different maze structure in Session R169-2009-05-16
+fd = fd([1:10 12:15]);
 
 cd(curr_pwd) % return to starting folder
 
