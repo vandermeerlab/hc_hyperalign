@@ -12,7 +12,7 @@ out_zscore_mat = set_withsubj_nan(zscore_mat);
 out_percent_mat = set_withsubj_nan(percent_mat);
 
 %% Calculate common metrics
-cfg.use_adr_data = 1;
+cfg.use_adr_data = 0;
 % Proportion of actual distance and identity distance smaller than shuffled distances
 actual_sf_mat = sum(actual_dists_mat < sf_dists_mat, 3);
 id_sf_mat = sum(id_dists_mat < sf_dists_mat, 3);
@@ -34,13 +34,15 @@ bar(1:19, [coefs]);
 
 %% Calculate errors across locations/time
 cfg.use_adr_data = 0;
-out_dists = id_dists_mat;
+out_dists = actual_dists_mat;
 out_dists = set_withsubj_nan(cfg, out_dists);
 out_keep_idx = cellfun(@(C) any(~isnan(C(:))), out_dists);
 out_dists = out_dists(out_keep_idx);
 out_dists = cell2mat(out_dists);
 
+% Normalize within session to prevent average dominated by high errors
+out_dists = zscore(out_dists, 0, 2);
 mean_across_w = mean(out_dists, 1);
 std_across_w = std(out_dists, 1);
 errorbar(1:length(mean_across_w), mean_across_w, std_across_w);
-title('Squared Errors from ID prediction across locations');
+title('Squared Errors from M prediction across time');
