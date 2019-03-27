@@ -1,3 +1,4 @@
+%% Prepare input
 % Last 2.4 second, dt = 50ms
 % w_len = 48;
 % Or last 41 bins (after all choice points) for TC
@@ -27,15 +28,21 @@ for q_i = 1:19
             Q{q_i}.right(n_i, :) = gaussian_1d(w_len, right_peak, right_mu, right_sig);
         end
     end
+    % Different normalization.
+    % Ind. normalization
+    Q_norm_ind{q_i} = normalize_Q('ind', Q{q_i});
+    % Concat. normalization
+    Q_norm_concat{q_i} = normalize_Q('concat', Q{q_i});
 end
 
-% Plot example input
+%% Plot example input
 hold on;
 subplot(4, 1, 1)
 imagesc([Q{1}.left, Q{1}.right]);
 set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 40);
 title('L R ind.')
 
+%% Hyperalignment procedure
 norm_methods = {'concat'};
 for nm_i = 1:length(norm_methods)
     cfg_pre = [];
