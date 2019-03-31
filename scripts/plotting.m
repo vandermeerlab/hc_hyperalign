@@ -18,7 +18,7 @@ histogram(out_zscore_mat, 20)
 set(gca, 'XTick', 1:19, 'XTickLabel', restrictionLabels);
 set(gca, 'YTick', 1:19, 'YTickLabel', restrictionLabels);
 
-%% Create polished imagesc and histogram as in main result
+%% Create polished imagesc and histogram (for proportion)
 subplot(1, 2, 1);
 imagesc(out_actual_sf_mat,'AlphaData', ~isnan(out_actual_sf_mat));
 colorbar;
@@ -30,8 +30,39 @@ subplot(1, 2, 2);
 histogram(out_actual_sf_mat, 20)
 ylabel('# of pairs');
 xlabel('Proportion > shuffled');
-title(sprintf('M > ID: %.2f %%', out_id_prop * 100));
 % set(gca, 'yticklabel', [], 'FontSize', 35)
+
+%% Create polished imagesc and histogram (for comparison with mean of shuffles and ID)
+subplot(2, 2, 1);
+imagesc(out_actual_mean_sf,'AlphaData', ~isnan(out_actual_sf_mat));
+colorbar;
+ylabel('Source Sessions');
+xlabel('Target Sessions');
+% set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 35);
+
+subplot(2, 2, 3);
+histogram(out_actual_mean_sf, 20)
+ylabel('# of pairs');
+xlabel('Hypertransform - mean of shuffled');
+% set(gca, 'yticklabel', [], 'FontSize', 35)
+
+subplot(2, 2, 2);
+imagesc(out_M_ID,'AlphaData', ~isnan(out_M_ID));
+colorbar;
+% set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 35);
+
+subplot(2, 2, 4);
+histogram(out_M_ID, 20)
+xlabel('Hypertransform - ID');
+% set(gca, 'yticklabel', [], 'FontSize', 35)
+
+%% Create M v.s ID figure
+M = out_actual_dists(~isnan(out_actual_dists))';
+ID = out_id_dists(~isnan(out_id_dists))';
+plot([zeros(size(M)); ones(size(ID))], [M; ID]); hold on;
+plot([zeros(size(M)); ones(size(ID))], [M; ID], '.', 'MarkerSize', 10);
+xlim([-0.1 1.1])
+title(sprintf('Welch’s t-test: %.2f (%.2f %%), Binomial CDF: %.2f %%', t_h, t_p, bino_p));
 
 %% Create Q figures
 for p_i = 1:length(Q)

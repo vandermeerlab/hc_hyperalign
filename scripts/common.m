@@ -19,18 +19,25 @@ id_sf_mat = sum(id_dists_mat < sf_dists_mat, 3);
 
 out_actual_sf_mat = set_withsubj_nan(cfg, actual_sf_mat) / 1000;
 
-% Proportion of distance obtained from M smaller than identity mapping
+% Matrix of differences between actual distance (identity distance) and
+% mean shuffled distance.
+
+actual_mean_sf = actual_dists_mat - median(sf_dists_mat, 3);
+out_actual_mean_sf = set_withsubj_nan(cfg, actual_mean_sf);
+out_M_ID = set_withsubj_nan(cfg, (actual_dists_mat - id_dists_mat));
+
+%% Proportion of distance obtained from M smaller than identity mapping
 out_actual_dists = set_withsubj_nan(cfg, actual_dists_mat);
 out_id_dists = set_withsubj_nan(cfg, id_dists_mat);
 out_id_prop = sum(sum(out_actual_dists < out_id_dists)) / sum(sum(~isnan(out_actual_dists)));
-binocdf(sum(sum(out_actual_dists < out_id_dists)), sum(sum(~isnan(out_actual_dists))), 0.5)
+bino_p = binocdf(sum(sum(out_actual_dists < out_id_dists)), sum(sum(~isnan(out_actual_dists))), 0.5);
 
 %% Welch’s t-test on errors from M prediction and ID prediction
 cfg.use_adr_data = 0;
 out_actual_dists = set_withsubj_nan(cfg, actual_dists_mat);
 out_id_dists = set_withsubj_nan(cfg, id_dists_mat);
 
-[h, p] = ttest2(out_actual_dists(:), out_id_dists(:), 'Vartype','unequal');
+[t_h, t_p] = ttest2(out_actual_dists(:), out_id_dists(:), 'Vartype','unequal');
 
 %% Test correlations within data
 for i = 1:length(TC)
