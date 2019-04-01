@@ -2,7 +2,6 @@ function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R(cf
     % Perform PCA, hyperalignment (with either two or all sessions)
     % and predict target (either trajectory in common space, PCA space or Q matrix).
     % The way that this function performs hyperalignment is concatenating left(L) and right(R) into [L, R].
-    cfg_def.NumComponents = 10;
     cfg_def.hyperalign_all = false;
     % Could be 'common', 'pca', or 'Q'.
     cfg_def.predict_target = 'Q';
@@ -24,7 +23,7 @@ function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R(cf
             Q_norm{p_i} = normalize_Q(cfg.normalization, Q{p_i});
             pca_input = Q_norm{p_i};
         end
-        [proj_Q{p_i}, eigvecs{p_i}, pca_mean{p_i}] = perform_pca(pca_input, cfg.NumComponents);
+        [proj_Q{p_i}, eigvecs{p_i}, pca_mean{p_i}] = perform_pca(cfg, pca_input);
     end
 
     if cfg.shuffled
@@ -40,7 +39,7 @@ function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R(cf
                 s_Q_norm = normalize_Q(cfg.normalization, s_Q{s_i});
                 s_pca_input = s_Q_norm;
             end
-            [s_proj_Q{s_i}] = perform_pca(s_pca_input, cfg.NumComponents);
+            [s_proj_Q{s_i}] = perform_pca(cfg, s_pca_input);
         end
     end
 
@@ -80,7 +79,7 @@ function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R(cf
                     transforms_tar = transforms{2};
                 end
                 % Estimate M from L to R using source session.
-                [~, ~, M] = procrustes(aligned_right_sr', aligned_left_sr');
+                [~, ~, M] = procrustes(aligned_right_sr', aligned_left_sr', 'scaling', false);
                 % Apply M to L of target session to predict.
                 predicted_aligned = p_transform(M, aligned_left_tar);
                 % Estimate using L (identity mapping).

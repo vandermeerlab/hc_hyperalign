@@ -11,9 +11,10 @@ cfg_data.only_use_cp = 1;
 %% Main Procedure
 data = Q;
 cfg_pre = [];
+cfg_pre.NNPCA = true;
 cfg_pre.hyperalign_all = false;
 cfg_pre.predict_target = 'Q';
-cfg_pre.normalization = 'none';
+cfg_pre.normalization = 'ind';
 cfg_pre.dist_dim = 'all';
 [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R(cfg_pre, data);
 
