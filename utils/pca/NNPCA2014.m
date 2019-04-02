@@ -18,7 +18,7 @@ else
 end
 u= zeros(n,1) ;  %u(t)
 T = 13e3;            %max time to run
-fprintf('Starting calculation of Eigenvector\n')
+% fprintf('Starting calculation of Eigenvector\n')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for t=2:T
     %%%%%%THE CODE%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -31,17 +31,17 @@ for t=2:T
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%STOP condition%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if(  norm(v_prev - v,'fro'))<1e-1
-        fprintf('Algorithm converged, breaking...\n')
+        % fprintf('Algorithm converged, breaking...\n')
         break;
     end
     if (t>2e3)
-        fprintf('Iteration exceeded max iters allowed')
+        % fprintf('Iteration exceeded max iters allowed')
         break;
     end
-    
+
     if (mod(t,50) ==0)
-        fprintf('iteration # %d ',t)
-        fprintf('Current converging distance is %d\n',norm(v_prev - v,'fro'));
+        % fprintf('iteration # %d ',t)
+        % fprintf('Current converging distance is %d\n',norm(v_prev - v,'fro'));
     end
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     pause(0.000001);  % for control purpose
@@ -53,7 +53,7 @@ v(v<0) = 0; % cut off last negative parts of vector
 v = v./norm(v);
 u(u<0) = 0;
 u = u./norm(u);
-fprintf('Done with calcaulations\n');
+% fprintf('Done with calcaulations\n');
 end %end of function
 
 %% BACKUP%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
