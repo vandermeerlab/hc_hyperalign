@@ -8,5 +8,8 @@ function [Q_norm] = normalize_Q(normalization, Q)
         Q_norm_concat = zscore([Q.left, Q.right], 0, 2);
         Q_norm.left = Q_norm_concat(:, 1:w_len);
         Q_norm.right = Q_norm_concat(:, w_len+1:end);
+    elseif strcmp(normalization, 'sub_mean')
+        Q_norm.left = Q.left - mean(Q.left, 2);
+        Q_norm.right = Q.right - mean(Q.right, 2);
     end
 end

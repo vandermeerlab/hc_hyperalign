@@ -13,7 +13,7 @@ data = Q;
 cfg_pre = [];
 cfg_pre.hyperalign_all = false;
 cfg_pre.predict_target = 'Q';
-cfg_pre.normalization = 'none';
+cfg_pre.normalization = 'sub_mean';
 cfg_pre.dist_dim = 'all';
 [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R(cfg_pre, data);
 

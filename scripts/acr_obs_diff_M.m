@@ -64,7 +64,7 @@ for i = 1:1000
         s_predicted = cellfun(@(x) p_transform(sf_M{sr_i}, x), aligned_source, 'UniformOutput', false);
 
         for tar_i = 1:length(Q)
-            % Apply inverse procustes to project back to PCA space.
+            % Apply inverse procrustes to project back to PCA space.
             padding = zeros(size(aligned_source{tar_i}));
             project_back_pca = inv_p_transform(transforms{tar_i}, [padding, predicted{tar_i}, padding]);
             % project_back_pca_right = project_back_pca(:, w_len+1:2*w_len);

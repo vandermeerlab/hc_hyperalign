@@ -1,22 +1,32 @@
-imagesc(zscore_mat);
-colorbar;
-ylabel('Source Sessions');
-xlabel('Target Sessions');
-title('Z-score of distances including within subjects')
+%% Set Labels as Restrction Types
+set(gca, 'XTick', 1:19, 'XTickLabel', restrictionLabels);
+set(gca, 'YTick', 1:19, 'YTickLabel', restrictionLabels);
 
+%% Create polished imagesc and histogram (for comparison with zscores of shuffles and ID)
+subplot(2, 2, 1);
 imagesc(out_zscore_mat,'AlphaData', ~isnan(out_zscore_mat));
 colorbar;
 ylabel('Source Sessions');
 xlabel('Target Sessions');
-title('Z-score of distances excluding within subjects')
-% set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 60);
+% set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 35);
 
-% Histoggram of z-scores
-histogram(out_zscore_mat, 20)
+subplot(2, 2, 3);
+histogram(out_zscore_mat, 50);
+title('zscores of Hypertransform');
+ylabel('# of pairs');
+xlabel(sprintf('< 0: %.2f %%, Bino-p: %.2f', out_zscore_prop * 100, bino_p_mean));
+% set(gca, 'yticklabel', [], 'FontSize', 35)
 
-% Set Labels as Restrction Types
-set(gca, 'XTick', 1:19, 'XTickLabel', restrictionLabels);
-set(gca, 'YTick', 1:19, 'YTickLabel', restrictionLabels);
+subplot(2, 2, 2);
+imagesc(out_M_ID,'AlphaData', ~isnan(out_M_ID));
+colorbar;
+% set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 35);
+
+subplot(2, 2, 4);
+histogram(out_M_ID, 50)
+title('Hypertransform - ID');
+xlabel(sprintf('< 0: %.2f %%, Bino-p: %.2f', out_id_prop * 100, bino_p_id));
+% set(gca, 'yticklabel', [], 'FontSize', 35)
 
 %% Create polished imagesc and histogram (for proportion)
 subplot(1, 2, 1);
@@ -41,9 +51,15 @@ xlabel('Target Sessions');
 % set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 35);
 
 subplot(2, 2, 3);
-histogram(out_actual_mean_sf, 20)
+binsize = 10;
+bin_edges = round(min(out_actual_mean_sf(:)), -1):binsize:round(max(out_actual_mean_sf(:)), -1);
+bin_centers = bin_edges(1:end-1) + binsize ./ 2;
+this_h = histc(out_actual_mean_sf(:), bin_edges);
+
+bar(bin_centers, this_h(1:end-1));
+title('Hypertransform - mean of shuffled');
 ylabel('# of pairs');
-xlabel('Hypertransform - mean of shuffled');
+xlabel(sprintf('< 0: %.2f %%, Bino-p: %.2f', out_actual_mean_sf_prop * 100, bino_p_mean));
 % set(gca, 'yticklabel', [], 'FontSize', 35)
 
 subplot(2, 2, 2);
@@ -52,8 +68,9 @@ colorbar;
 % set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 35);
 
 subplot(2, 2, 4);
-histogram(out_M_ID, 20)
-xlabel('Hypertransform - ID');
+histogram(out_M_ID, 50)
+title('Hypertransform - ID');
+xlabel(sprintf('< 0: %.2f %%, Bino-p: %.2f', out_id_prop * 100, bino_p_id));
 % set(gca, 'yticklabel', [], 'FontSize', 35)
 
 %% Create M v.s ID figure
@@ -70,7 +87,7 @@ for p_i = 1:length(Q)
     imagesc([Q{p_i}.left, Q{p_i}.right]);
     colorbar;
     subplot(2, 1, 2)
-    Q_norm{p_i} = normalize_Q('concat', Q{p_i});
+    Q_norm{p_i} = normalize_Q('sub_mean', Q{p_i});
     imagesc([Q_norm{p_i}.left, Q_norm{p_i}.right]);
     colorbar;
     saveas(gcf, sprintf('Q_%d.jpg', p_i));

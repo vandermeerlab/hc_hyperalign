@@ -1,3 +1,4 @@
+cfg.use_adr_data = 0;
 zscore_mat = zeros(length(data));
 percent_mat = zeros(length(data));
 for i = 1:length(data)
@@ -8,8 +9,8 @@ for i = 1:length(data)
         percent_mat(i, j) = get_percentile(actual_dists_mat(i, j), sf_dists);
     end
 end
-out_zscore_mat = set_withsubj_nan(zscore_mat);
-out_percent_mat = set_withsubj_nan(percent_mat);
+out_zscore_mat = set_withsubj_nan(cfg, zscore_mat);
+out_zscore_prop = sum(sum(out_zscore_mat < 0)) / sum(sum(~isnan(out_zscore_mat)));
 
 %% Calculate common metrics
 cfg.use_adr_data = 0;
@@ -19,18 +20,23 @@ id_sf_mat = sum(id_dists_mat < sf_dists_mat, 3);
 
 out_actual_sf_mat = set_withsubj_nan(cfg, actual_sf_mat) / 1000;
 
-% Matrix of differences between actual distance (identity distance) and
-% mean shuffled distance.
+% Matrix of differences between actual distance (identity distance) and mean of shuffled distance.
 
-actual_mean_sf = actual_dists_mat - median(sf_dists_mat, 3);
+actual_mean_sf = actual_dists_mat - mean(sf_dists_mat, 3);
 out_actual_mean_sf = set_withsubj_nan(cfg, actual_mean_sf);
 out_M_ID = set_withsubj_nan(cfg, (actual_dists_mat - id_dists_mat));
 
-%% Proportion of distance obtained from M smaller than identity mapping
+% Proportion of distance obtained from M smaller than mean of shuffled distance.
+out_actual_mean_sf_prop = sum(sum(out_actual_mean_sf < 0)) / sum(sum(~isnan(out_actual_mean_sf)));
+
+% Proportion of distance obtained from M smaller than identity mapping
 out_actual_dists = set_withsubj_nan(cfg, actual_dists_mat);
 out_id_dists = set_withsubj_nan(cfg, id_dists_mat);
 out_id_prop = sum(sum(out_actual_dists < out_id_dists)) / sum(sum(~isnan(out_actual_dists)));
-bino_p = binocdf(sum(sum(out_actual_dists < out_id_dists)), sum(sum(~isnan(out_actual_dists))), 0.5);
+
+% Binomial stats
+bino_p_mean = calculate_bino_p(sum(sum(out_actual_mean_sf < 0)), sum(sum(~isnan(out_actual_mean_sf))), 0.5);
+bino_p_id = calculate_bino_p(sum(sum(out_actual_dists < out_id_dists)), sum(sum(~isnan(out_actual_dists))), 0.5);
 
 %% Welch’s t-test on errors from M prediction and ID prediction
 cfg.use_adr_data = 0;
