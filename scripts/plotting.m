@@ -44,15 +44,15 @@ xlabel('Proportion > shuffled');
 
 %% Create polished imagesc and histogram (for comparison with mean of shuffles and ID)
 subplot(2, 2, 1);
-imagesc(out_actual_mean_sf,'AlphaData', ~isnan(out_actual_sf_mat));
+imagesc(out_actual_mean_sf,'AlphaData', ~isnan(out_actual_mean_sf));
 colorbar;
 ylabel('Source Sessions');
 xlabel('Target Sessions');
 % set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 35);
 
 subplot(2, 2, 3);
-binsize = 10;
-bin_edges = round(min(out_actual_mean_sf(:)), -1):binsize:round(max(out_actual_mean_sf(:)), -1);
+binsize = 25;
+bin_edges = round(min(out_actual_mean_sf(:)), -2):binsize:round(max(out_actual_mean_sf(:)), -2);
 bin_centers = bin_edges(1:end-1) + binsize ./ 2;
 this_h = histc(out_actual_mean_sf(:), bin_edges);
 
@@ -193,3 +193,127 @@ imagesc([pro_Q_left, pro_Q_right]);
 ylabel('Neurons');
 xlabel('Locations');
 set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 40);
+
+% Summary of main results
+%% Plot example inputs
+norm_inputs = {Q, Q_norm_ind, Q_norm_concat, Q_norm_sub};
+norm_methods = {'none', 'ind', 'concat', 'sub_mean'};
+for n_i = 1:length(norm_inputs)
+    subplot(3, 4, n_i)
+    imagesc([norm_inputs{n_i}{1}.left, norm_inputs{n_i}{1}.right]);
+    colorbar;
+    % set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 40);
+    title(norm_methods{n_i});
+end
+
+%% Hyperalignment procedure
+rng(mean('hyperalignment'));
+for nm_i = 1:length(norm_methods)
+    cfg_pre = [];
+    cfg_pre.normalization = norm_methods{nm_i};
+    [actual_dists_mat, id_dists_mat] = predict_with_L_R(cfg_pre, Q);
+
+    n_shuffles = 1000;
+    sf_dists_mat  = zeros(length(Q), length(Q), n_shuffles);
+
+    for i = 1:n_shuffles
+        cfg_pre.shuffled = 1;
+        [s_actual_dists_mat] = predict_with_L_R(cfg_pre, Q);
+        sf_dists_mat(:, :, i) = s_actual_dists_mat;
+    end
+
+    % Calculate common metrics
+    cfg.use_adr_data = 0;
+    % Proportion of actual distance smaller than shuffled distances
+    actual_sf_mat = sum(actual_dists_mat < sf_dists_mat, 3);
+    out_actual_sf_mat = set_withsubj_nan(cfg, actual_sf_mat) / 1000;
+
+    % Matrix of differences between actual distance (identity distance) and mean of shuffled distance.
+    actual_mean_sf = actual_dists_mat - mean(sf_dists_mat, 3);
+    out_actual_mean_sf = set_withsubj_nan(cfg, actual_mean_sf);
+
+    % Proportion of distance obtained from M smaller than mean of shuffled distance.
+    out_actual_mean_sf_prop = sum(sum(out_actual_mean_sf < 0)) / sum(sum(~isnan(out_actual_mean_sf)));
+
+    % Proportion of distance obtained from M smaller than identity mapping
+    out_actual_dists = set_withsubj_nan(cfg, actual_dists_mat);
+    out_id_dists = set_withsubj_nan(cfg, id_dists_mat);
+    out_id_prop = sum(sum(out_actual_dists < out_id_dists)) / sum(sum(~isnan(out_actual_dists)));
+
+    % Binomial stats
+    bino_p_mean = calculate_bino_p(sum(sum(out_actual_mean_sf < 0)), sum(sum(~isnan(out_actual_mean_sf))), 0.5);
+    bino_p_id = calculate_bino_p(sum(sum(out_actual_dists < out_id_dists)), sum(sum(~isnan(out_actual_dists))), 0.5);
+
+    subplot(5, 4, 4 + nm_i)
+    imagesc(out_actual_sf_mat,'AlphaData', ~isnan(out_actual_sf_mat));
+    colorbar;
+
+    subplot(5, 4, 8 + nm_i)
+    histogram(out_actual_sf_mat, 20)
+    title(sprintf('M < ID: %.2f %%, Bino-p: %.2f', out_id_prop * 100, bino_p_id));
+
+    subplot(5, 4, 12 + nm_i)
+    imagesc(out_actual_mean_sf,'AlphaData', ~isnan(out_actual_mean_sf));
+    colorbar;
+
+    binsize = 10;
+    bin_edges = round(min(out_actual_mean_sf(:)), -1):binsize:round(max(out_actual_mean_sf(:)), -1);
+    bin_centers = bin_edges(1:end-1) + binsize ./ 2;
+    this_h = histc(out_actual_mean_sf(:), bin_edges);
+
+    subplot(5, 4, 16 + nm_i)
+    bar(bin_centers, this_h(1:end-1));
+    title(sprintf('< 0: %.2f %%, Bino-p: %.2f', out_actual_mean_sf_prop * 100, bino_p_mean));
+end
+
+% Summary of correlation results
+%% Cell-by-cell correlation
+norm_inputs = {Q, Q_norm_ind, Q_norm_concat, Q_norm_sub};
+for n_i = 1:length(norm_inputs)
+    data = norm_inputs{n_i};
+    mean_coefs = zeros(1, length(data));
+    std_coefs = zeros(1, length(data));
+
+    for i = 1:length(data)
+        whiten_left = data{i}.left + 0.001 * rand(size(data{i}.left));
+        whiten_right = data{i}.right + 0.001 * rand(size(data{i}.right));
+
+        cell_coefs = zeros(size(whiten_left, 1), 1);
+        for j = 1:size(whiten_left, 1)
+            [coef] = corrcoef(whiten_left(j, :), whiten_right(j, :));
+            cell_coefs(j) = coef(1, 2);
+        end
+        mean_coefs(i) = mean(cell_coefs, 'omitnan');
+        std_coefs(i) = std(cell_coefs, 'omitnan');
+    end
+
+    subplot(3, 4, 4 + n_i)
+    errorbar(1:length(mean_coefs), mean_coefs, std_coefs);
+    xlabel('corrcoefs'); ylabel('sessions')
+end
+
+%% Location-by-location (time-by-time) analysis
+norm_inputs = {Q, Q_norm_ind, Q_norm_concat, Q_norm_sub};
+for n_i = 1:length(norm_inputs)
+    data = norm_inputs{n_i};
+    data = cellfun(@(x) [x.left, x.right], data, 'UniformOutput', false);
+    coefs = cell(1, length(data));
+
+    w_len = size(data{1}, 2);
+    for i = 1:length(data)
+        w_coefs = zeros(w_len, w_len);
+        for j = 1:w_len
+            for k = 1:w_len
+                [coef] = corrcoef(data{i}(:, j), data{i}(:, k));
+                w_coefs(j, k) = coef(1, 2);
+            end
+        end
+        coefs{i} = w_coefs;
+    end
+
+    mean_coefs = mean(cat(3, coefs{:}), 3);
+    subplot(3, 4, 8 + n_i)
+    imagesc(mean_coefs);
+    colorbar;
+    xlabel('L -> R'); ylabel('L -> R');
+end
