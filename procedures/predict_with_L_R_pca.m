@@ -57,7 +57,7 @@ function [actual_dists_mat, id_dists_mat] = predict_with_L_R_pca(cfg_in, Q)
                     right_tar = proj_Q{tar_i}.right;
                 end
                 % Estimate M from L to R using source session.
-                [~, ~, M] = procrustes(right_sr', left_sr');
+                [~, ~, M] = procrustes(right_sr', left_sr', 'scaling', false);
                 % Apply M to L of target session to predict.
                 predicted_pca = p_transform(M, left_tar);
                 % Estimate using L (identity mapping).

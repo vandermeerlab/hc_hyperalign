@@ -12,7 +12,7 @@ for q_i = 1:19
     Q{q_i}.right = zeros(n_units, w_len);
     for n_i = 1:n_units
         mu = rand() * w_len;
-        peak = rand() * 20;
+        peak = rand() * 0.5 + 0.5;
         sig = rand() * 5 + 2;
         left_has_field = rand() < 0.5;
         if left_has_field
