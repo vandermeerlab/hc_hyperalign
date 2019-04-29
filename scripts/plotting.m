@@ -317,3 +317,26 @@ for n_i = 1:length(norm_inputs)
     colorbar;
     xlabel('L -> R'); ylabel('L -> R');
 end
+
+%% Cell-by-cell correlations for all sessions in data, group by significant or not
+data = Q;
+sig_coefs = [];
+insig_coefs = [];
+
+for i = 1:length(data)
+    whiten_left = data{i}.left + 0.001 * rand(size(data{i}.left));
+    whiten_right = data{i}.right + 0.001 * rand(size(data{i}.right));
+    for j = 1:size(data{i}.left, 1)
+        [coef, p] = corrcoef(whiten_left(j, :), whiten_right(j, :));
+        if p(1, 2) < 0.05
+            sig_coefs = [sig_coefs, coef(1, 2)];
+        else
+            insig_coefs = [insig_coefs, coef(1, 2)];
+        end
+    end
+end
+
+histogram(sig_coefs, 20);
+hold on;
+histogram(insig_coefs, 20);
+legend('Significant', 'Insignificant');
