@@ -5,9 +5,8 @@ w_len = 48;
 % w_len = 41;
 rng(mean('hyperalignment'));
 
-p_xor = 0;
-p_same_mu = 1/10;
 for q_i = 1:19
+    [p_xor, p_same_mu] = get_rand_discrete_probs();
     % Number of neurons
     n_units = randi([60, 120]);
     Q{q_i}.left = zeros(n_units, w_len);
