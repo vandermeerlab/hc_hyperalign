@@ -343,61 +343,49 @@ legend('Significant', 'Insignificant');
 
 %% Cell-by-cell for [Source, Predicted, Target]
 for source_id = 1:length(Q)
-pair_len = 6;
-target_array = 1:length(Q); target_array(source_id) = [];
-target_ids = datasample(target_array, pair_len, 'Replace', false);
+    pair_len = 6;
+    target_array = 1:length(Q); target_array(source_id) = [];
+    target_ids = datasample(target_array, pair_len, 'Replace', false);
 
-for t_i = 1:length(target_ids)
-    target_id = target_ids(t_i);
-    p_target.left = predicted_mat{source_id, target_id}(:, 1:48);
-    p_target.right = predicted_mat{source_id, target_id}(:, 49:end);
-    paired_inputs = {Q{source_id}, p_target, Q{target_id}};
-    paired_titles = {'Source', 'Predicted', 'Target'};
-    
-    for p_i = 1:length(paired_inputs)
-        p_input = paired_inputs{p_i};
-        sig_coefs = [];
-        insig_coefs = [];
-        for c_i = 1:size(p_input.left, 1)
-            [coef, p] = corrcoef(p_input.left(c_i, :), p_input.right(c_i, :));
-            if p(1, 2) < 0.05
-                sig_coefs = [sig_coefs, coef(1, 2)];
-            else
-                insig_coefs = [insig_coefs, coef(1, 2)];
+    for t_i = 1:length(target_ids)
+        target_id = target_ids(t_i);
+        p_target.left = predicted_mat{source_id, target_id}(:, 1:48);
+        p_target.right = predicted_mat{source_id, target_id}(:, 49:end);
+        paired_inputs = {Q{source_id}, p_target, Q{target_id}};
+        paired_titles = {'Source', 'Predicted', 'Target'};
+
+        for p_i = 1:length(paired_inputs)
+            p_input = paired_inputs{p_i};
+            sig_coefs = [];
+            insig_coefs = [];
+            for c_i = 1:size(p_input.left, 1)
+                [coef, p] = corrcoef(p_input.left(c_i, :), p_input.right(c_i, :));
+                if p(1, 2) < 0.05
+                    sig_coefs = [sig_coefs, coef(1, 2)];
+                else
+                    insig_coefs = [insig_coefs, coef(1, 2)];
+                end
             end
+            subplot(pair_len, 3, 3 * (t_i - 1) + p_i)
+            histogram(sig_coefs, 20);
+            hold on;
+            histogram(insig_coefs, 20);
+            title(paired_titles{p_i});
         end
-        subplot(pair_len, 3, 3 * (t_i - 1) + p_i)
-        histogram(sig_coefs, 20);
-        hold on;
-        histogram(insig_coefs, 20);
-        title(paired_titles{p_i});
     end
-end
-saveas(gcf, sprintf('source_%d.png', source_id));
-figure;
+    saveas(gcf, sprintf('source_%d.png', source_id));
+    figure;
 end
 
 %% Population vectors for [Source, Predicted, Target]
 for source_id = 1:length(Q)
-pair_len = 4;
-target_array = 1:length(Q); target_array(source_id) = [];
-target_ids = datasample(target_array, pair_len, 'Replace', false);
+    pair_len = 4;
+    target_array = 1:length(Q); target_array(source_id) = [];
+    target_ids = datasample(target_array, pair_len, 'Replace', false);
 
-for t_i = 1:length(target_ids)
-    target_id = target_ids(t_i);
-    Q_source = [Q{source_id}.left, Q{source_id}.right];
-    Q_target = [Q{target_id}.left, Q{target_id}.right];
-    paired_inputs = {Q_source, predicted_mat{source_id, target_id}, Q_target};
-    paired_titles = {'Source', 'Predicted', 'Target'};
-    for p_i = 1:length(paired_inputs)
-        p_input = paired_inputs{p_i};
-
-        w_len = size(p_input, 2);
-        w_coefs = zeros(w_len, w_len);
-        for j = 1:w_len
-            for k = 1:w_len
-                [coef] = corrcoef(p_input(:, j), p_input(:, k));
-                w_coefs(j, k) = coef(1, 2);
+    for t_i = 1:length(target_ids)
+        target_id = target_ids(t_i);
+        Q_source = [Q{source_id}.left, Q{source_id}.right];
             end
         end
 
