@@ -1,50 +1,38 @@
 % Last 2.4 second, dt = 50ms for Q
-% w_len = 48;
+w_len = 48;
 % Or last 41 bins (after all choice points) for TC
-w_len = 41;
+% w_len = 41;
 rng(mean('hyperalignment'));
-sim_data = cell(1, 2);
-n_units{1} = 50;
-n_units{2} = 65;
+sim_data = cell(1, 19);
 % Make two Qs - first: source, second: target
 for s_i = 1:length(sim_data)
     % Number of neurons
-    sim_data{s_i}.left = zeros(n_units{s_i}, w_len);
-    p_has_field = 0.25;
-    for n_i = 1:n_units{s_i}
+    n_units = randi([60, 120]);
+    sim_data{s_i}.left = zeros(n_units, w_len);
+    sim_data{s_i}.right = zeros(n_units, w_len);
+    p_has_field = 0.5;
+    for n_i = 1:n_units
         if rand() < p_has_field
-            left_mu = rand() * w_len;
-            sim_data{s_i}.left(n_i, :) = gaussian_1d(w_len, 5, left_mu, 5);
+            mu = rand() * w_len;
+            peak = rand() * 0.5 + 0.5;
+            sig = rand() * 5 + 2;
+            sim_data{s_i}.left(n_i, :) = gaussian_1d(w_len, peak, mu, sig);
         end
     end
-    sim_data{s_i}.left = zscore(sim_data{s_i}.left, 0, 2);
 end
 
 NumComponents = 10;
 % Project [L, R] to PCA space.
-for p_i = 1:length(sim_data)
-    pca_input = [sim_data{p_i}.left];
-    sim_pca_mean{p_i} = mean(pca_input, 2);
-    pca_input = pca_input - sim_pca_mean{p_i};
-    [sim_eigvecs{p_i}] = pca_egvecs(pca_input, NumComponents);
-    %  project all other trials (both left and right trials) to the same dimension
-    sim_proj_Q{p_i} = pca_project(pca_input, sim_eigvecs{p_i});
+for sim_i = 1:length(sim_data)
+    [sim_proj_data{sim_i}, sim_eigvecs{sim_i}, sim_pca_mean{sim_i}] = perform_pca(sim_data{sim_i}, NumComponents);
 end
 
-% Perform hyperalignment on concatenated [L, R] in PCA.
-hyper_input = {sim_proj_Q{1}, sim_proj_Q{2}};
-[sim_aligned_left, sim_transforms] = hyperalign(hyper_input{:});
-
 % Use M from real data
-% Get real Q inputs.
-% cfg_data = [];
-% [Q_norm, Q] = prepare_all_Q(cfg_data);
-
-% Get real TC inputs.
 cfg_data = [];
-[TC_norm, TC] = prepare_all_TC(cfg_data);
+cfg_data.use_adr_data = 0;
+[Q] = prepare_all_Q(cfg_data);
 
-data = TC_norm;
+data = Q;
 
 % PCA
 NumComponents = 10;
@@ -52,34 +40,89 @@ for rd_i = 1:length(data)
     proj_data{rd_i} = perform_pca(data{rd_i}, NumComponents);
 end
 
-% Hyperalignment
-[aligned_left, aligned_right] = get_aligned_left_right({proj_data{10}, proj_data{19}});
-[~, ~, M] = procrustes(aligned_right{1}', aligned_left{1}');
-% Disable scaling
-M.b = 1;
+%% Hyperalign source-target pair version
+% predicted_data_mat = cell(length(sim_data));
+predicted_data_mat = cell(length(sim_data), length(sim_data));
+for sr_i = 1:length(sim_data)
+    for tar_i = 1:length(sim_data)
+        if sr_i ~= tar_i
+            % Hyperalignment on real data to get M transformation
+            hyper_input = {proj_data{sr_i}, proj_data{tar_i}};
+            [aligned_left, aligned_right, transforms] = get_aligned_left_right(hyper_input);
 
-for r_i = 1:length(sim_data)
-    predicted{r_i} = p_transform(M, sim_aligned_left{r_i});
-    project_back_pca{r_i} = inv_p_transform(sim_transforms{r_i}, predicted{r_i});
-    sim_data{r_i}.right = sim_eigvecs{r_i} * project_back_pca{r_i} + sim_pca_mean{r_i};
+            % Perform hyperalignment on L of simulated data in PCA.
+            sim_hyper_input = {sim_proj_data{sr_i}, sim_proj_data{tar_i}};
+            [sim_aligned_left, sim_aligned_right, sim_transforms] = get_aligned_left_right(sim_hyper_input);
+
+            [~, ~, M] = procrustes(aligned_right{1}', aligned_left{1}', 'scaling', false);
+
+            predicted_aligned = p_transform(M, sim_aligned_left{2});
+            project_back_pca = inv_p_transform(sim_transforms{2}, [sim_aligned_left{2}, predicted_aligned]);
+            project_back_data = sim_eigvecs{tar_i} * project_back_pca + sim_pca_mean{tar_i};
+            predicted_data_mat{sr_i, tar_i} = project_back_data(:, w_len+1:end);
+            % sim_data{tar_i}.right = sim_data{tar_i}.right + (1/19 * project_back_data(:, 49:end));
+        end
+    end
 end
 
-%% Set the same color scale for hyper pair and create a polished figure
-sim_data_concat{1} = [sim_data{1}.left, sim_data{1}.right];
-sim_data_concat{2} = [sim_data{2}.left, sim_data{2}.right];
-min_val = min(min(min(sim_data_concat{1})), min(min(sim_data_concat{2})));
-max_val = max(max(max(sim_data_concat{1})), max(max(sim_data_concat{2})));
+%% Hyperalign-all version
+% Hyperalignment on real data to get M transformation
+hyper_input = proj_data;
+[aligned_left, aligned_right, transforms] = get_aligned_left_right(hyper_input);
 
-subplot(1, 2, 1)
-imagesc(sim_data_concat{1});
-caxis([min_val, max_val]);
-ylabel('Neurons');
-xlabel('Locations');
-set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 60);
+% Perform hyperalignment on L of simulated data in PCA.
+sim_hyper_input = sim_proj_data;
+[sim_aligned_left, sim_aligned_right, sim_transforms] = get_aligned_left_right(sim_hyper_input);
 
-subplot(1, 2, 2)
-imagesc(sim_data_concat{2});
-caxis([min_val, max_val]);
-ylabel('Neurons');
-xlabel('Locations');
-set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 60);
+predicted_data_mat = cell(length(sim_data));
+for sr_i = 1:length(sim_data)
+    [~, ~, M] = procrustes(aligned_right{sr_i}', aligned_left{sr_i}', 'scaling', false);
+    for tar_i = 1:length(sim_data)
+        if sr_i ~= tar_i
+            predicted_aligned = p_transform(M, sim_aligned_left{tar_i});
+            project_back_pca = inv_p_transform(sim_transforms{tar_i}, [sim_aligned_left{tar_i}, predicted_aligned]);
+            project_back_data = sim_eigvecs{tar_i} * project_back_pca + sim_pca_mean{tar_i};
+            predicted_data_mat{sr_i, tar_i} = project_back_data(:, w_len+1:end);
+            % sim_data{tar_i}.right = sim_data{tar_i}.right + (1/19 * project_back_data(:, 49:end));
+        else
+            predicted_data_mat{sr_i, tar_i} = zeros(size(sim_data{tar_i}.left, 1), w_len*2);
+        end
+    end
+end
+
+%% Cross-subject predictions.
+cfg.use_adr_data = 0;
+out_predicted_data_mat = set_withsubj_nan(cfg, predicted_data_mat);
+out_predicted_data = cell(length(sim_data));
+for s_i = 1:length(sim_data)
+    a = out_predicted_data_mat(:, s_i);
+    b = [];
+    for o_i = 1:length(a)
+        if ~isnan(a{o_i})
+            if isempty(b)
+                b = a{o_i};
+            else
+                b(:, :, end+1) = a{o_i};
+            end
+        end
+    end
+    sim_data{s_i}.right = mean(b, 3);
+end
+
+%% Including projected-back L.
+% sim_predicted_Q_mat = cell(1, 19);
+% for tar_i = 1:length(sim_data)
+%     for sr_i = 1:length(sim_data)
+%         if isempty(sim_predicted_Q_mat{tar_i})
+%             sim_predicted_Q_mat{tar_i} = (1/19 * predicted_data_mat{sr_i, tar_i});
+%         else
+%             sim_predicted_Q_mat{tar_i} = sim_predicted_Q_mat{tar_i} + (1/19 * predicted_data_mat{sr_i, tar_i});
+%         end
+%     end
+% end
+
+% sim_predicted_Q = cell(1, 19);
+% for s_i = 1:length(sim_data)
+%     sim_predicted_Q{s_i}.left = sim_predicted_Q_mat{s_i}(:, 1:48);
+%     sim_predicted_Q{s_i}.right = sim_predicted_Q_mat{s_i}(:, 49:end);
+% end
