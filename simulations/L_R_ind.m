@@ -11,6 +11,7 @@ for q_i = 1:19
     Q{q_i}.left = zeros(n_units, w_len);
     Q{q_i}.right = zeros(n_units, w_len);
     p_has_field = 0.5;
+    p_has_noise = 0.3;
     for n_i = 1:n_units
         % mu = rand() * w_len;
         % peak = rand() * 0.5 + 0.5;
@@ -27,7 +28,16 @@ for q_i = 1:19
             right_sig = rand() * 5 + 2;
             Q{q_i}.right(n_i, :) = gaussian_1d(w_len, right_peak, right_mu, right_sig);
         end
+        if rand() < p_has_noise
+            Q{q_i}.left(n_i, :) = Q{q_i}.left(n_i, :) + 0.001 * rand(size(Q{q_i}.left(n_i, :)));
+            Q{q_i}.right(n_i, :) = Q{q_i}.right(n_i, :) + 0.001 * rand(size(Q{q_i}.right(n_i, :)));
+        end
     end
+
+    cfg_data.removeCorrelations = 'pos_and_neg';
+    cfg_data.removeNaNFiring = true;
+    Q = remove_corr_cells(cfg_data, Q);
+
     % Different normalization.
     % Ind. normalization
     Q_norm_ind{q_i} = normalize_Q('ind', Q{q_i});

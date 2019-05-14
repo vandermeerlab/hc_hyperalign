@@ -23,7 +23,7 @@ function [Q] = get_processed_Q(cfg_in, session_path)
         if cfg.removeInterneurons
             cfg_temp = []; cfg_temp.showFRhist = 0;
             csc = LoadCSC([]);
-            S = RemoveInterneuronsHC(cfg_temp,S,csc);
+            S = RemoveInterneuronsHC(cfg_temp,S, csc);
         end
     end
 
@@ -39,30 +39,32 @@ function [Q] = get_processed_Q(cfg_in, session_path)
 
     tstart = [L_tstart; R_tstart];
     tend = [L_tend; R_tend];
+    % tstart = tend - cfg.last_n_sec;
     S_matched = restrict(S, tstart, tend);
 
-    % Remove cells with insufficient spikes
-    spk_count = getSpikeCount([], S_matched);
-    cell_keep_idx = spk_count >= cfg.minSpikes;
-    S = SelectTS([], S, cell_keep_idx);
+    % % Remove cells with insufficient spikes
+    % spk_count = getSpikeCount([], S_matched);
+    % cell_keep_idx = spk_count >= cfg.minSpikes;
+    % S = SelectTS([], S, cell_keep_idx);
 
     % Common binning and windowing configurations.
     cfg_Q = [];
     cfg_Q.dt = 0.05;
     cfg_Q.smooth = 'gauss';
     cfg_Q.gausswin_size = 1;
-    cfg_Q.gausswin_sd = 0.02;
+    cfg_Q.gausswin_sd = 0.05;
 
     % Construct Q with a whole session
     Q_whole = MakeQfromS(cfg_Q, S);
-    % Restrict Q with only matched trials
+    % % Restrict Q with only matched trials
     [Q_L, Q_R] = get_last_n_sec_LR(Q_whole, L_tend, R_tend, cfg.last_n_sec);
     Q = aver_Q_acr_trials(Q_L, Q_R);
-    % if strcmp(cfg.normalization, 'all')
+    % if strcmp(cfg.normalization, 'all_sub_mean')
     %     Q_matched = restrict(Q_whole, tstart, tend);
-    %     Q_norm.data = zscore(Q_matched.data, 0, 2);
-    %     [Q_norm_L, Q_norm_R] = get_last_n_sec_LR(Q_norm, L_tend, R_tend, cfg.last_n_sec);
-    %     Q_norm = aver_Q_acr_trials(Q_norm_L, Q_norm_R);
+    %     % Q_matched.data = Q_matched.data - mean(Q_matched.data, 2);
+    %     Q_matched.data = zscore(Q_matched.data, 0, 2);
+    %     [Q_L, Q_R] = get_last_n_sec_LR(Q_matched, L_tend, R_tend, cfg.last_n_sec);
+    %     Q = aver_Q_acr_trials(Q_L, Q_R);
     % end
 end
 

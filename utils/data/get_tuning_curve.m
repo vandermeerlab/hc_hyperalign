@@ -83,7 +83,8 @@ function [TC] = get_tuning_curve(cfg_in, session_path)
     % http://ctnsrv.uwaterloo.ca/vandermeerlab/doku.php?id=analysis:nsb2015:week12
     for iCond = 1:nCond
 
-        cfg_tc = []; cfg_tc.smoothingKernel = gausskernel(11, 1); cfg_tc.minOcc = 0.25;
+        cfg_tc = []; cfg_tc.smoothingKernel = gausskernel(1 / 0.05, 0.02 / 0.05); cfg_tc.minOcc = 0.25;
+        % cfg_tc = []; cfg_tc.smoothingKernel = gausskernel(11, 1); cfg_tc.minOcc = 0.25;
         expCond(iCond).tc = TuningCurves(cfg_tc,expCond(iCond).S,expCond(iCond).linpos);
         [~,expCond(iCond).cp_bin] = histc(expCond(iCond).cp.data, expCond(iCond).tc.usr.binEdges);
 

@@ -1,6 +1,6 @@
 %$ Get Q inputs.
 cfg_data = [];
-cfg_data.use_adr_data = 1;
+cfg_data.use_adr_data = 0;
 [Q] = prepare_all_Q(cfg_data);
 
 %% Get TC inputs.

@@ -83,13 +83,13 @@ title(sprintf('Welch’s t-test: %.2f (%.2f %%), Binomial CDF: %.2f %%', t_h, t_
 
 %% Create Q figures
 for p_i = 1:length(Q)
-    subplot(2, 1, 1)
+%     subplot(2, 1, 1)
     imagesc([Q{p_i}.left, Q{p_i}.right]);
     colorbar;
-    subplot(2, 1, 2)
-    Q_norm{p_i} = normalize_Q('sub_mean', Q{p_i});
-    imagesc([Q_norm{p_i}.left, Q_norm{p_i}.right]);
-    colorbar;
+%     subplot(2, 1, 2)
+%     Q_norm{p_i} = normalize_Q('sub_mean', Q{p_i});
+%     imagesc([Q2{p_i}.left, Q2{p_i}.right]);
+%     colorbar;
     saveas(gcf, sprintf('Q_%d.jpg', p_i));
 end
 
@@ -195,7 +195,7 @@ xlabel('Locations');
 set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 40);
 
 % Summary of main results
-%% Plot example inputs
+%% Plot example paired_inputs
 norm_inputs = {Q, Q_norm_ind, Q_norm_concat, Q_norm_sub};
 norm_methods = {'none', 'ind', 'concat', 'sub_mean'};
 for n_i = 1:length(norm_inputs)
@@ -324,8 +324,8 @@ sig_coefs = [];
 insig_coefs = [];
 
 for i = 1:length(data)
-    whiten_left = data{i}.left + 0.001 * rand(size(data{i}.left));
-    whiten_right = data{i}.right + 0.001 * rand(size(data{i}.right));
+    whiten_left = data{i}.left; % + 0.001 * rand(size(data{i}.left));
+    whiten_right = data{i}.right; %+ 0.001 * rand(size(data{i}.right));
     for j = 1:size(data{i}.left, 1)
         [coef, p] = corrcoef(whiten_left(j, :), whiten_right(j, :));
         if p(1, 2) < 0.05
@@ -386,16 +386,28 @@ for source_id = 1:length(Q)
     for t_i = 1:length(target_ids)
         target_id = target_ids(t_i);
         Q_source = [Q{source_id}.left, Q{source_id}.right];
-            end
-        end
+        Q_target = [Q{target_id}.left, Q{target_id}.right];
+        paired_inputs = {Q_source, predicted_mat{source_id, target_id}, Q_target};
+        paired_titles = {'Source', 'Predicted', 'Target'};
+        for p_i = 1:length(paired_inputs)
+            p_input = paired_inputs{p_i};
 
-        subplot(pair_len, 3, 3 * (t_i - 1) + p_i)
-        imagesc(w_coefs);
-        colorbar;
-        title(paired_titles{p_i});
-        xlabel('L -> R'); ylabel('L -> R');
+            w_len = size(p_input, 2);
+            w_coefs = zeros(w_len, w_len);
+            for j = 1:w_len
+                for k = 1:w_len
+                    [coef] = corrcoef(p_input(:, j), p_input(:, k));
+                    w_coefs(j, k) = coef(1, 2);
+                end
+            end
+
+            subplot(pair_len, 3, 3 * (t_i - 1) + p_i)
+            imagesc(w_coefs);
+            colorbar;
+            title(paired_titles{p_i});
+            xlabel('L -> R'); ylabel('L -> R');
+        end
     end
-end
-saveas(gcf, sprintf('source_%d.png', source_id));
-figure;
+    saveas(gcf, sprintf('source_%d.png', source_id));
+    figure;
 end
