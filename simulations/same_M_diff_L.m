@@ -30,6 +30,7 @@ end
 % Use M from real data
 cfg_data = [];
 cfg_data.use_adr_data = 0;
+cfg_data.removeInterneurons = 1;
 [Q] = prepare_all_Q(cfg_data);
 
 data = Q;
@@ -126,3 +127,51 @@ end
 %     sim_predicted_Q{s_i}.left = sim_predicted_Q_mat{s_i}(:, 1:48);
 %     sim_predicted_Q{s_i}.right = sim_predicted_Q_mat{s_i}(:, 49:end);
 % end
+
+%% Cell-by-cell correlation
+mean_coefs = zeros(length(sim_data), length(sim_data));
+std_coefs = zeros(length(sim_data), length(sim_data));
+for i = 1:length(sim_data)
+    whiten_left = sim_data{i}.left + 0.001 * rand(size(sim_data{i}.left));
+    for j = 1:length(sim_data)
+        if ~isnan(out_predicted_data_mat{j, i})
+            whiten_right = out_predicted_data_mat{j, i} + 0.001 * rand(size(out_predicted_data_mat{j, i}));
+            cell_coefs = zeros(size(whiten_left, 1), 1);
+            for k = 1:size(whiten_left, 1)
+                [coef] = corrcoef(whiten_left(k, :), whiten_right(k, :));
+                cell_coefs(k) = coef(1, 2);
+            end
+            mean_coefs(j, i) = mean(cell_coefs, 'omitnan');
+            std_coefs(j, i) = std(cell_coefs, 'omitnan');
+        end
+    end
+end
+
+errorbar(1:numel(mean_coefs), mean_coefs(:), std_coefs(:));
+xlabel('corrcoefs'); ylabel('sessions')
+
+%% Population Vector Analysis (PVA)
+coefs = cell(length(sim_data), length(sim_data));
+w_len = size(sim_data{1}.left, 2) * 2;
+for i = 1:length(sim_data)
+    for c_i = 1:length(sim_data)
+        if ~isnan(out_predicted_data_mat{c_i, i})
+            w_coefs = zeros(w_len, w_len);
+            corr_data = [sim_data{i}.left, out_predicted_data_mat{c_i, i}];
+            for j = 1:w_len
+                for k = 1:w_len
+                    [coef] = corrcoef(corr_data(:, j), corr_data(:, k));
+                    w_coefs(j, k) = coef(1, 2);
+                end
+            end
+            coefs{c_i, i} = w_coefs;
+            imagesc(w_coefs);
+            saveas(gcf, sprintf('PV_%d_%d.png', c_i, i));
+        end
+    end
+end
+mean_coefs = mean(cat(3, coefs{:}), 3, 'omitnan');
+
+imagesc(mean_coefs);
+colorbar;
+xlabel('L -> R'); ylabel('L -> R');
