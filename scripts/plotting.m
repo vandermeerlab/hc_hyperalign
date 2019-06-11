@@ -51,8 +51,8 @@ xlabel('Target Sessions');
 % set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 35);
 
 subplot(2, 2, 3);
-binsize = 25;
-bin_edges = round(min(out_actual_mean_sf(:)), -2):binsize:round(max(out_actual_mean_sf(:)), -2);
+binsize = 10;
+bin_edges = round(min(out_actual_mean_sf(:)), -1):binsize:round(max(out_actual_mean_sf(:)), -1);
 bin_centers = bin_edges(1:end-1) + binsize ./ 2;
 this_h = histc(out_actual_mean_sf(:), bin_edges);
 
