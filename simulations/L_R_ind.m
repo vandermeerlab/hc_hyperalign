@@ -34,9 +34,9 @@ for q_i = 1:19
         end
     end
 
-    cfg_data.removeCorrelations = 'pos_and_neg';
-    cfg_data.removeNaNFiring = true;
-    Q = remove_corr_cells(cfg_data, Q);
+%     cfg_data.removeCorrelations = 'pos_and_neg';
+%     cfg_data.removeNaNFiring = true;
+%     Q = remove_corr_cells(cfg_data, Q);
 
     % Different normalization.
     % Ind. normalization

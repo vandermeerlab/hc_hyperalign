@@ -26,7 +26,7 @@ end
 errorbar(1:length(mean_coefs), mean_coefs, std_coefs);
 title('Cell-by-cell correlation coefficients (averaged) in each session');
 
-%% Location-by-location (time-by-time) analysis
+%% Population Vector analysis
 data = Q;
 data = cellfun(@(x) [x.left, x.right], data, 'UniformOutput', false);
 coefs = cell(1, length(data));
@@ -46,7 +46,7 @@ end
 mean_coefs = mean(cat(3, coefs{:}), 3);
 imagesc(mean_coefs);
 colorbar;
-title('Time-by-time correlation coefficients (from L to R)')
+title('Population Vector coefficients (from L to R)')
 
 %% Create figures for each session
 for p_i = 1:length(data)

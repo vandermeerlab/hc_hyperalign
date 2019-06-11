@@ -1,6 +1,7 @@
 %% Get Q inputs.
 cfg_data = [];
 cfg_data.use_adr_data = 0;
+cfg_data.removeInterneurons = 1;
 [Q] = prepare_all_Q(cfg_data);
 % Remove cells that are significantly correlated between L and R.
 % cfg_data.removeCorrelations = 'pos';
@@ -16,7 +17,7 @@ data = Q;
 cfg_pre = [];
 cfg_pre.hyperalign_all = false;
 cfg_pre.predict_target = 'Q';
-cfg_pre.normalization = 'sub_mean';
+cfg_pre.normalization = 'none';
 cfg_pre.dist_dim = 'all';
 [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R(cfg_pre, data);
 

@@ -1,6 +1,7 @@
 %$ Get Q inputs.
 cfg_data = [];
 cfg_data.use_adr_data = 0;
+cfg_data.removeInterneurons = 1;
 [Q] = prepare_all_Q(cfg_data);
 
 %% Get TC inputs.
