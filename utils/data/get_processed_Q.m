@@ -20,11 +20,11 @@ function [Q] = get_processed_Q(cfg_in, session_path)
         cfg_spikes = {};
         cfg_spikes.load_questionable_cells = 1;
         S = LoadSpikes(cfg_spikes);
-        if cfg.removeInterneurons
-            cfg_temp = []; cfg_temp.showFRhist = 0;
-            csc = LoadCSC([]);
-            S = RemoveInterneuronsHC(cfg_temp,S, csc);
-        end
+        % if cfg.removeInterneurons
+        %     cfg_temp = []; cfg_temp.showFRhist = 0;
+        %     csc = LoadCSC([]);
+        %     S = RemoveInterneuronsHC(cfg_temp,S, csc);
+        % end
     end
 
     % The end times of left and right trials.
