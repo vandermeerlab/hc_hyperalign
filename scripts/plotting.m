@@ -83,13 +83,8 @@ title(sprintf('Welch’s t-test: %.2f (%.2f %%), Binomial CDF: %.2f %%', t_h, t_
 
 %% Create Q figures
 for p_i = 1:length(Q)
-%     subplot(2, 1, 1)
     imagesc([Q{p_i}.left, Q{p_i}.right]);
     colorbar;
-%     subplot(2, 1, 2)
-%     Q_norm{p_i} = normalize_Q('sub_mean', Q{p_i});
-%     imagesc([Q2{p_i}.left, Q2{p_i}.right]);
-%     colorbar;
     saveas(gcf, sprintf('Q_%d.jpg', p_i));
 end
 
@@ -292,7 +287,7 @@ for n_i = 1:length(norm_inputs)
     xlabel('corrcoefs'); ylabel('sessions')
 end
 
-%% Location-by-location (time-by-time) analysis
+%% Population Vector analysis
 norm_inputs = {Q, Q_norm_ind, Q_norm_concat, Q_norm_sub};
 for n_i = 1:length(norm_inputs)
     data = norm_inputs{n_i};
