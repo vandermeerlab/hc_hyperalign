@@ -2,7 +2,7 @@
 w_len = 48;
 % Or last 41 bins (after all choice points) for TC
 % w_len = 41;
-rng(mean('hyperalignment'));
+rng(mean('mvdmlab'));
 sim_data = cell(1, 19);
 % Make two Qs - first: source, second: target
 for s_i = 1:length(sim_data)
@@ -147,8 +147,8 @@ for i = 1:length(sim_data)
     end
 end
 
-errorbar(1:numel(mean_coefs), mean_coefs(:), std_coefs(:));
-xlabel('corrcoefs'); ylabel('sessions')
+errorbar(1:length(mean_coefs), mean(mean_coefs, 1), mean(std_coefs, 1));
+xlabel('sessions'); ylabel('coefs')
 
 %% Population Vector Analysis (PVA)
 coefs = cell(length(sim_data), length(sim_data));
@@ -165,8 +165,8 @@ for i = 1:length(sim_data)
                 end
             end
             coefs{c_i, i} = w_coefs;
-            imagesc(w_coefs);
-            saveas(gcf, sprintf('PV_%d_%d.png', c_i, i));
+%             imagesc(w_coefs);
+%             saveas(gcf, sprintf('PV_%d_%d.png', c_i, i));
         end
     end
 end
