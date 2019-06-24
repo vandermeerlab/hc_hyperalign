@@ -14,9 +14,12 @@ mean_coefs = zeros(1, length(data));
 std_coefs = zeros(1, length(data));
 
 for i = 1:length(data)
+    whiten_left = data{i}.left + 0.00001 * rand(size(data{i}.left));
+    whiten_right = data{i}.right + 0.00001 * rand(size(data{i}.right));
+
     cell_coefs = zeros(size(data{i}.left, 1), 1);
-    for j = 1:size(data{i}.left, 1)
-        [coef] = corrcoef(data{i}.left(j, :), data{i}.right(j, :));
+    for j = 1:size(whiten_left, 1)
+        [coef] = corrcoef(whiten_left(j, :), whiten_right(j, :));
         cell_coefs(j) = coef(1, 2);
     end
     mean_coefs(i) = mean(cell_coefs, 'omitnan');

@@ -287,6 +287,41 @@ for n_i = 1:length(norm_inputs)
     xlabel('corrcoefs'); ylabel('sessions')
 end
 
+%% Cell-by-cell correlations across subjects
+corr_inputs = {Q_xor, Q_ind, Q_same_mu, Q};
+corr_types = {'x-or', 'L R ind.', 'L R ind. (same μ)', 'Real data'};
+
+mean_coefs_types = zeros(length(corr_inputs), 1);
+sem_coefs_types = zeros(length(corr_inputs), 1);
+for n_i = 1:length(corr_inputs)
+    data = corr_inputs{n_i};
+    sub_ids_start = [1, 5, 10, 12];
+    sub_ids_end = [4, 9, 11, 19];
+    mean_coefs = zeros(1, length(sub_ids_start));
+
+    for s_i = 1:length(sub_ids_start)
+        cell_coefs = [];
+        for w_i = sub_ids_start(s_i):sub_ids_end(s_i)
+            whiten_left = data{w_i}.left + 0.00001 * rand(size(data{w_i}.left));
+            whiten_right = data{w_i}.right + 0.00001 * rand(size(data{w_i}.right));
+
+            for c_i = 1:size(data{w_i}.left, 1)
+                [coef] = corrcoef(whiten_left(c_i, :), whiten_right(c_i, :));
+                cell_coefs = [cell_coefs, coef(1, 2)];
+            end
+        end
+        mean_coefs(s_i) = mean(cell_coefs, 'omitnan');
+    end
+    mean_coefs_types(n_i) = mean(mean_coefs);
+    sem_coefs_types(n_i) = std(mean_coefs) / sqrt(length(mean_coefs));
+end
+
+errorbar(1:length(corr_inputs), mean_coefs_types, sem_coefs_types, 'LineStyle', 'none');
+hold on;
+plot(1:length(corr_inputs), mean_coefs_types, '.', 'MarkerSize', 20);
+set(gca, 'XTick', 1:4, 'XTickLabel', corr_types, 'XLim', [0.75 4.25]);
+title('Cell-by-cell correlation coefficients (averaged) across subjects');
+
 %% Population Vector analysis
 norm_inputs = {Q, Q_norm_ind, Q_norm_concat, Q_norm_sub};
 for n_i = 1:length(norm_inputs)
