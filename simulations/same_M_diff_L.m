@@ -27,11 +27,11 @@ for sim_i = 1:length(sim_data)
     [sim_proj_data{sim_i}, sim_eigvecs{sim_i}, sim_pca_mean{sim_i}] = perform_pca(sim_data{sim_i}, NumComponents);
 end
 
-% Use M from real data
-cfg_data = [];
-cfg_data.use_adr_data = 0;
-cfg_data.removeInterneurons = 1;
-[Q] = prepare_all_Q(cfg_data);
+% % Use M from real data
+% cfg_data = [];
+% cfg_data.use_adr_data = 0;
+% cfg_data.removeInterneurons = 1;
+% [Q] = prepare_all_Q(cfg_data);
 
 data = Q;
 

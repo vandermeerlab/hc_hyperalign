@@ -203,17 +203,18 @@ end
 
 %% Hyperalignment procedure
 rng(mean('hyperalignment'));
-for nm_i = 1:length(norm_methods)
+for nm_i = 1:length(hyper_types)
+    data = hyper_inputs{nm_i};
     cfg_pre = [];
-    cfg_pre.normalization = norm_methods{nm_i};
-    [actual_dists_mat, id_dists_mat] = predict_with_L_R(cfg_pre, Q);
+    cfg_pre.normalization = 'none';
+    [actual_dists_mat, id_dists_mat] = predict_with_L_R(cfg_pre, data);
 
     n_shuffles = 1000;
-    sf_dists_mat  = zeros(length(Q), length(Q), n_shuffles);
+    sf_dists_mat  = zeros(length(data), length(data), n_shuffles);
 
     for i = 1:n_shuffles
         cfg_pre.shuffled = 1;
-        [s_actual_dists_mat] = predict_with_L_R(cfg_pre, Q);
+        [s_actual_dists_mat] = predict_with_L_R(cfg_pre, data);
         sf_dists_mat(:, :, i) = s_actual_dists_mat;
     end
 
@@ -263,15 +264,16 @@ end
 
 % Summary of correlation results
 %% Cell-by-cell correlation
-norm_inputs = {Q, Q_norm_ind, Q_norm_concat, Q_norm_sub};
-for n_i = 1:length(norm_inputs)
-    data = norm_inputs{n_i};
+corr_inputs = {Q_xor, Q_same_mu, Q};
+corr_types = {'x-or', 'L R ind. (same μ)', 'Real data'};
+for n_i = 1:length(corr_inputs)
+    data = corr_inputs{n_i};
     mean_coefs = zeros(1, length(data));
     std_coefs = zeros(1, length(data));
 
     for i = 1:length(data)
-        whiten_left = data{i}.left + 0.001 * rand(size(data{i}.left));
-        whiten_right = data{i}.right + 0.001 * rand(size(data{i}.right));
+        whiten_left = data{i}.left + 0.00001 * rand(size(data{i}.left));
+        whiten_right = data{i}.right + 0.00001 * rand(size(data{i}.right));
 
         cell_coefs = zeros(size(whiten_left, 1), 1);
         for j = 1:size(whiten_left, 1)
@@ -282,17 +284,20 @@ for n_i = 1:length(norm_inputs)
         std_coefs(i) = std(cell_coefs, 'omitnan');
     end
 
-    subplot(3, 4, 4 + n_i)
+    subplot(2, 3, n_i)
     errorbar(1:length(mean_coefs), mean_coefs, std_coefs);
-    xlabel('corrcoefs'); ylabel('sessions')
+    xlabel('sessions'); ylabel('corrcoefs')
+    title(corr_types{n_i});
 end
 
 %% Cell-by-cell correlations across subjects
+rng(mean('hyperalignment'));
 corr_inputs = {Q_xor, Q_ind, Q_same_mu, Q};
-corr_types = {'x-or', 'L R ind.', 'L R ind. (same μ)', 'Real data'};
+corr_types = {'x-or', 'ind.', 'ind.\\(same $\mu$)', 'data'};
 
 mean_coefs_types = zeros(length(corr_inputs), 1);
-sem_coefs_types = zeros(length(corr_inputs), 1);
+% sem_coefs_types = zeros(length(corr_inputs), 1);
+sd_coefs_types = zeros(length(corr_inputs), 1);
 for n_i = 1:length(corr_inputs)
     data = corr_inputs{n_i};
     sub_ids_start = [1, 5, 10, 12];
@@ -313,19 +318,31 @@ for n_i = 1:length(corr_inputs)
         mean_coefs(s_i) = mean(cell_coefs, 'omitnan');
     end
     mean_coefs_types(n_i) = mean(mean_coefs);
-    sem_coefs_types(n_i) = std(mean_coefs) / sqrt(length(mean_coefs));
+    % sem_coefs_types(n_i) = std(mean_coefs) / sqrt(length(mean_coefs));
+    sd_coefs_types(n_i) = std(mean_coefs);
 end
 
-errorbar(1:length(corr_inputs), mean_coefs_types, sem_coefs_types, 'LineStyle', 'none');
+figure; subplot(231);
+
+dx = 0.1;
+x = dx * (1:length(corr_inputs));
+xpad = 0.05;
+h = errorbar(x, mean_coefs_types, sd_coefs_types, 'LineStyle', 'none', 'LineWidth', 2);
+set(h, 'Color', 'k');
 hold on;
-plot(1:length(corr_inputs), mean_coefs_types, '.', 'MarkerSize', 20);
-set(gca, 'XTick', 1:4, 'XTickLabel', corr_types, 'XLim', [0.75 4.25]);
+plot(x, mean_coefs_types, '.k', 'MarkerSize', 20);
+set(gca, 'TickLabelInterpreter', 'latex');
+set(gca, 'XTick', x, 'YTick', [-0.05:0.1:0.3], 'XTickLabel', corr_types, ...
+    'XLim', [x(1)-xpad x(end)+xpad], 'YLim', [-0.05 0.3], 'FontSize', 24, ...
+    'LineWidth', 1, 'TickDir', 'out');
 title('Cell-by-cell correlation coefficients (averaged) across subjects');
+box off;
+plot([x(1)-xpad x(end)+xpad], [0 0], '--k', 'LineWidth', 1, 'Color', [0.7 0.7 0.7]);
 
 %% Population Vector analysis
-norm_inputs = {Q, Q_norm_ind, Q_norm_concat, Q_norm_sub};
-for n_i = 1:length(norm_inputs)
-    data = norm_inputs{n_i};
+corr_inputs = {Q, Q_adr, Q_xor, Q_ind, Q_same_mu};
+for n_i = 1:length(corr_inputs)
+    data = corr_inputs{n_i};
     data = cellfun(@(x) [x.left, x.right], data, 'UniformOutput', false);
     coefs = cell(1, length(data));
 
@@ -342,34 +359,41 @@ for n_i = 1:length(norm_inputs)
     end
 
     mean_coefs = mean(cat(3, coefs{:}), 3);
-    subplot(3, 4, 8 + n_i)
+    subplot(2, 3, 1 + n_i)
     imagesc(mean_coefs);
     colorbar;
+    this_scale = [-0.25 1]; caxis(this_scale);
     xlabel('L -> R'); ylabel('L -> R');
 end
 
 %% Cell-by-cell correlations for all sessions in data, group by significant or not
-data = Q;
-sig_coefs = [];
-insig_coefs = [];
+corr_inputs = {Q_xor, Q_same_mu, Q};
+corr_types = {'x-or', 'L R ind. (same μ)', 'Real data'};
+for n_i = 1:length(corr_inputs)
+    data = corr_inputs{n_i};
+    sig_coefs = [];
+    insig_coefs = [];
 
-for i = 1:length(data)
-    whiten_left = data{i}.left; % + 0.001 * rand(size(data{i}.left));
-    whiten_right = data{i}.right; %+ 0.001 * rand(size(data{i}.right));
-    for j = 1:size(data{i}.left, 1)
-        [coef, p] = corrcoef(whiten_left(j, :), whiten_right(j, :));
-        if p(1, 2) < 0.05
-            sig_coefs = [sig_coefs, coef(1, 2)];
-        else
-            insig_coefs = [insig_coefs, coef(1, 2)];
+    for i = 1:length(data)
+        whiten_left = data{i}.left  + 0.00001 * rand(size(data{i}.left));
+        whiten_right = data{i}.right  + 0.00001 * rand(size(data{i}.right));
+        for j = 1:size(data{i}.left, 1)
+            [coef, p] = corrcoef(whiten_left(j, :), whiten_right(j, :));
+            if p(1, 2) < 0.05
+                sig_coefs = [sig_coefs, coef(1, 2)];
+            else
+                insig_coefs = [insig_coefs, coef(1, 2)];
+            end
         end
     end
-end
 
-histogram(sig_coefs, 20);
-hold on;
-histogram(insig_coefs, 20);
-legend('Significant', 'Insignificant');
+    subplot(1, 3, n_i)
+    histogram(sig_coefs, 20);
+    hold on;
+    histogram(insig_coefs, 20);
+    legend('Significant', 'Insignificant');
+    title(corr_types{n_i});
+end
 
 %% Cell-by-cell for [Source, Predicted, Target]
 for source_id = 1:length(Q)

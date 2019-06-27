@@ -37,12 +37,12 @@ function [Q] = get_processed_Q(cfg_in, session_path)
         L_tend = metadata.taskvars.trial_iv_L.tend; R_tend = metadata.taskvars.trial_iv_R.tend;
     end
 
-    tstart = [L_tstart; R_tstart];
+    % tstart = [L_tstart; R_tstart];
     tend = [L_tend; R_tend];
-    % tstart = tend - cfg.last_n_sec;
-    S_matched = restrict(S, tstart, tend);
+    tstart = tend - cfg.last_n_sec;
 
     % % Remove cells with insufficient spikes
+    % S_matched = restrict(S, tstart, tend);
     % spk_count = getSpikeCount([], S_matched);
     % cell_keep_idx = spk_count >= cfg.minSpikes;
     % S = SelectTS([], S, cell_keep_idx);
@@ -56,10 +56,10 @@ function [Q] = get_processed_Q(cfg_in, session_path)
 
     % Construct Q with a whole session
     Q_whole = MakeQfromS(cfg_Q, S);
-    % % Restrict Q with only matched trials
+    % Restrict Q with only matched trials
     [Q_L, Q_R] = get_last_n_sec_LR(Q_whole, L_tend, R_tend, cfg.last_n_sec);
     Q = aver_Q_acr_trials(Q_L, Q_R);
-    % if strcmp(cfg.normalization, 'all_sub_mean')
+    % if strcmp(cfg.normalization, 'norm_average')
     %     Q_matched = restrict(Q_whole, tstart, tend);
     %     % Q_matched.data = Q_matched.data - mean(Q_matched.data, 2);
     %     Q_matched.data = zscore(Q_matched.data, 0, 2);
