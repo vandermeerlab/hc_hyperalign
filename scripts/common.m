@@ -38,6 +38,9 @@ out_id_prop = sum(sum(out_actual_dists < out_id_dists)) / sum(sum(~isnan(out_act
 bino_p_mean = calculate_bino_p(sum(sum(out_actual_mean_sf < 0)), sum(sum(~isnan(out_actual_mean_sf))), 0.5);
 bino_p_id = calculate_bino_p(sum(sum(out_actual_dists < out_id_dists)), sum(sum(~isnan(out_actual_dists))), 0.5);
 
+% Signed rank test (zscore; two tailed)
+sr_p_zscore = signrank(out_zscore_mat(:), 0);
+
 %% Welch’s t-test on errors from M prediction and ID prediction
 cfg.use_adr_data = 0;
 out_actual_dists = set_withsubj_nan(cfg, actual_dists_mat);
