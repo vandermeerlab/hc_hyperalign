@@ -183,14 +183,16 @@ set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 40);
 
 % Summary of main results
 %% Plot example paired_inputs
-norm_inputs = {Q, Q_norm_ind, Q_norm_concat, Q_norm_sub};
-norm_methods = {'none', 'ind', 'concat', 'sub_mean'};
-for n_i = 1:length(norm_inputs)
-    subplot(3, 4, n_i)
-    imagesc([norm_inputs{n_i}{1}.left, norm_inputs{n_i}{1}.right]);
+% hyper_inputs = {Q, Q_norm_ind, Q_norm_concat, Q_norm_sub};
+% hyper_types = {'none', 'ind', 'concat', 'sub_mean'};
+hyper_inputs = {Q_norm_average_w_inter, Q_norm_average_wo_inter, Q_average_norm_w_inter, Q_average_norm_wo_inter};
+hyper_types = {'Norm\_then\_aver (inter)', 'Norm\_then\_aver (no inter)', 'Aver\_then\_norm (inter)', 'Aver\_then\_norm (no inter)'};
+for n_i = 1:length(hyper_inputs)
+    subplot(5, 4, n_i)
+    imagesc([hyper_inputs{n_i}{1}.left, hyper_inputs{n_i}{1}.right]);
     colorbar;
     % set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 40);
-    title(norm_methods{n_i});
+    title(hyper_types{n_i});
 end
 
 %% Hyperalignment procedure
