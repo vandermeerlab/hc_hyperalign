@@ -1,9 +1,16 @@
-%% Get Q inputs.
+%% Get Carey Q inputs.
 cfg_data = [];
 cfg_data.use_adr_data = 0;
 cfg_data.removeInterneurons = 0;
 % cfg_data.normalization = 'norm_average';
 [Q] = prepare_all_Q(cfg_data);
+
+%% Get ADR Q input
+cfg_data = [];
+cfg_data.use_adr_data = 1;
+cfg_data.removeInterneurons = 0;
+% cfg_data.normalization = 'norm_average';
+[adr_Q] = prepare_all_Q(cfg_data);
 
 % Remove cells that are significantly correlated between L and R.
 % cfg_data.removeCorrelations = 'pos';
