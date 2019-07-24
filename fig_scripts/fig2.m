@@ -5,7 +5,7 @@ data = Q;
 [actual_dists_mat, id_dists_mat, sf_dists_mat] = predict_with_shuffles([], data, @predict_with_L_R);
 [actual_dists_mat_pca, id_dists_mat_pca, sf_dists_mat_pca] = predict_with_shuffles([], data, @predict_with_L_R_pca);
 
-[z_score, mean_shuffles, proportion, M_ID] = calculate_common_metrics([], actual_dists_mat, ...
+[z_score, mean_shuffles, proportion] = calculate_common_metrics([], actual_dists_mat, ...
     id_dists_mat, sf_dists_mat);
 
 titles = {'Z-scores of HT', 'HT - mean of shuffled', 'Proportion > shuffled'};
@@ -22,14 +22,15 @@ end
 
 %% Hypertransform and PCA-only in Carey and ADR
 datas = {Q, adr_Q};
+color_themes = {'carey', 'adr'};
 for d_i = 1:length(datas)
     data = datas{d_i};
     [actual_dists_mat, id_dists_mat, sf_dists_mat] = predict_with_shuffles([], data, @predict_with_L_R);
     [actual_dists_mat_pca, id_dists_mat_pca, sf_dists_mat_pca] = predict_with_shuffles([], data, @predict_with_L_R_pca);
 
-    [z_score, mean_shuffles, proportion, M_ID] = calculate_common_metrics([], actual_dists_mat, ...
+    [z_score, mean_shuffles, proportion] = calculate_common_metrics([], actual_dists_mat, ...
     id_dists_mat, sf_dists_mat);
-    [z_score_pca, mean_shuffles_pca, proportion_pca, M_ID_pca] = calculate_common_metrics([], actual_dists_mat_pca, id_dists_mat_pca, sf_dists_mat_pca);
+    [z_score_pca, mean_shuffles_pca, proportion_pca] = calculate_common_metrics([], actual_dists_mat_pca, id_dists_mat_pca, sf_dists_mat_pca);
 
     binsizes = {1, 100, 0.1};
     matrix_objs = {{z_score_pca.out_zscore_mat, z_score.out_zscore_mat}, ...
@@ -46,8 +47,8 @@ for d_i = 1:length(datas)
             bin_edges = cellfun(@(x) floor(min(x(:))):binsize:ceil(max(x(:))), matrix_obj, 'UniformOutput', false);
         end
         bin_centers = cellfun(@(x) x(1:end-1) + binsize ./ 2, bin_edges, 'UniformOutput', false);
-        hist_colors = {colors.carey.pca.hist, colors.carey.HT.hist};
-        fit_colors = {colors.carey.pca.fit, colors.carey.HT.fit};
+        hist_colors = {colors.(color_themes{d_i}).pca.hist, colors.(color_themes{d_i}).HT.hist};
+        fit_colors = {colors.(color_themes{d_i}).pca.fit, colors.(color_themes{d_i}).HT.fit};
 
         for h_i = 1:length(matrix_obj)
             % histogram
