@@ -1,0 +1,128 @@
+rng(mean('hyperalignment'));
+colors = get_hyper_colors();
+
+% Correlation analysis in Carey and ADR
+datas = {Q, adr_Q};
+themes = {'carey', 'adr'};
+
+%% Cell-by-cell correlation across subjects
+mean_coefs_types = zeros(length(datas), 1);
+% sem_coefs_types = zeros(length(datas), 1);
+sd_coefs_types = zeros(length(datas), 1);
+sub_ids_starts = {[1, 6, 8, 14], [1, 5, 10, 12]};
+sub_ids_ends = {[5, 7, 13, 19], [4, 9, 11, 14]};
+
+
+for d_i = 1:length(datas)
+    data = datas{d_i};
+    sub_ids_start = sub_ids_starts{d_i};
+    sub_ids_end = sub_ids_ends{d_i};
+    mean_coefs = zeros(1, length(sub_ids_start));
+
+    for s_i = 1:length(sub_ids_start)
+        cell_coefs = [];
+        for w_i = sub_ids_start(s_i):sub_ids_end(s_i)
+            whiten_left = data{w_i}.left + 0.00001 * rand(size(data{w_i}.left));
+            whiten_right = data{w_i}.right + 0.00001 * rand(size(data{w_i}.right));
+
+            for c_i = 1:size(data{w_i}.left, 1)
+                [coef] = corrcoef(whiten_left(c_i, :), whiten_right(c_i, :));
+                cell_coefs = [cell_coefs, coef(1, 2)];
+            end
+        end
+        mean_coefs(s_i) = mean(cell_coefs, 'omitnan');
+    end
+    mean_coefs_types(d_i) = mean(mean_coefs);
+    % sem_coefs_types(d_i) = std(mean_coefs) / sqrt(length(mean_coefs));
+    sd_coefs_types(d_i) = std(mean_coefs);
+end
+
+figure; subplot(2, 3, 1);
+
+dx = 0.1;
+x = dx * (1:length(datas));
+xpad = 0.05;
+h = errorbar(x, mean_coefs_types, sd_coefs_types, 'LineStyle', 'none', 'LineWidth', 2);
+set(h, 'Color', 'k');
+hold on;
+plot(x, mean_coefs_types, '.k', 'MarkerSize', 20);
+set(gca, 'TickLabelInterpreter', 'latex');
+set(gca, 'XTick', x, 'YTick', [-0.05:0.1:0.3], 'XTickLabel', themes, ...
+    'XLim', [x(1)-xpad x(end)+xpad], 'YLim', [-0.05 0.3], 'FontSize', 24, ...
+    'LineWidth', 1, 'TickDir', 'out');
+title('Cell-by-cell correlation coefficients (averaged) across subjects');
+box off;
+plot([x(1)-xpad x(end)+xpad], [0 0], '--k', 'LineWidth', 1, 'Color', [0.7 0.7 0.7]);
+
+%% Population Vector analysis
+for d_i = 1:length(datas)
+    data = datas{d_i};
+    data = cellfun(@(x) [x.left, x.right], data, 'UniformOutput', false);
+    coefs = cell(1, length(data));
+
+    w_len = size(data{1}, 2);
+    for i = 1:length(data)
+        w_coefs = zeros(w_len, w_len);
+        for j = 1:w_len
+            for k = 1:w_len
+                [coef] = corrcoef(data{i}(:, j), data{i}(:, k));
+                w_coefs(j, k) = coef(1, 2);
+            end
+        end
+        coefs{i} = w_coefs;
+    end
+
+    mean_coefs = mean(cat(3, coefs{:}), 3);
+    subplot(2, 3, 1 + d_i)
+    imagesc(mean_coefs);
+    colorbar;
+    this_scale = [-0.25 1]; caxis(this_scale);
+    xlabel('L -> R'); ylabel('L -> R');
+end
+
+%% ID prediction in Carey and ADR
+for d_i = 1:length(datas)
+    data = datas{d_i};
+    [actual_dists_mat, id_dists_mat, sf_dists_mat] = predict_with_shuffles([], data, @predict_with_L_R);
+
+    [z_score, mean_shuffles, proportion, M_ID] = calculate_common_metrics([], actual_dists_mat, ...
+    id_dists_mat, sf_dists_mat);
+
+    subplot(3, 3, 4 + d_i);
+    matrix_obj = {M_ID.out_M_ID};
+    binsize = 100;
+    bin_edges = cellfun(@(x) round(min(x(:)), -2):binsize:round(max(x(:)), -2), matrix_obj, 'UniformOutput', false);
+    bin_centers = cellfun(@(x) x(1:end-1) + binsize ./ 2, bin_edges, 'UniformOutput', false);
+    hist_colors = {colors.(themes{d_i}).ID.hist};
+    fit_colors = {colors.(themes{d_i}).ID.fit};
+
+    for h_i = 1:length(matrix_obj)
+        % histogram
+        this_h = histcounts(matrix_obj{h_i}(:), bin_edges{h_i});
+        bar(bin_centers{h_i}, this_h, 'FaceColor', hist_colors{h_i}, 'FaceAlpha', 0.8, 'EdgeColor', 'none');
+        hold on;
+    end
+
+    % Find the bins with largest length so the fitting could span the whole range.
+    [max_v, max_i] = max(cellfun(@length, bin_centers));
+    for f_i = 1:length(matrix_obj)
+        % fit
+        pd = fitdist(matrix_obj{f_i}(:), 'Normal');
+        fitted_range = bin_centers{max_i}(1):(binsize):bin_centers{max_i}(end);
+        pd_values = pdf(pd, fitted_range);
+%         pd_values = pd_values / sum(pd_values);
+        fitted_values = pd_values * sum(sum(~isnan(matrix_obj{f_i})));
+        fit_plots{f_i} = plot(fitted_range, fitted_values, 'Color', fit_colors{f_i}, 'LineWidth', 1);
+        hold on;
+        m_metric = median(matrix_obj{f_i}(:), 'omitnan');
+        line([m_metric, m_metric], ylim, 'LineWidth', 1, 'Color', fit_colors{f_i}, 'LineStyle', '--')
+        hold on;
+    end
+
+    line([0, 0], ylim, 'LineWidth', 1, 'Color', 'black')
+    legend([fit_plots{1}], {themes{d_i}}, 'FontSize', 12)
+    legend boxoff
+    box off
+    ylabel('# of pairs');
+    set(gca, 'yticklabel', [], 'FontSize', 24)
+end
