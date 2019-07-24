@@ -22,7 +22,7 @@ end
 
 %% Hypertransform and PCA-only in Carey and ADR
 datas = {Q, adr_Q};
-color_themes = {'carey', 'adr'};
+themes = {'carey', 'adr'};
 for d_i = 1:length(datas)
     data = datas{d_i};
     [actual_dists_mat, id_dists_mat, sf_dists_mat] = predict_with_shuffles([], data, @predict_with_L_R);
@@ -47,8 +47,8 @@ for d_i = 1:length(datas)
             bin_edges = cellfun(@(x) floor(min(x(:))):binsize:ceil(max(x(:))), matrix_obj, 'UniformOutput', false);
         end
         bin_centers = cellfun(@(x) x(1:end-1) + binsize ./ 2, bin_edges, 'UniformOutput', false);
-        hist_colors = {colors.(color_themes{d_i}).pca.hist, colors.(color_themes{d_i}).HT.hist};
-        fit_colors = {colors.(color_themes{d_i}).pca.fit, colors.(color_themes{d_i}).HT.fit};
+        hist_colors = {colors.(themes{d_i}).pca.hist, colors.(themes{d_i}).HT.hist};
+        fit_colors = {colors.(themes{d_i}).pca.fit, colors.(themes{d_i}).HT.fit};
 
         for h_i = 1:length(matrix_obj)
             % histogram
