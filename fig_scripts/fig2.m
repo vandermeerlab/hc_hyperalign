@@ -62,11 +62,13 @@ for d_i = 1:length(datas)
 
         for f_i = 1:length(matrix_obj)
             % fit
+            smoothing_factor = 10;
             pd = fitdist(matrix_obj{f_i}(:), 'Normal');
-            fitted_range = bin_centers{max_i}(1):(binsize):bin_centers{max_i}(end);
+            fitted_range = bin_centers{max_i}(1):(binsize/smoothing_factor):bin_centers{max_i}(end);
             pd_values = pdf(pd, fitted_range);
+            % Normalize PDF
             pd_values = pd_values / sum(pd_values);
-            fitted_values = pd_values * sum(sum(~isnan(matrix_obj{f_i})));
+            fitted_values = pd_values * sum(sum(~isnan(matrix_obj{f_i}))) * smoothing_factor;
             fit_plots{f_i} = plot(fitted_range, fitted_values, 'Color', fit_colors{f_i}, 'LineWidth', 1);
             hold on;
             if m_i ~= 3
