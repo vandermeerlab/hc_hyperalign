@@ -3,7 +3,6 @@ colors = get_hyper_colors();
 %% Source-target figures in Carey
 data = Q;
 [actual_dists_mat, id_dists_mat, sf_dists_mat] = predict_with_shuffles([], data, @predict_with_L_R);
-[actual_dists_mat_pca, id_dists_mat_pca, sf_dists_mat_pca] = predict_with_shuffles([], data, @predict_with_L_R_pca);
 
 [z_score, mean_shuffles, proportion] = calculate_common_metrics([], actual_dists_mat, ...
     id_dists_mat, sf_dists_mat);
@@ -22,7 +21,7 @@ end
 
 %% Hypertransform and PCA-only in Carey and ADR
 datas = {Q, adr_Q};
-themes = {'carey', 'adr'};
+% themes = {'Carey', 'ADR'};
 for d_i = 1:length(datas)
     data = datas{d_i};
     [actual_dists_mat, id_dists_mat, sf_dists_mat] = predict_with_shuffles([], data, @predict_with_L_R);
@@ -32,7 +31,7 @@ for d_i = 1:length(datas)
     id_dists_mat, sf_dists_mat);
     [z_score_pca, mean_shuffles_pca, proportion_pca] = calculate_common_metrics([], actual_dists_mat_pca, id_dists_mat_pca, sf_dists_mat_pca);
 
-    binsizes = {1, 100, 0.1};
+    binsizes = {1, 0.1, 0.1};
     matrix_objs = {{z_score_pca.out_zscore_mat, z_score.out_zscore_mat}, ...
         {mean_shuffles_pca.out_actual_mean_sf, mean_shuffles.out_actual_mean_sf}, ...
         {proportion_pca.out_actual_sf_mat, proportion.out_actual_sf_mat}};
@@ -41,24 +40,27 @@ for d_i = 1:length(datas)
         subplot(3, 3, (3 * d_i) + m_i);
         matrix_obj = matrix_objs{m_i};
         binsize = binsizes{m_i};
-        if m_i == 2
-            bin_edges = cellfun(@(x) round(min(x(:)), -2):binsize:round(max(x(:)), -2), matrix_obj, 'UniformOutput', false);
-        else
-            bin_edges = cellfun(@(x) floor(min(x(:))):binsize:ceil(max(x(:))), matrix_obj, 'UniformOutput', false);
-        end
+%         if m_i == 2
+%             bin_edges = cellfun(@(x) round(min(x(:)), -2):binsize:round(max(x(:)), -2), matrix_obj, 'UniformOutput', false);
+%         else
+%             bin_edges = cellfun(@(x) floor(min(x(:))):binsize:ceil(max(x(:))), matrix_obj, 'UniformOutput', false);
+%         end
+        bin_edges = cellfun(@(x) floor(min(x(:))):binsize:ceil(max(x(:))), matrix_obj, 'UniformOutput', false);
         bin_centers = cellfun(@(x) x(1:end-1) + binsize ./ 2, bin_edges, 'UniformOutput', false);
-        hist_colors = {colors.(themes{d_i}).pca.hist, colors.(themes{d_i}).HT.hist};
-        fit_colors = {colors.(themes{d_i}).pca.fit, colors.(themes{d_i}).HT.fit};
+        hist_colors = {colors.pca.hist, colors.HT.hist};
+        fit_colors = {colors.pca.fit, colors.HT.fit};
 
+        % Find the bins with largest length so both bin ranges can be covered.
+        [max_v, max_i] = max(cellfun(@length, bin_centers));
         for h_i = 1:length(matrix_obj)
             % histogram
-            this_h = histcounts(matrix_obj{h_i}(:), bin_edges{h_i});
-            bar(bin_centers{h_i}, this_h, 'FaceColor', hist_colors{h_i}, 'FaceAlpha', 0.8, 'EdgeColor', 'none');
+            hists{h_i} = histcounts(matrix_obj{h_i}(:), bin_edges{max_i});
+%             bar(bin_centers{h_i}, this_h, 'FaceColor', hist_colors{h_i}, 'FaceAlpha', 0.8, 'EdgeColor', 'none');
             hold on;
         end
-
-        % Find the bins with largest length so the fitting could span the whole range.
-        [max_v, max_i] = max(cellfun(@length, bin_centers));
+        hdl = bar(bin_centers{max_i}, [hists{1}; hists{2}]', 'grouped');
+        set(hdl(1), 'FaceColor', hist_colors{1}, 'EdgeColor', 'none');
+        set(hdl(2), 'FaceColor', hist_colors{2}, 'EdgeColor', 'none');
 
         for f_i = 1:length(matrix_obj)
             % fit
@@ -66,7 +68,7 @@ for d_i = 1:length(datas)
             pd = fitdist(matrix_obj{f_i}(:), 'Normal');
             fitted_range = bin_centers{max_i}(1):(binsize/smoothing_factor):bin_centers{max_i}(end);
             pd_values = pdf(pd, fitted_range);
-            % Normalize PDF
+            % normalize pdf
             pd_values = pd_values / sum(pd_values);
             fitted_values = pd_values * sum(sum(~isnan(matrix_obj{f_i}))) * smoothing_factor;
             fit_plots{f_i} = plot(fitted_range, fitted_values, 'Color', fit_colors{f_i}, 'LineWidth', 1);
@@ -81,10 +83,10 @@ for d_i = 1:length(datas)
         if m_i ~= 3
             line([0, 0], ylim, 'LineWidth', 1, 'Color', 'black')
         end
-        legend([fit_plots{2}, fit_plots{1}], {'Hypertransform','PCA - only'}, 'FontSize', 12)
+        legend([fit_plots{2}, fit_plots{1}], {'Hypertransform','PCA - only'}, 'FontSize', 24)
         legend boxoff
         box off
         ylabel('# of pairs');
-        set(gca, 'yticklabel', [], 'FontSize', 24)
+        set(gca, 'yticklabel', [], 'FontSize', 24);
     end
 end

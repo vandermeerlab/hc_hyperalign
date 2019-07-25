@@ -26,13 +26,15 @@ function [z_score, mean_shuffles, proportion, M_ID] = calculate_common_metrics(c
     %% Matrix of differences between actual distance (identity distance) and mean of shuffled distance.
     actual_mean_sf = actual_dists_mat - mean(sf_dists_mat, 3);
     out_actual_mean_sf = set_withsubj_nan(cfg, actual_mean_sf);
-    mean_shuffles.out_actual_mean_sf = out_actual_mean_sf;
 
     % Proportion of distance obtained from M smaller than mean of shuffled distance.
     mean_shuffles.out_actual_mean_sf_prop = sum(sum(out_actual_mean_sf < 0)) / sum(sum(~isnan(out_actual_mean_sf)));
-
     % Binomial stats
     mean_shuffles.bino_p_mean = calculate_bino_p(sum(sum(out_actual_mean_sf < 0)), sum(sum(~isnan(out_actual_mean_sf))), 0.5);
+    % Normalize into 0 to 1
+    % norm_mean_sf = out_actual_mean_sf - min(out_actual_mean_sf(:));
+    norm_mean_sf = out_actual_mean_sf;
+    mean_shuffles.out_actual_mean_sf = norm_mean_sf / (max(norm_mean_sf(:)) - min(norm_mean_sf(:)));
 
     %% Proportion of actual distance and identity distance smaller than shuffled distances
     actual_sf_mat = sum(actual_dists_mat < sf_dists_mat, 3);
