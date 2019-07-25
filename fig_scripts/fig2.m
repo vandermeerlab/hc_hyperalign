@@ -62,28 +62,30 @@ for d_i = 1:length(datas)
         set(hdl(1), 'FaceColor', hist_colors{1}, 'EdgeColor', 'none');
         set(hdl(2), 'FaceColor', hist_colors{2}, 'EdgeColor', 'none');
 
-        for f_i = 1:length(matrix_obj)
-            % fit
-            smoothing_factor = 10;
-            pd = fitdist(matrix_obj{f_i}(:), 'Normal');
-            fitted_range = bin_centers{max_i}(1):(binsize/smoothing_factor):bin_centers{max_i}(end);
-            pd_values = pdf(pd, fitted_range);
-            % normalize pdf
-            pd_values = pd_values / sum(pd_values);
-            fitted_values = pd_values * sum(sum(~isnan(matrix_obj{f_i}))) * smoothing_factor;
-            fit_plots{f_i} = plot(fitted_range, fitted_values, 'Color', fit_colors{f_i}, 'LineWidth', 1);
-            hold on;
-            if m_i ~= 3
-                m_metric = median(matrix_obj{f_i}(:), 'omitnan');
-                line([m_metric, m_metric], ylim, 'LineWidth', 1, 'Color', fit_colors{f_i}, 'LineStyle', '--')
+        if m_i ~= 3
+            for f_i = 1:length(matrix_obj)
+                % fit
+                smoothing_factor = 10;
+                pd = fitdist(matrix_obj{f_i}(:), 'Normal');
+                fitted_range = bin_centers{max_i}(1):(binsize/smoothing_factor):bin_centers{max_i}(end);
+                pd_values = pdf(pd, fitted_range);
+                % normalize pdf
+                pd_values = pd_values / sum(pd_values);
+                fitted_values = pd_values * sum(sum(~isnan(matrix_obj{f_i}))) * smoothing_factor;
+                fit_plots{f_i} = plot(fitted_range, fitted_values, 'Color', fit_colors{f_i}, 'LineWidth', 1);
                 hold on;
+                if m_i ~= 3
+                    m_metric = median(matrix_obj{f_i}(:), 'omitnan');
+                    line([m_metric, m_metric], ylim, 'LineWidth', 1, 'Color', fit_colors{f_i}, 'LineStyle', '--')
+                    hold on;
+                end
             end
         end
 
         if m_i ~= 3
             line([0, 0], ylim, 'LineWidth', 1, 'Color', 'black')
         end
-        legend([fit_plots{2}, fit_plots{1}], {'Hypertransform','PCA - only'}, 'FontSize', 24)
+        legend([hdl(2), hdl(1)], {'Hypertransform','PCA - only'}, 'FontSize', 24)
         legend boxoff
         box off
         ylabel('# of pairs');
