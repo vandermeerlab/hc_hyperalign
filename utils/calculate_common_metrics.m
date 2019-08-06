@@ -33,8 +33,9 @@ function [z_score, mean_shuffles, proportion, M_ID] = calculate_common_metrics(c
     mean_shuffles.bino_p_mean = calculate_bino_p(sum(sum(out_actual_mean_sf < 0)), sum(sum(~isnan(out_actual_mean_sf))), 0.5);
     % Normalize into 0 to 1
     % norm_mean_sf = out_actual_mean_sf - min(out_actual_mean_sf(:));
-    norm_mean_sf = out_actual_mean_sf;
-    mean_shuffles.out_actual_mean_sf = norm_mean_sf / (max(norm_mean_sf(:)) - min(norm_mean_sf(:)));
+    % norm_mean_sf = out_actual_mean_sf;
+    % mean_shuffles.out_actual_mean_sf = norm_mean_sf / (max(norm_mean_sf(:)) - min(norm_mean_sf(:)));
+    mean_shuffles.out_actual_mean_sf = out_actual_mean_sf;
 
     %% Proportion of actual distance and identity distance smaller than shuffled distances
     actual_sf_mat = sum(actual_dists_mat < sf_dists_mat, 3);
