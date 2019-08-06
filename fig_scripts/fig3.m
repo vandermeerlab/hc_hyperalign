@@ -3,7 +3,7 @@ colors = get_hyper_colors();
 
 % Correlation analysis in Carey and ADR
 datas = {Q, adr_Q};
-themes = {'carey', 'adr'};
+themes = {'Carey', 'ADR'};
 
 %% Cell-by-cell correlation across subjects
 mean_coefs_types = zeros(length(datas), 1);
@@ -47,10 +47,10 @@ set(h, 'Color', 'k');
 hold on;
 plot(x, mean_coefs_types, '.k', 'MarkerSize', 20);
 set(gca, 'TickLabelInterpreter', 'latex');
-set(gca, 'XTick', x, 'YTick', [-0.05:0.1:0.3], 'XTickLabel', themes, ...
-    'XLim', [x(1)-xpad x(end)+xpad], 'YLim', [-0.05 0.3], 'FontSize', 24, ...
+set(gca, 'XTick', x, 'YTick', [-0.05:0.1:0.45], 'XTickLabel', themes, ...
+    'XLim', [x(1)-xpad x(end)+xpad], 'YLim', [-0.05 0.45], 'FontSize', 12, ...
     'LineWidth', 1, 'TickDir', 'out');
-title('Cell-by-cell correlation coefficients (averaged) across subjects');
+% title('Cell-by-cell correlation (across subjects)');
 box off;
 plot([x(1)-xpad x(end)+xpad], [0 0], '--k', 'LineWidth', 1, 'Color', [0.7 0.7 0.7]);
 
@@ -76,7 +76,7 @@ for d_i = 1:length(datas)
     subplot(2, 3, 1 + d_i)
     imagesc(mean_coefs);
     colorbar;
-    this_scale = [-0.25 1]; caxis(this_scale);
+    this_scale = [0 1]; caxis(this_scale);
     xlabel('L -> R'); ylabel('L -> R');
 end
 
@@ -88,13 +88,13 @@ for d_i = 1:length(datas)
     [z_score, mean_shuffles, proportion, M_ID] = calculate_common_metrics([], actual_dists_mat, ...
     id_dists_mat, sf_dists_mat);
 
-    subplot(3, 3, 4 + d_i);
+    subplot(2, 3, 4 + d_i);
     matrix_obj = {M_ID.out_M_ID};
-    binsize = 100;
+    binsize = 50;
     bin_edges = cellfun(@(x) round(min(x(:)), -2):binsize:round(max(x(:)), -2), matrix_obj, 'UniformOutput', false);
     bin_centers = cellfun(@(x) x(1:end-1) + binsize ./ 2, bin_edges, 'UniformOutput', false);
-    hist_colors = {colors.(themes{d_i}).ID.hist};
-    fit_colors = {colors.(themes{d_i}).ID.fit};
+    hist_colors = {colors.ID.hist};
+    fit_colors = {colors.ID.fit};
 
     for h_i = 1:length(matrix_obj)
         % histogram
@@ -107,11 +107,13 @@ for d_i = 1:length(datas)
     [max_v, max_i] = max(cellfun(@length, bin_centers));
     for f_i = 1:length(matrix_obj)
         % fit
+        smoothing_factor = 10;
         pd = fitdist(matrix_obj{f_i}(:), 'Normal');
-        fitted_range = bin_centers{max_i}(1):(binsize):bin_centers{max_i}(end);
+        fitted_range = bin_centers{max_i}(1):(binsize/smoothing_factor):bin_centers{max_i}(end);
         pd_values = pdf(pd, fitted_range);
-%         pd_values = pd_values / sum(pd_values);
-        fitted_values = pd_values * sum(sum(~isnan(matrix_obj{f_i})));
+        % normalize pdf
+        pd_values = pd_values / sum(pd_values);
+        fitted_values = pd_values * sum(sum(~isnan(matrix_obj{f_i}))) * smoothing_factor;
         fit_plots{f_i} = plot(fitted_range, fitted_values, 'Color', fit_colors{f_i}, 'LineWidth', 1);
         hold on;
         m_metric = median(matrix_obj{f_i}(:), 'omitnan');
@@ -124,5 +126,5 @@ for d_i = 1:length(datas)
     legend boxoff
     box off
     ylabel('# of pairs');
-    set(gca, 'yticklabel', [], 'FontSize', 24)
+    set(gca, 'yticklabel', [], 'FontSize', 12)
 end
