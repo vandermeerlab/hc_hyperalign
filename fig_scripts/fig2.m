@@ -40,11 +40,11 @@ for d_i = 1:length(datas)
         subplot(3, 3, (3 * d_i) + m_i);
         matrix_obj = matrix_objs{m_i};
         binsize = binsizes{m_i};
-%         if m_i == 2
-%             bin_edges = cellfun(@(x) round(min(x(:)), -2):binsize:round(max(x(:)), -2), matrix_obj, 'UniformOutput', false);
-%         else
-%             bin_edges = cellfun(@(x) floor(min(x(:))):binsize:ceil(max(x(:))), matrix_obj, 'UniformOutput', false);
-%         end
+        if m_i == 2
+            bin_edges = cellfun(@(x) round(min(x(:)), -2):binsize:round(max(x(:)), -2), matrix_obj, 'UniformOutput', false);
+        else
+            bin_edges = cellfun(@(x) floor(min(x(:))):binsize:ceil(max(x(:))), matrix_obj, 'UniformOutput', false);
+        end
         bin_edges = cellfun(@(x) floor(min(x(:))):binsize:ceil(max(x(:))), matrix_obj, 'UniformOutput', false);
         bin_centers = cellfun(@(x) x(1:end-1) + binsize ./ 2, bin_edges, 'UniformOutput', false);
         hist_colors = {colors.pca.hist, colors.HT.hist};

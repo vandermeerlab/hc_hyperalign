@@ -459,3 +459,50 @@ for source_id = 1:length(Q)
     saveas(gcf, sprintf('source_%d.png', source_id));
     figure;
 end
+
+% Correlation plots for applying hypertransform on simulated data.
+%% Cell-by-cell correlation
+mean_coefs = zeros(length(sim_data), length(sim_data));
+std_coefs = zeros(length(sim_data), length(sim_data));
+for i = 1:length(sim_data)
+    whiten_left = sim_data{i}.left + 0.001 * rand(size(sim_data{i}.left));
+    for j = 1:length(sim_data)
+        if ~isnan(out_predicted_data_mat{j, i})
+            whiten_right = out_predicted_data_mat{j, i} + 0.001 * rand(size(out_predicted_data_mat{j, i}));
+            cell_coefs = zeros(size(whiten_left, 1), 1);
+            for k = 1:size(whiten_left, 1)
+                [coef] = corrcoef(whiten_left(k, :), whiten_right(k, :));
+                cell_coefs(k) = coef(1, 2);
+            end
+            mean_coefs(j, i) = mean(cell_coefs, 'omitnan');
+            std_coefs(j, i) = std(cell_coefs, 'omitnan');
+        end
+    end
+end
+
+errorbar(1:length(mean_coefs), mean(mean_coefs, 1), mean(std_coefs, 1));
+xlabel('sessions'); ylabel('coefs')
+
+%% Population Vector Analysis (PVA)
+coefs = cell(length(sim_data), length(sim_data));
+w_len = size(sim_data{1}.left, 2) * 2;
+for i = 1:length(sim_data)
+    for c_i = 1:length(sim_data)
+        if ~isnan(out_predicted_data_mat{c_i, i})
+            w_coefs = zeros(w_len, w_len);
+            corr_data = [sim_data{i}.left, out_predicted_data_mat{c_i, i}];
+            for j = 1:w_len
+                for k = 1:w_len
+                    [coef] = corrcoef(corr_data(:, j), corr_data(:, k));
+                    w_coefs(j, k) = coef(1, 2);
+                end
+            end
+            coefs{c_i, i} = w_coefs;
+        end
+    end
+end
+mean_coefs = mean(cat(3, coefs{:}), 3, 'omitnan');
+
+imagesc(mean_coefs);
+colorbar;
+xlabel('L -> R'); ylabel('L -> R');
