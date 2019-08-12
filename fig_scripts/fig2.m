@@ -22,6 +22,7 @@ end
 %% Hypertransform and PCA-only in Carey and ADR
 datas = {Q, adr_Q};
 % themes = {'Carey', 'ADR'};
+x_limits = {[-6, 6], [-1200, 1200], [0 ,1]};
 for d_i = 1:length(datas)
     data = datas{d_i};
     [actual_dists_mat, id_dists_mat, sf_dists_mat] = predict_with_shuffles([], data, @predict_with_L_R);
@@ -31,7 +32,7 @@ for d_i = 1:length(datas)
     id_dists_mat, sf_dists_mat);
     [z_score_pca, mean_shuffles_pca, proportion_pca] = calculate_common_metrics([], actual_dists_mat_pca, id_dists_mat_pca, sf_dists_mat_pca);
 
-    binsizes = {1, 0.1, 0.1};
+    binsizes = {1, 200, 0.1};
     matrix_objs = {{z_score_pca.out_zscore_mat, z_score.out_zscore_mat}, ...
         {mean_shuffles_pca.out_actual_mean_sf, mean_shuffles.out_actual_mean_sf}, ...
         {proportion_pca.out_actual_sf_mat, proportion.out_actual_sf_mat}};
@@ -85,10 +86,11 @@ for d_i = 1:length(datas)
         if m_i ~= 3
             line([0, 0], ylim, 'LineWidth', 1, 'Color', 'black')
         end
-        legend([hdl(2), hdl(1)], {'Hypertransform','PCA - only'}, 'FontSize', 24)
+        xlim(x_limits{(d_i-1)*3+m_i});
+        legend([hdl(2), hdl(1)], {'Hypertransform','PCA - only'}, 'FontSize', 12)
         legend boxoff
         box off
         ylabel('# of pairs');
-        set(gca, 'yticklabel', [], 'FontSize', 24);
+        set(gca, 'yticklabel', [], 'FontSize', 12);
     end
 end
