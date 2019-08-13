@@ -76,8 +76,8 @@ for d_i = 1:length(datas)
                 fit_plots{f_i} = plot(fitted_range, fitted_values, 'Color', fit_colors{f_i}, 'LineWidth', 1);
                 hold on;
                 if m_i ~= 3
-                    m_metric = median(matrix_obj{f_i}(:), 'omitnan');
-                    line([m_metric, m_metric], ylim, 'LineWidth', 1, 'Color', fit_colors{f_i}, 'LineStyle', '--')
+                    m_metric = mean(matrix_obj{f_i}(:), 'omitnan');
+                    plot(m_metric, max(fitted_values), '.', 'Color', fit_colors{f_i}, 'MarkerSize', 15)
                     hold on;
                 end
             end
