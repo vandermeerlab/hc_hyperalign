@@ -89,22 +89,25 @@ for d_i = 1:length(datas)
     id_dists_mat, sf_dists_mat);
 
     subplot(2, 3, 4 + d_i);
-    matrix_obj = {M_ID.out_M_ID};
+    matrix_obj = {M_ID.out_actual_dists, M_ID.out_id_dists};
     binsize = 50;
-    bin_edges = cellfun(@(x) round(min(x(:)), -2):binsize:round(max(x(:)), -2), matrix_obj, 'UniformOutput', false);
+    bin_edges = cellfun(@(x) round(min(x(:)), -1):binsize:round(max(x(:)), -1), matrix_obj, 'UniformOutput', false);
     bin_centers = cellfun(@(x) x(1:end-1) + binsize ./ 2, bin_edges, 'UniformOutput', false);
-    hist_colors = {colors.ID.hist};
-    fit_colors = {colors.ID.fit};
+    hist_colors = {colors.HT.hist, colors.ID.hist};
+    fit_colors = {colors.HT.fit, colors.ID.fit};
 
+    % Find the bins with largest length so both bin ranges can be covered.
+    [max_v, max_i] = max(cellfun(@length, bin_centers));
     for h_i = 1:length(matrix_obj)
         % histogram
-        this_h = histcounts(matrix_obj{h_i}(:), bin_edges{h_i});
-        bar(bin_centers{h_i}, this_h, 'FaceColor', hist_colors{h_i}, 'FaceAlpha', 0.8, 'EdgeColor', 'none');
+        hists{h_i} = histcounts(matrix_obj{h_i}(:), bin_edges{max_i});
         hold on;
     end
+    hdl = bar(bin_centers{max_i}, [hists{1}; hists{2}]', 'grouped');
+    set(hdl(1), 'FaceColor', hist_colors{1}, 'EdgeColor', 'none');
+    set(hdl(2), 'FaceColor', hist_colors{2}, 'EdgeColor', 'none');
 
     % Find the bins with largest length so the fitting could span the whole range.
-    [max_v, max_i] = max(cellfun(@length, bin_centers));
     for f_i = 1:length(matrix_obj)
         % fit
         smoothing_factor = 10;
@@ -116,13 +119,10 @@ for d_i = 1:length(datas)
         fitted_values = pd_values * sum(sum(~isnan(matrix_obj{f_i}))) * smoothing_factor;
         fit_plots{f_i} = plot(fitted_range, fitted_values, 'Color', fit_colors{f_i}, 'LineWidth', 1);
         hold on;
-        m_metric = median(matrix_obj{f_i}(:), 'omitnan');
-        line([m_metric, m_metric], ylim, 'LineWidth', 1, 'Color', fit_colors{f_i}, 'LineStyle', '--')
-        hold on;
     end
 
     line([0, 0], ylim, 'LineWidth', 1, 'Color', 'black')
-    legend([fit_plots{1}], {themes{d_i}}, 'FontSize', 12)
+    legend([hdl(2), hdl(1)], {'HT','ID'}, 'FontSize', 12)
     legend boxoff
     box off
     ylabel('# of pairs');

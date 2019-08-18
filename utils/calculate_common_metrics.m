@@ -42,9 +42,11 @@ function [z_score, mean_shuffles, proportion, M_ID] = calculate_common_metrics(c
     proportion.out_actual_sf_mat = set_withsubj_nan(cfg, actual_sf_mat) / 1000;
 
     % Proportion of distance obtained from M smaller than identity mapping
-    M_ID.out_M_ID = set_withsubj_nan(cfg, (actual_dists_mat - id_dists_mat));
+    % M_ID.out_M_ID = set_withsubj_nan(cfg, (actual_dists_mat - id_dists_mat));
     out_actual_dists = set_withsubj_nan(cfg, actual_dists_mat);
     out_id_dists = set_withsubj_nan(cfg, id_dists_mat);
+    M_ID.out_actual_dists = out_actual_dists;
+    M_ID.out_id_dists = out_id_dists;
     M_ID.out_id_prop = sum(sum(out_actual_dists < out_id_dists)) / sum(sum(~isnan(out_actual_dists)));
 
     % Binomial stats

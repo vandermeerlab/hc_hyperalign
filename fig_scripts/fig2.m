@@ -46,7 +46,6 @@ for d_i = 1:length(datas)
         else
             bin_edges = cellfun(@(x) floor(min(x(:))):binsize:ceil(max(x(:))), matrix_obj, 'UniformOutput', false);
         end
-        bin_edges = cellfun(@(x) floor(min(x(:))):binsize:ceil(max(x(:))), matrix_obj, 'UniformOutput', false);
         bin_centers = cellfun(@(x) x(1:end-1) + binsize ./ 2, bin_edges, 'UniformOutput', false);
         hist_colors = {colors.pca.hist, colors.HT.hist};
         fit_colors = {colors.pca.fit, colors.HT.fit};
