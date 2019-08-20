@@ -92,18 +92,18 @@ for d_i = 1:length(datas)
     matrix_obj = {M_ID.out_actual_dists, M_ID.out_id_dists};
     binsize = 50;
     bin_edges = cellfun(@(x) round(min(x(:)), -1):binsize:round(max(x(:)), -1), matrix_obj, 'UniformOutput', false);
-    bin_centers = cellfun(@(x) x(1:end-1) + binsize ./ 2, bin_edges, 'UniformOutput', false);
+    % Find the max-spanning range so that both ranges can be covered.
+    com_bin_edges = min(cell2mat(bin_edges)):binsize:(max(cell2mat(bin_edges)) + binsize);
+    bin_centers = com_bin_edges(1:end-1) + binsize ./ 2;
     hist_colors = {colors.HT.hist, colors.ID.hist};
     fit_colors = {colors.HT.fit, colors.ID.fit};
 
-    % Find the bins with largest length so both bin ranges can be covered.
-    [max_v, max_i] = max(cellfun(@length, bin_centers));
     for h_i = 1:length(matrix_obj)
         % histogram
-        hists{h_i} = histcounts(matrix_obj{h_i}(:), bin_edges{max_i});
+        hists{h_i} = histcounts(matrix_obj{h_i}(:), com_bin_edges);
         hold on;
     end
-    hdl = bar(bin_centers{max_i}, [hists{1}; hists{2}]', 'grouped');
+    hdl = bar(bin_centers, [hists{1}; hists{2}]', 'grouped');
     set(hdl(1), 'FaceColor', hist_colors{1}, 'EdgeColor', 'none');
     set(hdl(2), 'FaceColor', hist_colors{2}, 'EdgeColor', 'none');
 
@@ -112,7 +112,7 @@ for d_i = 1:length(datas)
         % fit
         smoothing_factor = 10;
         pd = fitdist(matrix_obj{f_i}(:), 'Normal');
-        fitted_range = bin_centers{max_i}(1):(binsize/smoothing_factor):bin_centers{max_i}(end);
+        fitted_range = bin_centers(1):(binsize/smoothing_factor):bin_centers(end);
         pd_values = pdf(pd, fitted_range);
         % normalize pdf
         pd_values = pd_values / sum(pd_values);
@@ -121,7 +121,6 @@ for d_i = 1:length(datas)
         hold on;
     end
 
-    line([0, 0], ylim, 'LineWidth', 1, 'Color', 'black')
     legend([hdl(2), hdl(1)], {'HT','ID'}, 'FontSize', 12)
     legend boxoff
     box off

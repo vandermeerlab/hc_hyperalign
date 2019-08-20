@@ -16,13 +16,13 @@ for m_i = 1:length(matrix_obj)
     ylabel('Source Sessions');
     xlabel('Target Sessions');
     title(titles{m_i});
-    set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 24);
+    set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 12);
 end
 
 %% Hypertransform and PCA-only in Carey and ADR
 datas = {Q, adr_Q};
 % themes = {'Carey', 'ADR'};
-x_limits = {[-6, 6], [-1200, 1200], [0 ,1]};
+x_limits = {[-6, 6], [-1200, 1200], [0 ,1], [-6, 6], [-1600, 400], [0 ,1]};
 for d_i = 1:length(datas)
     data = datas{d_i};
     [actual_dists_mat, id_dists_mat, sf_dists_mat] = predict_with_shuffles([], data, @predict_with_L_R);
@@ -46,19 +46,19 @@ for d_i = 1:length(datas)
         else
             bin_edges = cellfun(@(x) floor(min(x(:))):binsize:ceil(max(x(:))), matrix_obj, 'UniformOutput', false);
         end
-        bin_centers = cellfun(@(x) x(1:end-1) + binsize ./ 2, bin_edges, 'UniformOutput', false);
+        % Find the max-spanning range so that both ranges can be covered.
+        com_bin_edges = min(cell2mat(bin_edges)):binsize:(max(cell2mat(bin_edges)) + binsize);
+        bin_centers = com_bin_edges(1:end-1) + binsize ./ 2;
         hist_colors = {colors.pca.hist, colors.HT.hist};
         fit_colors = {colors.pca.fit, colors.HT.fit};
 
-        % Find the bins with largest length so both bin ranges can be covered.
-        [max_v, max_i] = max(cellfun(@length, bin_centers));
         for h_i = 1:length(matrix_obj)
             % histogram
-            hists{h_i} = histcounts(matrix_obj{h_i}(:), bin_edges{max_i});
+            hists{h_i} = histcounts(matrix_obj{h_i}(:), com_bin_edges);
 %             bar(bin_centers{h_i}, this_h, 'FaceColor', hist_colors{h_i}, 'FaceAlpha', 0.8, 'EdgeColor', 'none');
             hold on;
         end
-        hdl = bar(bin_centers{max_i}, [hists{1}; hists{2}]', 'grouped');
+        hdl = bar(bin_centers, [hists{1}; hists{2}]', 'grouped');
         set(hdl(1), 'FaceColor', hist_colors{1}, 'EdgeColor', 'none');
         set(hdl(2), 'FaceColor', hist_colors{2}, 'EdgeColor', 'none');
 
@@ -67,7 +67,7 @@ for d_i = 1:length(datas)
                 % fit
                 smoothing_factor = 10;
                 pd = fitdist(matrix_obj{f_i}(:), 'Normal');
-                fitted_range = bin_centers{max_i}(1):(binsize/smoothing_factor):bin_centers{max_i}(end);
+                fitted_range = bin_centers(1):(binsize/smoothing_factor):bin_centers(end);
                 pd_values = pdf(pd, fitted_range);
                 % normalize pdf
                 pd_values = pd_values / sum(pd_values);
