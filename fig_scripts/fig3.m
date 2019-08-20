@@ -121,7 +121,7 @@ for d_i = 1:length(datas)
         hold on;
     end
 
-    legend([hdl(2), hdl(1)], {'HT','ID'}, 'FontSize', 12)
+    legend([hdl(1), hdl(2)], {'HT','ID'}, 'FontSize', 12)
     legend boxoff
     box off
     ylabel('# of pairs');

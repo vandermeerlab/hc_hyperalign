@@ -33,9 +33,9 @@ for d_i = 1:length(datas)
     [z_score_pca, mean_shuffles_pca, proportion_pca] = calculate_common_metrics([], actual_dists_mat_pca, id_dists_mat_pca, sf_dists_mat_pca);
 
     binsizes = {1, 200, 0.1};
-    matrix_objs = {{z_score_pca.out_zscore_mat, z_score.out_zscore_mat}, ...
-        {mean_shuffles_pca.out_actual_mean_sf, mean_shuffles.out_actual_mean_sf}, ...
-        {proportion_pca.out_actual_sf_mat, proportion.out_actual_sf_mat}};
+    matrix_objs = {{z_score.out_zscore_mat, z_score_pca.out_zscore_mat}, ...
+        {mean_shuffles.out_actual_mean_sf, mean_shuffles_pca.out_actual_mean_sf}, ...
+        {proportion.out_actual_sf_mat, proportion_pca.out_actual_sf_mat}};
 
     for m_i = 1:length(matrix_objs)
         subplot(3, 3, (3 * d_i) + m_i);
@@ -49,8 +49,8 @@ for d_i = 1:length(datas)
         % Find the max-spanning range so that both ranges can be covered.
         com_bin_edges = min(cell2mat(bin_edges)):binsize:(max(cell2mat(bin_edges)) + binsize);
         bin_centers = com_bin_edges(1:end-1) + binsize ./ 2;
-        hist_colors = {colors.pca.hist, colors.HT.hist};
-        fit_colors = {colors.pca.fit, colors.HT.fit};
+        hist_colors = {colors.HT.hist, colors.pca.hist};
+        fit_colors = {colors.HT.fit, colors.pca.fit};
 
         for h_i = 1:length(matrix_obj)
             % histogram
@@ -86,7 +86,7 @@ for d_i = 1:length(datas)
             line([0, 0], ylim, 'LineWidth', 1, 'Color', 'black')
         end
         xlim(x_limits{(d_i-1)*3+m_i});
-        legend([hdl(2), hdl(1)], {'Hypertransform','PCA - only'}, 'FontSize', 12)
+        legend([hdl(1), hdl(2)], {'Hypertransform','PCA - only'}, 'FontSize', 12)
         legend boxoff
         box off
         ylabel('# of pairs');
