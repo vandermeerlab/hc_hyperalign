@@ -1,11 +1,17 @@
 colors = get_hyper_colors();
 
-%% Source-target figures in Carey
-data = Q;
-[actual_dists_mat, id_dists_mat, sf_dists_mat] = predict_with_shuffles([], data, @predict_with_L_R);
+%% Hyperalignment procedure
+% Carey: 1, ADR: 2;
+datas = {Q, adr_Q};
+for d_i = 1:length(datas)
+    data = datas{d_i};
+    [actual_dists_mat{d_i}, id_dists_mat{d_i}, sf_dists_mat{d_i}] = predict_with_shuffles([], data, @predict_with_L_R);
+    [actual_dists_mat_pca{d_i}, id_dists_mat_pca{d_i}, sf_dists_mat_pca{d_i}] = predict_with_shuffles([], data, @predict_with_L_R_pca);
+end
 
-[z_score, mean_shuffles, proportion] = calculate_common_metrics([], actual_dists_mat, ...
-    id_dists_mat, sf_dists_mat);
+%% Source-target figures in Carey
+[z_score, mean_shuffles, proportion] = calculate_common_metrics([], actual_dists_mat{1}, ...
+    id_dists_mat{1}, sf_dists_mat{1});
 
 titles = {'Z-scores of HT', 'HT - mean of shuffled', 'Proportion > shuffled'};
 matrix_obj = {z_score.out_zscore_mat, mean_shuffles.out_actual_mean_sf, proportion.out_actual_sf_mat};
@@ -20,17 +26,13 @@ for m_i = 1:length(matrix_obj)
 end
 
 %% Hypertransform and PCA-only in Carey and ADR
-datas = {Q, adr_Q};
 % themes = {'Carey', 'ADR'};
-x_limits = {[-6, 6], [-1200, 1200], [0 ,1], [-6, 6], [-1600, 400], [0 ,1]};
+x_limits = {[-6, 6], [-500, 500], [0 ,1], [-6, 6], [-500, 500], [0 ,1]};
 for d_i = 1:length(datas)
-    data = datas{d_i};
-    [actual_dists_mat, id_dists_mat, sf_dists_mat] = predict_with_shuffles([], data, @predict_with_L_R);
-    [actual_dists_mat_pca, id_dists_mat_pca, sf_dists_mat_pca] = predict_with_shuffles([], data, @predict_with_L_R_pca);
-
-    [z_score, mean_shuffles, proportion] = calculate_common_metrics([], actual_dists_mat, ...
-    id_dists_mat, sf_dists_mat);
-    [z_score_pca, mean_shuffles_pca, proportion_pca] = calculate_common_metrics([], actual_dists_mat_pca, id_dists_mat_pca, sf_dists_mat_pca);
+    [z_score, mean_shuffles, proportion] = calculate_common_metrics([], actual_dists_mat{d_i}, ...
+        id_dists_mat{d_i}, sf_dists_mat{d_i});
+    [z_score_pca, mean_shuffles_pca, proportion_pca] = calculate_common_metrics([], actual_dists_mat_pca{d_i}, ...
+        id_dists_mat_pca{d_i}, sf_dists_mat_pca{d_i});
 
     binsizes = {1, 200, 0.1};
     matrix_objs = {{z_score.out_zscore_mat, z_score_pca.out_zscore_mat}, ...

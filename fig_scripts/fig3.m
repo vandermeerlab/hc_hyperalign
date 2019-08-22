@@ -80,13 +80,18 @@ for d_i = 1:length(datas)
     xlabel('L -> R'); ylabel('L -> R');
 end
 
-%% ID prediction in Carey and ADR
+%% Hyperalignment procedure
+% Carey: 1, ADR: 2;
+datas = {Q, adr_Q};
 for d_i = 1:length(datas)
     data = datas{d_i};
-    [actual_dists_mat, id_dists_mat, sf_dists_mat] = predict_with_shuffles([], data, @predict_with_L_R);
+    [actual_dists_mat{d_i}, id_dists_mat{d_i}, sf_dists_mat{d_i}] = predict_with_shuffles([], data, @predict_with_L_R);
+end
 
-    [z_score, mean_shuffles, proportion, M_ID] = calculate_common_metrics([], actual_dists_mat, ...
-    id_dists_mat, sf_dists_mat);
+%% ID prediction in Carey and ADR
+for d_i = 1:length(datas)
+    [~, ~, ~, M_ID] = calculate_common_metrics([], actual_dists_mat{d_i}, ...
+        id_dists_mat{d_i}, sf_dists_mat{d_i});
 
     subplot(2, 3, 4 + d_i);
     matrix_obj = {M_ID.out_actual_dists, M_ID.out_id_dists};
