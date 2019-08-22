@@ -38,8 +38,8 @@ function [z_score, mean_shuffles, proportion, M_ID] = calculate_common_metrics(c
     mean_shuffles.out_actual_mean_sf = out_actual_mean_sf;
 
     %% Proportion of actual distance and identity distance smaller than shuffled distances
-    actual_sf_mat = sum(actual_dists_mat < sf_dists_mat, 3);
-    proportion.out_actual_sf_mat = set_withsubj_nan(cfg, actual_sf_mat) / 1000;
+    actual_sf_mat = sum(actual_dists_mat > sf_dists_mat, 3);
+    proportion.out_actual_sf_mat = set_withsubj_nan(cfg, actual_sf_mat) / size(sf_dists_mat, 3);
 
     % Proportion of distance obtained from M smaller than identity mapping
     % M_ID.out_M_ID = set_withsubj_nan(cfg, (actual_dists_mat - id_dists_mat));
