@@ -38,8 +38,8 @@ x_tick = {-6:6, -1000:250:1000, 0:0.2:1, -6:6, -1000:250:1000, 0:0.2:1};
 binsizes = [1, 150, 0.1]; % for histograms
 
 cfg_plot = [];
-cfg_plot.hist_colors = {colors.HT.hist, colors.ID.hist};
-cfg_plot.fit_colors = {colors.HT.fit, colors.ID.fit};
+cfg_plot.hist_colors = {colors.HT.hist, colors.pca.hist};
+cfg_plot.fit_colors = {colors.HT.fit, colors.pca.fit};
 
 for d_i = 1:length(datas) % one row each for Carey, ADR
     [z_score, mean_shuffles, proportion] = calculate_common_metrics([], actual_dists_mat{d_i}, ...
