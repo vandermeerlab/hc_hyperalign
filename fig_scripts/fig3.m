@@ -1,58 +1,21 @@
 rng(mean('hyperalignment'));
 colors = get_hyper_colors();
+sub_ids = get_sub_ids_start_end();
 
 % Correlation analysis in Carey and ADR
 datas = {Q, adr_Q};
 themes = {'Carey', 'ADR'};
 
 %% Cell-by-cell correlation across subjects
-mean_coefs_types = zeros(length(datas), 1);
-% sem_coefs_types = zeros(length(datas), 1);
-sd_coefs_types = zeros(length(datas), 1);
-sub_ids_starts = {[1, 6, 8, 14], [1, 5, 10, 12]};
-sub_ids_ends = {[5, 7, 13, 19], [4, 9, 11, 14]};
+cfg_cell_plot = [];
+cfg_cell_plot.ax = subplot(2, 3, 1);
+cfg_cell_plot.sub_ids_starts = {sub_ids.start.carey};
+cfg_cell_plot.sub_ids_ends = {sub_ids.end.carey};
+cfg_cell_plot.ylim = [-0.05, 0.45];
 
+plot_cell_by_cell(cfg_cell_plot, datas, themes)
 
-for d_i = 1:length(datas)
-    data = datas{d_i};
-    sub_ids_start = sub_ids_starts{d_i};
-    sub_ids_end = sub_ids_ends{d_i};
-    mean_coefs = zeros(1, length(sub_ids_start));
-
-    for s_i = 1:length(sub_ids_start)
-        cell_coefs = [];
-        for w_i = sub_ids_start(s_i):sub_ids_end(s_i)
-            whiten_left = data{w_i}.left + 0.00001 * rand(size(data{w_i}.left));
-            whiten_right = data{w_i}.right + 0.00001 * rand(size(data{w_i}.right));
-
-            for c_i = 1:size(data{w_i}.left, 1)
-                [coef] = corrcoef(whiten_left(c_i, :), whiten_right(c_i, :));
-                cell_coefs = [cell_coefs, coef(1, 2)];
-            end
-        end
-        mean_coefs(s_i) = mean(cell_coefs, 'omitnan');
-    end
-    mean_coefs_types(d_i) = mean(mean_coefs);
-    % sem_coefs_types(d_i) = std(mean_coefs) / sqrt(length(mean_coefs));
-    sd_coefs_types(d_i) = std(mean_coefs);
-end
-
-figure; subplot(2, 3, 1);
-
-dx = 0.1;
-x = dx * (1:length(datas));
-xpad = 0.05;
-h = errorbar(x, mean_coefs_types, sd_coefs_types, 'LineStyle', 'none', 'LineWidth', 2);
-set(h, 'Color', 'k');
-hold on;
-plot(x, mean_coefs_types, '.k', 'MarkerSize', 20);
-set(gca, 'TickLabelInterpreter', 'latex');
-set(gca, 'XTick', x, 'YTick', [-0.05:0.1:0.45], 'XTickLabel', themes, ...
-    'XLim', [x(1)-xpad x(end)+xpad], 'YLim', [-0.05 0.45], 'FontSize', 12, ...
-    'LineWidth', 1, 'TickDir', 'out');
-% title('Cell-by-cell correlation (across subjects)');
-box off;
-plot([x(1)-xpad x(end)+xpad], [0 0], '--k', 'LineWidth', 1, 'Color', [0.7 0.7 0.7]);
+set(gcf, 'Position', [316 185 898 721]);
 
 %% Population Vector analysis
 for d_i = 1:length(datas)

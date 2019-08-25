@@ -1,5 +1,5 @@
 function plot_hist2(cfg_in, data)
-% plots dual histograms
+    % plots dual histograms
 
     cfg_def = [];
     cfg_def.fs = 12;
