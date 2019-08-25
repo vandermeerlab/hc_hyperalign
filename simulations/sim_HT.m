@@ -1,6 +1,8 @@
 function [sim_data] = sim_HT(cfg_in)
     % Last 2.4 second, dt = 50ms, or last 41 bins (after all choice points) for TC
     cfg_def.w_len = 48;
+    % Number of neurons
+    cfg_def.n_units = randi([60, 120]);
 
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);
@@ -9,17 +11,15 @@ function [sim_data] = sim_HT(cfg_in)
     sim_data = cell(1, 19);
     % Make two Qs - first: source, second: target
     for s_i = 1:length(sim_data)
-        % Number of neurons
-        n_units = randi([60, 120]);
-        sim_data{s_i}.left = zeros(n_units, w_len);
-        sim_data{s_i}.right = zeros(n_units, w_len);
+        sim_data{s_i}.left = zeros(cfg.n_units, cfg.w_len);
+        sim_data{s_i}.right = zeros(cfg.n_units, cfg.w_len);
         p_has_field = 0.5;
-        for n_i = 1:n_units
+        for n_i = 1:cfg.n_units
             if rand() < p_has_field
-                mu = rand() * w_len;
+                mu = rand() * cfg.w_len;
                 peak = rand() * 0.5 + 0.5;
                 sig = rand() * 5 + 2;
-                sim_data{s_i}.left(n_i, :) = gaussian_1d(w_len, peak, mu, sig);
+                sim_data{s_i}.left(n_i, :) = gaussian_1d(cfg.w_len, peak, mu, sig);
             end
         end
     end
@@ -63,7 +63,7 @@ function [sim_data] = sim_HT(cfg_in)
                 predicted_aligned = p_transform(M, sim_aligned_left{2});
                 project_back_pca = inv_p_transform(sim_transforms{2}, [sim_aligned_left{2}, predicted_aligned]);
                 project_back_data = sim_eigvecs{tar_i} * project_back_pca + sim_pca_mean{tar_i};
-                predicted_data_mat{sr_i, tar_i} = project_back_data(:, w_len+1:end);
+                predicted_data_mat{sr_i, tar_i} = project_back_data(:, cfg.w_len+1:end);
                 % sim_data{tar_i}.right = sim_data{tar_i}.right + (1/19 * project_back_data(:, 49:end));
             end
         end
@@ -86,10 +86,10 @@ function [sim_data] = sim_HT(cfg_in)
                 predicted_aligned = p_transform(M, sim_aligned_left{tar_i});
                 project_back_pca = inv_p_transform(sim_transforms{tar_i}, [sim_aligned_left{tar_i}, predicted_aligned]);
                 project_back_data = sim_eigvecs{tar_i} * project_back_pca + sim_pca_mean{tar_i};
-                predicted_data_mat{sr_i, tar_i} = project_back_data(:, w_len+1:end);
+                predicted_data_mat{sr_i, tar_i} = project_back_data(:, cfg.w_len+1:end);
                 % sim_data{tar_i}.right = sim_data{tar_i}.right + (1/19 * project_back_data(:, 49:end));
             else
-                predicted_data_mat{sr_i, tar_i} = zeros(size(sim_data{tar_i}.left, 1), w_len*2);
+                predicted_data_mat{sr_i, tar_i} = zeros(size(sim_data{tar_i}.left, 1), cfg.w_len*2);
             end
         end
     end

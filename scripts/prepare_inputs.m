@@ -1,7 +1,7 @@
 %% Get Carey Q inputs.
 cfg_data = [];
 cfg_data.use_adr_data = 0;
-cfg_data.removeInterneurons = 0;
+cfg_data.removeInterneurons = 1;
 % cfg_data.normalization = 'norm_average';
 [Q] = prepare_all_Q(cfg_data);
 
@@ -20,6 +20,7 @@ cfg_data.removeInterneurons = 0;
 Q_xor = L_xor_R([]);
 Q_ind = L_R_ind([]);
 Q_same_mu = L_R_ind(struct('same_mu', 1));
+Q_sim_HT = sim_HT([]);
 
 %% Get TC inputs.
 cfg_data = [];

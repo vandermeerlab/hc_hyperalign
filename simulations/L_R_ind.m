@@ -2,6 +2,8 @@ function [Q] = L_R_ind(cfg_in)
     % Last 2.4 second, dt = 50ms, or last 41 bins (after all choice points) for TC
     cfg_def.w_len = 48;
     cfg_def.same_mu = 0;
+    % Number of neurons
+    cfg_def.n_units = randi([60, 120]);
 
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);
@@ -9,11 +11,10 @@ function [Q] = L_R_ind(cfg_in)
     rng(mean('hyperalignment'));
     for q_i = 1:19
         % Number of neurons
-        n_units = randi([60, 120]);
-        Q{q_i}.left = zeros(n_units, cfg.w_len);
-        Q{q_i}.right = zeros(n_units, cfg.w_len);
+        Q{q_i}.left = zeros(cfg.n_units, cfg.w_len);
+        Q{q_i}.right = zeros(cfg.n_units, cfg.w_len);
         p_has_field = 0.5;
-        for n_i = 1:n_units
+        for n_i = 1:cfg.n_units
             mu = rand() * cfg.w_len;
             if rand() < p_has_field
                 if cfg.same_mu

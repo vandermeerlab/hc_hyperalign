@@ -1,6 +1,8 @@
 function [Q] = L_xor_R(cfg_in)
     % Last 2.4 second, dt = 50ms, or last 41 bins (after all choice points) for TC
     cfg_def.w_len = 48;
+    % Number of neurons
+    cfg_def.n_units = randi([60, 120]);
 
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);
@@ -8,11 +10,9 @@ function [Q] = L_xor_R(cfg_in)
     rng(mean('hyperalignment'));
     % Make two Qs - first: source, second: target
     for q_i = 1:19
-        % Number of neurons
-        n_units = randi([60, 120]);
-        Q{q_i}.left = zeros(n_units, cfg.w_len);
-        Q{q_i}.right = zeros(n_units, cfg.w_len);
-        for n_i = 1:n_units
+        Q{q_i}.left = zeros(cfg.n_units, cfg.w_len);
+        Q{q_i}.right = zeros(cfg.n_units, cfg.w_len);
+        for n_i = 1:cfg.n_units
             mu = rand() * cfg.w_len;
             peak = rand() * 0.5 + 0.5;
             sig = rand() * 5 + 2;
