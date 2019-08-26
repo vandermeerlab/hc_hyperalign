@@ -33,11 +33,11 @@ function plot_PV(cfg_in, data)
     if ~isempty(cfg.clim)
         caxis(cfg.clim);
     end
-    
+
     cb = colorbar;
     cb.Box = 'off';
-%     cb.Ticks = [];
+    cb.Ticks = cfg.clim;
     set(cfg.ax, 'xticklabel', [], 'yticklabel', [], 'FontSize', cfg.fs, 'LineWidth', 1, 'TickDir', 'out');
     axis(cfg.ax, 'off'); cfg.ax.XLabel.Visible = 'on'; cfg.ax.YLabel.Visible = 'on';
-    
+
 end
