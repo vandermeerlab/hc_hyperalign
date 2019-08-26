@@ -18,8 +18,13 @@ function plot_cell_by_cell(cfg_in, datas, themes)
 
     for d_i = 1:length(datas)
         data = datas{d_i};
-        sub_ids_start = cfg.sub_ids_starts{d_i};
-        sub_ids_end = cfg.sub_ids_ends{d_i};
+        if length(cfg.sub_ids_starts) > 1
+            sub_ids_start = cfg.sub_ids_starts{d_i};
+            sub_ids_end = cfg.sub_ids_ends{d_i};
+        else
+            sub_ids_start = cfg.sub_ids_starts{1};
+            sub_ids_end = cfg.sub_ids_ends{1};
+        end
         mean_coefs = zeros(1, length(sub_ids_start));
 
         for s_i = 1:length(sub_ids_start)

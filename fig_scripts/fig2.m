@@ -32,7 +32,6 @@ end
 set(gcf, 'Position', [316 185 898 721]);
 
 %% Hypertransform and PCA-only in Carey and ADR
-% themes = {'Carey', 'ADR'};
 x_limits = {[-6.5, 6.5], [-1050, 1050], [0, 1], [-6.5, 6.5], [-1050, 1050], [0, 1]}; % two rows, three columns in figure
 x_tick = {-6:6, -1000:250:1000, 0:0.2:1, -6:6, -1000:250:1000, 0:0.2:1};
 binsizes = [1, 150, 0.1]; % for histograms
