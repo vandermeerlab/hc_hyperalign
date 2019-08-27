@@ -4,7 +4,7 @@ function plot_hist2(cfg_in, data)
     cfg_def = [];
     cfg_def.fs = 12;
     cfg_def.ax = []; % handle to axes to plot in, e.g. ax = subplot(221)
-    cfg_def.indicate_zero = 1;
+    cfg_def.plot_vert_zero = 1;
 
     cfg = ProcessConfig(cfg_def, cfg_in);
 
@@ -57,7 +57,7 @@ function plot_hist2(cfg_in, data)
                 vh = vline(xm, '-'); set(vh, 'Color', cfg.fit_colors{iData});
         end
 
-        if cfg.indicate_zero
+        if cfg.plot_vert_zero
             vh = vline(0, 'k--');
         end
 

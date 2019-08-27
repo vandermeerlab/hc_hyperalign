@@ -15,7 +15,7 @@ cfg_cell_plot.ylim = [-0.05, 0.45];
 
 plot_cell_by_cell(cfg_cell_plot, datas, themes)
 
-set(gcf, 'Position', [316 185 898 721]);
+set(gcf, 'Position', [316 253 1160 653]);
 
 %% Population Vector analysis
 cfg_pv_plot = [];
@@ -54,8 +54,9 @@ for d_i = 1:length(datas)
     cfg_plot.xtick = x_tick{d_i};
     cfg_plot.binsize = binsizes(d_i);
     cfg_plot.ax = this_ax;
-    cfg_plot.insert_zero = 1; % plot zero xtick
+    cfg_plot.insert_zero = 0; % plot zero xtick
     cfg_plot.fit = 'vline'; % 'gauss', 'kernel', 'vline' or 'none (no fit)
+    cfg_plot.plot_vert_zero = 0; % plot vertical dashed line at 0
 
     plot_hist2(cfg_plot, matrix_obj); % ht, then pca
 end
