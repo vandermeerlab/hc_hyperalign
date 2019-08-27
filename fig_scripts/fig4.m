@@ -24,7 +24,7 @@ for d_i = 1:length(datas)
     title(themes{d_i});
 end
 
-set(gcf, 'Position', [316 185 898 721]);
+set(gcf, 'Position', [179 7 1299 948]);
 
 %% Hyperalignment procedure
 for d_i = 1:length(datas)
@@ -32,15 +32,14 @@ for d_i = 1:length(datas)
     [actual_dists_mat{d_i}, id_dists_mat{d_i}, sf_dists_mat{d_i}] = predict_with_shuffles([], data, @predict_with_L_R);
 end
 
-%% HT and ID prediction in various simulations.
-x_limits = {[-15, 15], [-15, 15], [-200, 200], [-60, 60], ...
-    [0 ,400], [0 ,400], [0 ,400], [0 ,400]};
-x_tick = {-15:2.5:15, -15:2.5:15, -200:50:200, -60:15:60, 0:50:400, 0:50:400, 0:50:400, 0:50:400};
-binsizes = [2.5, 2.5, 20, 5, 25, 25, 25, 25];
+%% HT prediction in various simulations.
+x_limits = {[-15, 15], [-15, 15], [-40, 40], [-60, 60]};
+x_tick = {-15:2.5:15, -15:2.5:15, -40:20:40, -60:15:60};
+binsizes = [2.5, 2.5, 5, 5];
 
 cfg_plot = [];
-cfg_plot.hist_colors = {colors.HT.hist, colors.ID.hist};
-cfg_plot.fit_colors = {colors.HT.fit, colors.ID.fit};
+cfg_plot.hist_colors = {colors.HT.hist};
+cfg_plot.fit_colors = {colors.HT.fit};
 
 for d_i = 1:length(datas)
     [~, mean_shuffles, ~, ~] = calculate_common_metrics([], actual_dists_mat{d_i}, ...
@@ -56,14 +55,8 @@ for d_i = 1:length(datas)
         cfg_plot.xtick = x_tick{p_i};
         cfg_plot.binsize = binsizes(p_i);
         cfg_plot.ax = this_ax;
-        cfg_plot.insert_zero = 0; % plot zero xtick
+        cfg_plot.insert_zero = 1; % plot zero xtick
         cfg_plot.fit = 'vline'; % 'gauss', 'kernel', 'vline' or 'none (no fit)
-
-        if m_i == 2
-            cfg_plot.indicate_zero = 0;
-        else
-            cfg_plot.indicate_zero = 1;
-        end
 
         plot_hist2(cfg_plot, matrix_obj); % ht, then pca
 
@@ -75,18 +68,27 @@ cfg_pv_plot = [];
 cfg_pv_plot.clim = [-0.2 1];
 for d_i = 1:length(datas)
     data = datas{d_i};
-    cfg_pv_plot.ax = subplot(4, 4, 12 + d_i);
+    cfg_pv_plot.ax = subplot(4, 4, 8 + d_i);
     plot_PV(cfg_pv_plot, data);
 end
 
 %% Cell-by-cell correlation across subjects
 datas = {Q_ind, Q_xor, Q_same_mu, Q_sim_HT, Q};
-themes = {'ind.', 'x-or', 'ind.(same μ)', 'sim. HT', 'Carey'};
+themes = {'ind.', 'x-or', 'same μ', 'sim. HT', 'Carey'};
 
 cfg_cell_plot = [];
-cfg_cell_plot.ax = subplot(2, 3, 1);
+cfg_cell_plot.ax = subplot(4, 4, 13);
 cfg_cell_plot.sub_ids_starts = {sub_ids.start.carey};
 cfg_cell_plot.sub_ids_ends = {sub_ids.end.carey};
 cfg_cell_plot.ylim = [-0.05, 0.45];
 
 plot_cell_by_cell(cfg_cell_plot, datas, themes)
+
+%% Plot off-diagonal of Population Vector correlation
+datas = {Q_ind, Q_xor, Q_same_mu, Q_sim_HT, Q};
+themes = {'ind.', 'x-or', 'same μ', 'sim. HT', 'Carey'};
+
+cfg_off_pv_plot = [];
+cfg_off_pv_plot.ax = subplot(4, 4, 14);
+cfg_off_pv_plot.ylim = [-0.3, 0.6];
+plot_off_diag_PV(cfg_off_pv_plot, datas, themes);
