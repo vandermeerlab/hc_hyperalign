@@ -11,7 +11,7 @@ cfg_cell_plot = [];
 cfg_cell_plot.ax = subplot(2, 3, 1);
 cfg_cell_plot.sub_ids_starts = {sub_ids.start.carey, sub_ids.start.adr};
 cfg_cell_plot.sub_ids_ends = {sub_ids.end.carey, sub_ids.end.adr};
-cfg_cell_plot.ylim = [-0.05, 0.45];
+cfg_cell_plot.ylim = [-0.1, 0.5];
 
 plot_cell_by_cell(cfg_cell_plot, datas, themes)
 
