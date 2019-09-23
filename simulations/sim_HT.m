@@ -1,4 +1,4 @@
-function [sim_data] = sim_HT(cfg_in)
+function [sim_data, sim_corr_right, predicted_data_mat] = sim_HT(cfg_in)
     % Last 2.4 second, dt = 50ms, or last 41 bins (after all choice points) for TC
     cfg_def.w_len = 48;
     % Number of neurons; set to different random number for each session if not specified.
@@ -13,8 +13,19 @@ function [sim_data] = sim_HT(cfg_in)
     cfg_data.use_adr_data = 0;
     cfg_data.removeInterneurons = 1;
     [Q] = prepare_all_Q(cfg_data);
-
     data = Q;
+    
+    if cfg.sample_real_data
+        cfg_data = [];
+        cfg_data.use_adr_data = 1;
+        cfg_data.removeInterneurons = 0;
+        [adr_Q] = prepare_all_Q(cfg_data);
+        all_left = cellfun(@(x) x.left, [Q, adr_Q], 'UniformOutput', false);
+        all_left = cell2mat(all_left');
+        
+        all_right = cellfun(@(x) x.right, [Q, adr_Q], 'UniformOutput', false);
+        all_right = cell2mat(all_right');
+    end
 
     % PCA
     NumComponents = 10;
@@ -32,9 +43,8 @@ function [sim_data] = sim_HT(cfg_in)
             n_units = randi([60, 120]);
         end
         if cfg.sample_real_data
-            all_left = cellfun(@(x) x.left, data, 'UniformOutput', false);
-            all_left = cell2mat(all_left');
-            sim_data{s_i}.left = datasample(all_left, n_units, 'Replace', false);
+            [sim_data{s_i}.left, sim_indices{s_i}] = datasample(all_left, n_units, 'Replace', false);
+            sim_corr_right{s_i} = all_right(sim_indices{s_i}, :);
             sim_data{s_i}.right = zeros(n_units, cfg.w_len);
         else
             sim_data{s_i}.left = zeros(n_units, cfg.w_len);
@@ -63,7 +73,7 @@ function [sim_data] = sim_HT(cfg_in)
         for tar_i = 1:length(sim_data)
 %             if sr_i ~= tar_i
                 % Hyperalignment on real data to get M transformation
-                hyper_input = {proj_data{sr_i}, sim_data{tar_i}};
+                hyper_input = {proj_data{sr_i}, sim_proj_data{tar_i}};
                 [aligned_left, aligned_right, transforms] = get_aligned_left_right(hyper_input);
 
                 % % Perform hyperalignment on L of simulated data in PCA.
@@ -106,24 +116,24 @@ function [sim_data] = sim_HT(cfg_in)
     %     end
     % end
 
-    %% Cross-subject predictions.
-    cfg.use_adr_data = 0;
-    out_predicted_data_mat = predicted_data_mat;
+%     %% Cross-subject predictions.
+%     cfg.use_adr_data = 0;
+%     out_predicted_data_mat = predicted_data_mat;
 %     out_predicted_data_mat = set_withsubj_nan(cfg, predicted_data_mat);
-    for s_i = 1:length(data)
-        a = out_predicted_data_mat(:, s_i);
-        b = [];
-        for o_i = 1:length(a)
-            if ~isnan(a{o_i})
-                if isempty(b)
-                    b = a{o_i};
-                else
-                    b(:, :, end+1) = a{o_i};
-                end
-            end
-        end
-        sim_data{s_i}.right = mean(b, 3);
-    end
+%     for s_i = 1:length(data)
+%         a = out_predicted_data_mat(:, s_i);
+%         b = [];
+%         for o_i = 1:length(a)
+%             if ~isnan(a{o_i})
+%                 if isempty(b)
+%                     b = a{o_i};
+%                 else
+%                     b(:, :, end+1) = a{o_i};
+%                 end
+%             end
+%         end
+%         sim_data{s_i}.right = mean(b, 3);
+%     end
 
     %% Including projected-back L.
     % sim_predicted_Q_mat = cell(1, 19);
