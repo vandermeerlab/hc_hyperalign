@@ -15,8 +15,8 @@ ex_same_mu = L_R_ind(struct('same_mu', 1, 'n_units', 30));
 ex_sim_HT = sim_HT(cfg_ex);
 
 ex_datas = {ex_ind, ex_xor, ex_same_mu, ex_sim_HT};
-for d_i = 1:length(datas)
-    subplot(4, 4, d_i)
+for d_i = 1:length(ex_datas)
+    subplot(4, 4, (4*(d_i-1) + 1))
     imagesc([ex_datas{d_i}{1}.left, ex_datas{d_i}{1}.right]);
     colorbar;
     set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 12);
@@ -35,7 +35,7 @@ end
 %% HT prediction in various simulations.
 x_limits = {[-15, 15], [-15, 15], [-40, 40], [-60, 60]};
 x_tick = {-15:2.5:15, -15:2.5:15, -40:20:40, -60:15:60};
-binsizes = [2.5, 2.5, 5, 5];
+binsizes = [1.5, 1.5, 4, 5];
 
 cfg_plot = [];
 cfg_plot.hist_colors = {colors.HT.hist};
@@ -47,7 +47,7 @@ for d_i = 1:length(datas)
 
     matrix_objs = {{mean_shuffles.out_actual_mean_sf}};
     for m_i = 1:length(matrix_objs)
-        this_ax = subplot(4, 4, 4 * m_i + d_i);
+        this_ax = subplot(4, 4, (4*(d_i-1) + 2));
         p_i = (m_i - 1) * 4 + d_i; % % plot index to access x_limits etc defined above
         matrix_obj = matrix_objs{m_i};
 
@@ -58,7 +58,7 @@ for d_i = 1:length(datas)
         cfg_plot.insert_zero = 1; % plot zero xtick
         cfg_plot.fit = 'vline'; % 'gauss', 'kernel', 'vline' or 'none (no fit)
 
-        plot_hist2(cfg_plot, matrix_obj); % ht, then pca
+        plot_hist2(cfg_plot, matrix_obj);
 
     end
 end
@@ -68,7 +68,7 @@ cfg_pv_plot = [];
 cfg_pv_plot.clim = [-0.2 1];
 for d_i = 1:length(datas)
     data = datas{d_i};
-    cfg_pv_plot.ax = subplot(4, 4, 8 + d_i);
+    cfg_pv_plot.ax = subplot(4, 4, (4*(d_i-1) + 3));
     plot_PV(cfg_pv_plot, data);
 end
 
@@ -77,7 +77,7 @@ datas = {Q_ind, Q_xor, Q_same_mu, Q_sim_HT, Q};
 themes = {'ind.', 'x-or', 'same μ', 'sim. HT', 'Carey'};
 
 cfg_cell_plot = [];
-cfg_cell_plot.ax = subplot(4, 4, 13);
+cfg_cell_plot.ax = subplot(4, 4, 8);
 cfg_cell_plot.sub_ids_starts = {sub_ids.start.carey};
 cfg_cell_plot.sub_ids_ends = {sub_ids.end.carey};
 cfg_cell_plot.ylim = [-0.05, 0.45];
@@ -89,6 +89,6 @@ datas = {Q_ind, Q_xor, Q_same_mu, Q_sim_HT, Q};
 themes = {'ind.', 'x-or', 'same μ', 'sim. HT', 'Carey'};
 
 cfg_off_pv_plot = [];
-cfg_off_pv_plot.ax = subplot(4, 4, 14);
+cfg_off_pv_plot.ax = subplot(4, 4, 12);
 cfg_off_pv_plot.ylim = [-0.3, 0.6];
 plot_off_diag_PV(cfg_off_pv_plot, datas, themes);

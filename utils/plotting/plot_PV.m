@@ -4,6 +4,7 @@ function plot_PV(cfg_in, data)
     cfg_def.fs = 12;
     cfg_def.ax = []; % handle to axes to plot in, e.g. ax = subplot(221)
     cfg_def.clim = [];
+    cfg_def.need_concat = true;
 
     cfg = ProcessConfig(cfg_def, cfg_in);
 
@@ -13,7 +14,9 @@ function plot_PV(cfg_in, data)
         cfg.ax = gca;
     end
 
-    data = cellfun(@(x) [x.left, x.right], data, 'UniformOutput', false);
+    if cfg.need_concat
+        data = cellfun(@(x) [x.left, x.right], data, 'UniformOutput', false);
+    end
     coefs = cell(1, length(data));
     w_len = size(data{1}, 2);
     for i = 1:length(data)

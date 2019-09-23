@@ -1,4 +1,4 @@
-function [actual_dists_mat, id_dists_mat, predicted_mat] = predict_with_L_R_withhold(cfg_in, Q)
+function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R_withhold(cfg_in, Q)
     % Perform PCA, hyperalignment (with either two or all sessions)
     % and predict target matirx (only Q or TC matrix).
     % Note that target matrix would be excluded from the analysis and only used as ground truth.
@@ -44,10 +44,10 @@ function [actual_dists_mat, id_dists_mat, predicted_mat] = predict_with_L_R_with
 
     actual_dists_mat  = zeros(length(Q));
     id_dists_mat  = zeros(length(Q));
-    predicted_mat = cell(length(Q));
+    predicted_Q_mat = cell(length(Q));
     for sr_i = 1:length(Q)
         for tar_i = 1:length(Q)
-            if sr_i ~= tar_i
+            % if sr_i ~= tar_i
                 % Exclude target to be predicted
                 ex_Q = Q;
                 ex_Q{tar_i}.right = zeros(size(Q{tar_i}.right));
@@ -113,8 +113,8 @@ function [actual_dists_mat, id_dists_mat, predicted_mat] = predict_with_L_R_with
                 id_dist = calculate_dist(cfg.dist_dim, id_p_target, ground_truth);
                 actual_dists_mat(sr_i, tar_i) = actual_dist;
                 id_dists_mat(sr_i, tar_i) = id_dist;
-                predicted_mat{sr_i, tar_i} = project_back_Q;
-            end
+                predicted_Q_mat{sr_i, tar_i} = project_back_Q;
+            % end
         end
     end
 end

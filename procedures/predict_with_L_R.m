@@ -58,7 +58,7 @@ function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R(cf
             [aligned_left, aligned_right, transforms] = get_aligned_left_right(hyper_input);
         end
         for tar_i = 1:length(Q)
-            if sr_i ~= tar_i
+            % if sr_i ~= tar_i
                 if cfg.hyperalign_all
                     aligned_left_sr = aligned_left{sr_i};
                     aligned_right_sr = aligned_right{sr_i};
@@ -116,11 +116,11 @@ function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R(cf
                 actual_dists_mat{sr_i, tar_i} = actual_dist;
                 id_dists_mat{sr_i, tar_i} = id_dist;
                 predicted_Q_mat{sr_i, tar_i} = project_back_Q;
-            else
-                actual_dists_mat{sr_i, tar_i} = NaN;
-                id_dists_mat{sr_i, tar_i} = NaN;
-                predicted_Q_mat{sr_i, tar_i} = NaN;
-            end
+            % else
+            %     actual_dists_mat{sr_i, tar_i} = NaN;
+            %     id_dists_mat{sr_i, tar_i} = NaN;
+            %     predicted_Q_mat{sr_i, tar_i} = NaN;
+            % end
         end
     end
     if strcmp(cfg.dist_dim, 'all')
