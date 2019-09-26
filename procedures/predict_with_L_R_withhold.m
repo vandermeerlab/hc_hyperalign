@@ -47,7 +47,7 @@ function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R_wi
     predicted_Q_mat = cell(length(Q));
     for sr_i = 1:length(Q)
         for tar_i = 1:length(Q)
-            % if sr_i ~= tar_i
+            if sr_i ~= tar_i
                 % Exclude target to be predicted
                 ex_Q = Q;
                 ex_Q{tar_i}.right = zeros(size(Q{tar_i}.right));
@@ -114,7 +114,7 @@ function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R_wi
                 actual_dists_mat(sr_i, tar_i) = actual_dist;
                 id_dists_mat(sr_i, tar_i) = id_dist;
                 predicted_Q_mat{sr_i, tar_i} = project_back_Q;
-            % end
+            end
         end
     end
 end
