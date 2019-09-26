@@ -4,36 +4,36 @@ set(gca, 'YTick', 1:19, 'YTickLabel', restrictionLabels);
 
 %% Create polished imagesc and histogram (for comparison with zscores of shuffles)
 subplot(2, 4, 1);
-imagesc(out_zscore_mat,'AlphaData', ~isnan(out_zscore_mat));
+imagesc(z_score.out_zscore_mat,'AlphaData', ~isnan(z_score.out_zscore_mat));
 colorbar;
 ylabel('Source Sessions');
 xlabel('Target Sessions');
 set(gca, 'xticklabel', [], 'yticklabel', []);
 
 subplot(2, 4, 5);
-histogram(out_zscore_mat, 50);
+histogram(z_score.out_zscore_mat, 50);
 title('zscores of Hypertransform');
 ylabel('# of pairs');
-xlabel(sprintf('< 0: %.2f %%, Signrank: %.2f', out_zscore_prop * 100, sr_p_zscore));
+xlabel(sprintf('< 0: %.2f %%, Signrank: %.2f', z_score.out_zscore_prop * 100, z_score.sr_p_zscore));
 set(gca, 'yticklabel', [])
 
 %% Create polished imagesc and histogram (for proportion)
 subplot(2, 4, 3);
-imagesc(out_actual_sf_mat,'AlphaData', ~isnan(out_actual_sf_mat));
+imagesc(proportion.out_actual_sf_mat,'AlphaData', ~isnan(proportion.out_actual_sf_mat));
 colorbar;
 ylabel('Source Sessions');
 xlabel('Target Sessions');
 set(gca, 'xticklabel', [], 'yticklabel', []);
 
 subplot(2, 4, 7);
-histogram(out_actual_sf_mat, 20)
+histogram(proportion.out_actual_sf_mat, 20)
 ylabel('# of pairs');
 title('Proportion > shuffled');
 set(gca, 'yticklabel', [])
 
 %% Create polished imagesc and histogram (for comparison with mean of shuffles and ID)
 subplot(2, 4, 2);
-imagesc(out_actual_mean_sf,'AlphaData', ~isnan(out_actual_mean_sf));
+imagesc(mean_shuffles.out_actual_mean_sf,'AlphaData', ~isnan(mean_shuffles.out_actual_mean_sf));
 colorbar;
 ylabel('Source Sessions');
 xlabel('Target Sessions');
@@ -41,28 +41,29 @@ set(gca, 'xticklabel', [], 'yticklabel', []);
 
 subplot(2, 4, 6);
 binsize = 10;
-bin_edges = round(min(out_actual_mean_sf(:)), -1):binsize:round(max(out_actual_mean_sf(:)), -1);
+bin_edges = round(min(mean_shuffles.out_actual_mean_sf(:)), -1):binsize:round(max(mean_shuffles.out_actual_mean_sf(:)), -1);
 bin_centers = bin_edges(1:end-1) + binsize ./ 2;
-this_h = histc(out_actual_mean_sf(:), bin_edges);
+this_h = histc(mean_shuffles.out_actual_mean_sf(:), bin_edges);
 
 bar(bin_centers, this_h(1:end-1));
 title('Hypertransform - mean of shuffled');
 ylabel('# of pairs');
-xlabel(sprintf('< 0: %.2f %%, Bino-p: %.2f', out_actual_mean_sf_prop * 100, bino_p_mean));
+xlabel(sprintf('< 0: %.2f %%, Bino-p: %.2f', mean_shuffles.out_actual_mean_sf_prop * 100, mean_shuffles.bino_p_mean));
 set(gca, 'yticklabel', [])
 
+M_ID.out_M_ID = set_withsubj_nan([], (M_ID.out_actual_dists - M_ID.out_id_dists));
 subplot(2, 4, 4);
-imagesc(out_M_ID,'AlphaData', ~isnan(out_M_ID));
+imagesc(M_ID.out_M_ID,'AlphaData', ~isnan(M_ID.out_M_ID));
 colorbar;
 ylabel('Source Sessions');
 xlabel('Target Sessions');
 set(gca, 'xticklabel', [], 'yticklabel', []);
 
 subplot(2, 4, 8);
-histogram(out_M_ID, 50)
+histogram(M_ID.out_M_ID, 50)
 title('Hypertransform - ID');
 ylabel('# of pairs');
-xlabel(sprintf('< 0: %.2f %%, Bino-p: %.2f', out_id_prop * 100, bino_p_id));
+xlabel(sprintf('< 0: %.2f %%, Bino-p: %.2f', M_ID.out_id_prop * 100, M_ID.bino_p_id));
 set(gca, 'yticklabel', [])
 
 %% Create M v.s ID figure

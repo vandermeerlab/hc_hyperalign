@@ -41,6 +41,8 @@ function [sim_data, sim_corr_right] = sim_HT(cfg_in)
             n_units = cfg.n_units;
         else
             n_units = randi([60, 120]);
+            % Make the number of neurons as same in real data.
+            % n_units = size(data{s_i}.left, 1);
         end
         if cfg.sample_real_data
             [sim_data{s_i}.left, sim_indices{s_i}] = datasample(all_left, n_units, 'Replace', false);
