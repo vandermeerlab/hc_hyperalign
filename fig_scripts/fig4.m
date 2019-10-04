@@ -3,10 +3,8 @@ colors = get_hyper_colors();
 sub_ids = get_sub_ids_start_end();
 
 % Correlation analysis in various simulations: L_R_ind, L_xor_R, L_R_same_μ, sim_HT
-% datas = {Q_ind, Q_xor, Q_same_mu, Q_sim_HT};
-% themes = {'ind.', 'x-or', 'ind.(same μ)', 'sim. HT'};
-datas = {Q_ind};
-themes = {'ind.'};
+datas = {Q_ind, Q_xor, Q_same_mu, Q_sim_HT};
+themes = {'ind.', 'x-or', 'ind.(same ?)', 'sim. HT'};
 %% Example inputs
 cfg_ex = [];
 cfg_ex.n_units = 30;
