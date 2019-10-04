@@ -1,4 +1,4 @@
-function [sim_data, sim_corr_right] = sim_HT(cfg_in)
+function [giant_sim_data, sim_corr_right] = sim_HT(cfg_in)
     % Last 2.4 second, dt = 50ms, or last 41 bins (after all choice points) for TC
     cfg_def.w_len = 48;
     % Number of neurons; set to different random number for each session if not specified.
@@ -69,17 +69,24 @@ function [sim_data, sim_corr_right] = sim_HT(cfg_in)
         [sim_proj_data{sim_i}, sim_eigvecs{sim_i}, sim_pca_mean{sim_i}] = perform_pca(sim_data{sim_i}, NumComponents);
     end
 
+    giant_sim_data = cell(size(data));
+    for s_i = 1:length(data)
+        giant_sim_data{s_i} = sim_data;
+    end
+
     %% Hyperalign real data and simulated data pair version
     for d_i = 1:length(data)
-        hyper_input = {proj_data{d_i}, sim_proj_data{d_i}};
+        for s_i = 1:length(sim_data)
+        hyper_input = {proj_data{d_i}, sim_proj_data{s_i}};
         [aligned_left, aligned_right, transforms] = get_aligned_left_right(hyper_input);
 
         [~, ~, M] = procrustes(aligned_right{1}', aligned_left{1}', 'scaling', false);
         predicted_aligned = p_transform(M, aligned_left{2});
         project_back_pca = inv_p_transform(transforms{2}, [aligned_left{2}, predicted_aligned]);
-        project_back_data = sim_eigvecs{d_i} * project_back_pca + sim_pca_mean{d_i};
+        project_back_data = sim_eigvecs{s_i} * project_back_pca + sim_pca_mean{s_i};
 
-        sim_data{d_i}.right = project_back_data(:, cfg.w_len+1:end);
+        giant_sim_data{d_i}{s_i}.right = project_back_data(:, cfg.w_len+1:end);
+        end
     end
 
 end

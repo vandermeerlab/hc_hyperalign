@@ -10,31 +10,33 @@ function [Q] = L_R_ind(cfg_in)
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);
 
     rng(mean('hyperalignment'));
-    for q_i = 1:19
-        % Number of neurons
-        Q{q_i}.left = zeros(cfg.n_units, cfg.w_len);
-        Q{q_i}.right = zeros(cfg.n_units, cfg.w_len);
-        for n_i = 1:cfg.n_units
-            mu = rand() * cfg.w_len;
-            if rand() < cfg.p_has_field
-                if cfg.same_mu
-                    left_mu = mu;
-                else
-                    left_mu = rand() * cfg.w_len;
+    for d_i = 1:19
+        for q_i = 1:19
+            % Number of neurons
+            Q{d_i}{q_i}.left = zeros(cfg.n_units, cfg.w_len);
+            Q{d_i}{q_i}.right = zeros(cfg.n_units, cfg.w_len);
+            for n_i = 1:cfg.n_units
+                mu = rand() * cfg.w_len;
+                if rand() < cfg.p_has_field
+                    if cfg.same_mu
+                        left_mu = mu;
+                    else
+                        left_mu = rand() * cfg.w_len;
+                    end
+                    left_peak = rand() * 0.5 + 0.5;
+                    left_sig = rand() * 5 + 2;
+                    Q{d_i}{q_i}.left(n_i, :) = gaussian_1d(cfg.w_len, left_peak, left_mu, left_sig);
                 end
-                left_peak = rand() * 0.5 + 0.5;
-                left_sig = rand() * 5 + 2;
-                Q{q_i}.left(n_i, :) = gaussian_1d(cfg.w_len, left_peak, left_mu, left_sig);
-            end
-            if rand() < cfg.p_has_field
-                if cfg.same_mu
-                    right_mu = mu;
-                else
-                    right_mu = rand() * cfg.w_len;
+                if rand() < cfg.p_has_field
+                    if cfg.same_mu
+                        right_mu = mu;
+                    else
+                        right_mu = rand() * cfg.w_len;
+                    end
+                    right_peak = rand() * 0.5 + 0.5;
+                    right_sig = rand() * 5 + 2;
+                    Q{d_i}{q_i}.right(n_i, :) = gaussian_1d(cfg.w_len, right_peak, right_mu, right_sig);
                 end
-                right_peak = rand() * 0.5 + 0.5;
-                right_sig = rand() * 5 + 2;
-                Q{q_i}.right(n_i, :) = gaussian_1d(cfg.w_len, right_peak, right_mu, right_sig);
             end
         end
     end

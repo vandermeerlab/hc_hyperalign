@@ -3,23 +3,28 @@ function mat_output = set_withsubj_nan(cfg_in, mat_input)
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);
 
+    if isempty(cfg.sub_ids_starts) && isempty(cfg.sub_ids_ends)
+        sub_ids = get_sub_ids_start_end();
+        if cfg.use_adr_data
+            cfg.sub_ids_starts = sub_ids.start.adr;
+            cfg.sub_ids_ends = sub_ids.end.adr;
+        else
+            cfg.sub_ids_starts = sub_ids.start.carey;
+            cfg.sub_ids_ends = sub_ids.end.carey;
+        end
+    end
+
     if iscell(mat_input)
         empty_val = {NaN};
     else
         empty_val = NaN;
     end
 
-    if cfg.use_adr_data
+    for s_i = 1:length(cfg.sub_ids_starts)
+        s_start = cfg.sub_ids_starts(s_i);
+        s_end = cfg.sub_ids_ends(s_i);
+
         mat_output = mat_input;
-        mat_output(1:4, 1:4) = empty_val;
-        mat_output(5:9, 5:9) = empty_val;
-        mat_output(10:11, 10:11) = empty_val;
-        mat_output(12:end, 12:end) = empty_val;
-    else
-        mat_output = mat_input;
-        mat_output(1:5, 1:5) = empty_val;
-        mat_output(6:7, 6:7) = empty_val;
-        mat_output(8:13, 8:13) = empty_val;
-        mat_output(14:end, 14:end) = empty_val;
+        mat_output(s_start:s_end, s_start:s_end) = empty_val;
     end
 end

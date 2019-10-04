@@ -5,11 +5,22 @@ function [z_score, mean_shuffles, proportion, M_ID] = calculate_common_metrics(c
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);
 
+    if ~isfield(cfg, 'sub_ids_starts') && ~isfield(cfg, 'sub_ids_ends')
+        sub_ids = get_sub_ids_start_end();
+        if cfg.use_adr_data
+            cfg.sub_ids_starts = sub_ids.start.adr;
+            cfg.sub_ids_ends = sub_ids.end.adr;
+        else
+            cfg.sub_ids_starts = sub_ids.start.carey;
+            cfg.sub_ids_ends = sub_ids.end.carey;
+        end
+    end
+
     %% Matrix of zscores of actual distance among shuffle distances.
     zscore_mat = zeros(size(actual_dists_mat));
     percent_mat = zeros(size(actual_dists_mat));
-    for i = 1:length(actual_dists_mat)
-        for j = 1:length(actual_dists_mat)
+    for i = 1:size(actual_dists_mat, 1)
+        for j = 1:size(actual_dists_mat, 2)
             sf_dists = squeeze(sf_dists_mat(i, j, :))';
             zs = zscore([sf_dists, actual_dists_mat(i, j)]);
             zscore_mat(i, j) = zs(end);
