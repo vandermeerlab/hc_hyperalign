@@ -26,6 +26,12 @@ for d_i = 1:length(datas)
     plot_PV(cfg_pv_plot, data);
 end
 
+%% Plot off-diagonal of Population Vector correlation
+cfg_off_pv_plot = [];
+cfg_off_pv_plot.ax = subplot(2, 3, 4);
+cfg_off_pv_plot.ylim = [0, 1];
+plot_off_diag_PV(cfg_off_pv_plot, datas, themes);
+
 %% Hyperalignment procedure
 % Carey: 1, ADR: 2;
 datas = {Q, adr_Q};

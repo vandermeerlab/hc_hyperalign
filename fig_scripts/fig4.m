@@ -2,9 +2,9 @@ rng(mean('hyperalignment'));
 colors = get_hyper_colors();
 sub_ids = get_sub_ids_start_end();
 
-% Correlation analysis in various simulations: L_R_ind, L_xor_R, L_R_same_μ, sim_HT
+% Correlation analysis in various simulations: L_R_ind, L_xor_R, L_R_same_mu, sim_HT
 datas = {Q_ind, Q_xor, Q_same_mu, Q_sim_HT};
-themes = {'ind.', 'x-or', 'ind.(same ?)', 'sim. HT'};
+themes = {'ind.', 'x-or', 'ind.(same mu)', 'sim. HT'};
 %% Example inputs
 cfg_ex = [];
 cfg_ex.n_units = 30;
@@ -15,7 +15,7 @@ ex_sim_HT = sim_HT(cfg_ex);
 
 ex_datas = {ex_ind, ex_xor, ex_same_mu, ex_sim_HT};
 for d_i = 1:length(ex_datas)
-    subplot(4, 4, (4*(d_i-1) + 1))
+    subplot(4, 3, (3*(d_i-1) + 1))
     imagesc([ex_datas{d_i}{1}{1}.left, ex_datas{d_i}{1}{1}.right]);
     colorbar;
     set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 12);
@@ -23,7 +23,7 @@ for d_i = 1:length(ex_datas)
     title(themes{d_i});
 end
 
-set(gcf, 'Position', [179 7 1299 948]);
+set(gcf, 'Position', [199 42 1257 954]);
 
 %% Hyperalignment procedure
 for d_i = 1:length(datas)
@@ -34,8 +34,8 @@ for d_i = 1:length(datas)
 end
 
 %% HT prediction in various simulations.
-x_limits = {[-15, 15], [-15, 15], [-40, 40], [-80, 80]};
-x_tick = {-15:2.5:15, -15:2.5:15, -40:20:40, -80:20:80};
+x_limits = {[-15, 15], [-15, 15], [-40, 40], [-60, 60]};
+x_tick = {-15:2.5:15, -15:2.5:15, -40:20:40, -60:15:60};
 binsizes = [1.5, 1.5, 4, 5];
 
 cfg_plot = [];
@@ -48,7 +48,7 @@ for d_i = 1:length(datas)
 
     matrix_objs = {{mean_shuffles.out_actual_mean_sf}};
     for m_i = 1:length(matrix_objs)
-        this_ax = subplot(4, 4, (4*(d_i-1) + 2));
+        this_ax = subplot(4, 3, (3*(d_i-1) + 2));
         p_i = (m_i - 1) * 4 + d_i; % % plot index to access x_limits etc defined above
         matrix_obj = matrix_objs{m_i};
 
@@ -69,16 +69,17 @@ cfg_pv_plot = [];
 cfg_pv_plot.clim = [-0.2 1];
 for d_i = 1:length(datas)
     data = datas{d_i};
-    cfg_pv_plot.ax = subplot(4, 4, (4*(d_i-1) + 3));
+    cfg_pv_plot.ax = subplot(4, 3, (3*(d_i-1) + 3));
     plot_PV(cfg_pv_plot, horzcat(data{:}));
 end
 
 %% Cell-by-cell correlation across subjects
 datas = {horzcat(Q_ind{:}), horzcat(Q_xor{:}), horzcat(Q_same_mu{:}), horzcat(Q_sim_HT{:}), Q};
-themes = {'ind.', 'x-or', 'same μ', 'sim. HT', 'Carey'};
+themes = {'ind.', 'x-or', 'same mu', 'sim. HT', 'Carey'};
 
+figure;
 cfg_cell_plot = [];
-cfg_cell_plot.ax = subplot(4, 4, 8);
+cfg_cell_plot.ax = subplot(2, 1, 1);
 sub_ids_starts = [sub_ids.start.carey];
 sub_ids_ends = [sub_ids.end.carey];
 for i = 2:length(Q)
@@ -96,15 +97,17 @@ for i = 1:length(datas)
         cfg_cell_plot.sub_ids_ends{i} = sub_ids.end.carey;
     end
 end
-cfg_cell_plot.ylim = [-0.05, 0.45];
+cfg_cell_plot.ylim = [-0.1, 0.5];
 
 plot_cell_by_cell(cfg_cell_plot, datas, themes)
 
+set(gcf, 'Position', [680 315 532 663]);
+
 %% Plot off-diagonal of Population Vector correlation
 datas = {horzcat(Q_ind{:}), horzcat(Q_xor{:}), horzcat(Q_same_mu{:}), horzcat(Q_sim_HT{:}), Q};
-themes = {'ind.', 'x-or', 'same μ', 'sim. HT', 'Carey'};
+themes = {'ind.', 'x-or', 'same mu', 'sim. HT', 'Carey'};
 
 cfg_off_pv_plot = [];
-cfg_off_pv_plot.ax = subplot(4, 4, 12);
-cfg_off_pv_plot.ylim = [-0.3, 0.6];
+cfg_off_pv_plot.ax = subplot(2, 1, 2);
+cfg_off_pv_plot.ylim = [-0.3, 0.5];
 plot_off_diag_PV(cfg_off_pv_plot, datas, themes);
