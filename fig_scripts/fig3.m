@@ -41,9 +41,9 @@ for d_i = 1:length(datas)
 end
 
 %% ID prediction in Carey and ADR
-x_limits = {[0, 600], [0, 1200]}; % two rows, three columns in figure
-x_tick = {0:100:600, 0:200:1200};
-binsizes = [50, 100]; % for histograms
+x_limits = {[0, 600], [0, 300]}; % two rows, three columns in figure
+x_tick = {0:100:600, 0:50:300};
+binsizes = [50, 25]; % for histograms
 
 cfg_plot = [];
 cfg_plot.hist_colors = {colors.HT.hist, colors.ID.hist};

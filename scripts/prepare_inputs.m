@@ -12,7 +12,7 @@ cfg_data.removeInterneurons = 1;
 %% Get ADR Q input
 cfg_data = [];
 cfg_data.use_adr_data = 1;
-cfg_data.removeInterneurons = 0;
+cfg_data.removeInterneurons = 1;
 % cfg_data.normalization = 'norm_average';
 [adr_Q] = prepare_all_Q(cfg_data);
 

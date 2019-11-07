@@ -13,7 +13,7 @@ function [Q, restrictionLabels] = prepare_all_Q(cfg_in)
     end
 
     Q = cell(1, length(data_paths));
-    remove_idx = get_interneuron_idx();
+    remove_idx = get_interneuron_idx(cfg);
 
     for p_i = 1:length(data_paths)
         [Q{p_i}] = get_processed_Q(cfg, data_paths{p_i});
