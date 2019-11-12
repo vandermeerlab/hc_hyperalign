@@ -24,3 +24,8 @@ Before you try to do anything below. Use `set_hyper_path` and check for path set
 
 ### Plots
 You can find figure producing scrtips in `scripts/plotting`. Before that, for preparing the data structure, check `scripts/common`.
+
+## Acknowledgement
+shadedErrorBar: https://github.com/raacampbell/shadedErrorBar
+
+hypertools: https://github.com/ContextLab/hypertools-matlab
