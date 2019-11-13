@@ -94,6 +94,7 @@ hold on;
 set(gca, 'XTick', [], 'YTick', [ylim(1):dy:ylim(2)], 'XLim', [x(1) x(end)], ...
     'YLim', [ylim(1) ylim(2)], 'FontSize', 24, 'LineWidth', 1, 'TickDir', 'out');
 box off;
+xlabel('Time'); ylabel('Z-score')
 
 set(gcf, 'Position', [560 363 1047 585]);
 
@@ -116,5 +117,8 @@ std_var_pcs = std(cum_vars, 1);
 subplot(1, 2, 2);
 x = 1:num_pcs;
 h = errorbar(x, mean_var_pcs, std_var_pcs, 'LineStyle', '-', 'LineWidth', 1);
+hold on;
+plot(x, mean_var_pcs, '.', 'MarkerSize', 15, 'Color', [0 0.4470 0.7410]);
 set(gca, 'FontSize', 24, 'LineWidth', 1, 'TickDir', 'out');
+xlabel('Number of PCs'); ylabel('Explained Variance (%)')
 box off;
