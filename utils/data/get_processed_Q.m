@@ -4,6 +4,7 @@ function [Q] = get_processed_Q(cfg_in, session_path)
     cfg_def.use_matched_trials = 1;
     cfg_def.use_adr_data = 0;
     cfg_def.removeInterneurons = 0;
+    cfg_def.int_thres = 10;
     cfg_def.minSpikes = 25;
 
     mfun = mfilename;
@@ -20,11 +21,15 @@ function [Q] = get_processed_Q(cfg_in, session_path)
         cfg_spikes = {};
         cfg_spikes.load_questionable_cells = 1;
         S = LoadSpikes(cfg_spikes);
-        % if cfg.removeInterneurons
-        %     cfg_temp = []; cfg_temp.showFRhist = 0;
-        %     csc = LoadCSC([]);
-        %     S = RemoveInterneuronsHC(cfg_temp,S, csc);
-        % end
+    end
+    if cfg.removeInterneurons
+        channels = FindFiles('*.Ncs');
+        cfg_lfp = []; cfg_lfp.fc = {channels{1}};
+        lfp = LoadCSC(cfg_lfp);
+        
+        cfg_int = []; cfg_int.showFRhist = 0;
+        cfg_int.max_fr = cfg.int_thres;
+        S = RemoveInterneuronsHC(cfg_int,S, lfp);
     end
 
     % The end times of left and right trials.
