@@ -19,7 +19,7 @@ cfg_data.removeInterneurons = 1;
 %% Get simulated inputs.
 Q_xor = L_xor_R([]);
 Q_ind = L_R_ind([]);
-Q_same_mu = L_R_ind(struct('same_mu', 1));
+Q_same_ps = L_R_ind(struct('same_params', [1, 1, 1]));
 Q_sim_HT = sim_HT([]);
 
 %% Get TC inputs.
