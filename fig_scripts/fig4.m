@@ -2,18 +2,18 @@ rng(mean('hyperalignment'));
 colors = get_hyper_colors();
 sub_ids = get_sub_ids_start_end();
 
-% Correlation analysis in various simulations: L_R_ind, L_xor_R, L_R_same_mu, sim_HT
-datas = {Q_ind, Q_xor, Q_same_mu, Q_sim_HT};
-themes = {'ind.', 'x-or', 'ind.(same mu)', 'sim. HT'};
+% Correlation analysis in various simulations: L_R_ind, L_xor_R, L_R_same_params, sim_HT
+datas = {Q_ind, Q_xor, Q_same_ps, Q_sim_HT};
+themes = {'ind.', 'x-or', 'ind.(same params)', 'sim. HT'};
 %% Example inputs
 cfg_ex = [];
 cfg_ex.n_units = 30;
 ex_xor = L_xor_R(cfg_ex);
 ex_ind = L_R_ind(cfg_ex);
-ex_same_mu = L_R_ind(struct('same_mu', 1, 'n_units', 30));
-ex_sim_HT = sim_HT(cfg_ex);
+ex_same_ps = L_R_ind(struct('same_params', [1, 1, 1], 'n_units', 30));
+% ex_sim_HT = sim_HT(cfg_ex);
 
-ex_datas = {ex_ind, ex_xor, ex_same_mu, ex_sim_HT};
+ex_datas = {ex_ind, ex_xor, ex_same_ps, ex_sim_HT};
 for d_i = 1:length(ex_datas)
     subplot(4, 3, (3*(d_i-1) + 1))
     imagesc([ex_datas{d_i}{1}{1}.left, ex_datas{d_i}{1}{1}.right]);
@@ -74,8 +74,8 @@ for d_i = 1:length(datas)
 end
 
 %% Cell-by-cell correlation across subjects
-datas = {horzcat(Q_ind{:}), horzcat(Q_xor{:}), horzcat(Q_same_mu{:}), horzcat(Q_sim_HT{:}), Q};
-themes = {'ind.', 'x-or', 'same mu', 'sim. HT', 'Carey'};
+datas = {horzcat(Q_ind{:}), horzcat(Q_xor{:}), horzcat(Q_same_ps{:}), horzcat(Q_sim_HT{:}), Q};
+themes = {'ind.', 'x-or', 'same params', 'sim. HT', 'Carey'};
 
 figure;
 cfg_cell_plot = [];
@@ -104,8 +104,8 @@ plot_cell_by_cell(cfg_cell_plot, datas, themes)
 set(gcf, 'Position', [680 315 532 663]);
 
 %% Plot off-diagonal of Population Vector correlation
-datas = {horzcat(Q_ind{:}), horzcat(Q_xor{:}), horzcat(Q_same_mu{:}), horzcat(Q_sim_HT{:}), Q};
-themes = {'ind.', 'x-or', 'same mu', 'sim. HT', 'Carey'};
+datas = {horzcat(Q_ind{:}), horzcat(Q_xor{:}), horzcat(Q_same_ps{:}), horzcat(Q_sim_HT{:}), Q};
+themes = {'ind.', 'x-or', 'same params', 'sim. HT', 'Carey'};
 
 cfg_off_pv_plot = [];
 cfg_off_pv_plot.ax = subplot(2, 1, 2);
