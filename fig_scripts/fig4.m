@@ -11,7 +11,7 @@ cfg_ex.n_units = 30;
 ex_xor = L_xor_R(cfg_ex);
 ex_ind = L_R_ind(cfg_ex);
 ex_same_ps = L_R_ind(struct('same_params', [1, 1, 1], 'n_units', 30));
-% ex_sim_HT = sim_HT(cfg_ex);
+ex_sim_HT = sim_HT(cfg_ex);
 
 ex_datas = {ex_ind, ex_xor, ex_same_ps, ex_sim_HT};
 for d_i = 1:length(ex_datas)
