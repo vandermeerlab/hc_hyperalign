@@ -1,4 +1,4 @@
-function plot_off_diag_PV(cfg_in, datas, themes)
+function [mean_coefs_types, sd_coefs_types, all_coefs_types] = plot_off_diag_PV(cfg_in, datas, themes)
     % Plot Population Vector analysis
     cfg_def = [];
     cfg_def.fs = 12;
@@ -33,8 +33,10 @@ function plot_off_diag_PV(cfg_in, datas, themes)
 
         mean_coefs = mean(cat(3, coefs{:}), 3);
         off_diag_coefs = diag(mean_coefs(1:w_len/2, (w_len/2+1):end));
+        
         mean_coefs_types(d_i) = mean(off_diag_coefs);
         sd_coefs_types(d_i) = std(off_diag_coefs);
+        all_coefs_types{d_i} = off_diag_coefs;
     end
 
     dx = 0.1;

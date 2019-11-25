@@ -60,7 +60,7 @@ cfg_cell_plot.ylim = [-0.1, 0.5];
 
 [mean_coefs, sd_coefs, all_coefs_types] = plot_cell_by_cell(cfg_cell_plot, datas, themes);
 
-% Wilcoxon signed rank test for Carey and ADR
+% Wilcoxon signed rank test for Carey and ADR cell-by-cell
 ranksum(all_coefs_types{1}, all_coefs_types{2})
 %% Population Vector analysis
 cfg_pv_plot = [];
@@ -75,4 +75,8 @@ end
 cfg_off_pv_plot = [];
 cfg_off_pv_plot.ax = subplot(2, 3, 6);
 cfg_off_pv_plot.ylim = [0, 1];
-plot_off_diag_PV(cfg_off_pv_plot, datas, themes);
+
+[mean_coefs, sd_coefs, all_coefs_types] = plot_off_diag_PV(cfg_off_pv_plot, datas, themes);
+
+% Wilcoxon signed rank test for Carey and ADR off-diagonal
+ranksum(all_coefs_types{1}, all_coefs_types{2})
