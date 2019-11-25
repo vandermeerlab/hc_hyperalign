@@ -1,4 +1,4 @@
-function plot_cell_by_cell(cfg_in, datas, themes)
+function [mean_coefs_types, sd_coefs_types, all_coefs_types] = plot_cell_by_cell(cfg_in, datas, themes)
     % Plot cell-by-cell correlation across subjects
     cfg_def = [];
     cfg_def.fs = 12;
@@ -11,10 +11,12 @@ function plot_cell_by_cell(cfg_in, datas, themes)
     else
         cfg.ax = gca;
     end
-
+    
+    rng(mean('hyperalignment'));
     mean_coefs_types = zeros(length(datas), 1);
     % sem_coefs_types = zeros(length(datas), 1);
     sd_coefs_types = zeros(length(datas), 1);
+    all_coefs_types = cell(length(datas), 1);
 
     for d_i = 1:length(datas)
         data = datas{d_i};
@@ -43,6 +45,7 @@ function plot_cell_by_cell(cfg_in, datas, themes)
         mean_coefs_types(d_i) = mean(mean_coefs);
         % sem_coefs_types(d_i) = std(mean_coefs) / sqrt(length(mean_coefs));
         sd_coefs_types(d_i) = std(mean_coefs);
+        all_coefs_types{d_i} = mean_coefs;
     end
 
     dx = 0.1;

@@ -1,7 +1,6 @@
 colors = get_hyper_colors();
 
 %% Hyperalignment procedure
-% Carey: 1, ADR: 2;
 data = Q;
 [actual_dists_mat_wh, id_dists_mat_wh, sf_dists_mat_wh] = predict_with_shuffles([], data, @predict_with_L_R_withhold);
 
@@ -21,9 +20,9 @@ data = TC;
 %% Withholding (Q) and Hypertransform and PCA-only (TC) in Carey
 datas = {Q, TC};
 
-x_limits = {[-6.5, 6.5], [-1050, 1050], [0, 1], [-6.5, 6.5], [-505000, 505000], [0, 1]}; % two rows, three columns in figure
-x_tick = {-6:6, -1000:250:1000, 0:0.2:1, -6:6, -500000:125000:500000, 0:0.2:1};
-binsizes = [1, 150, 0.1, 1, 75000, 0.1]; % for histograms
+x_limits = {[-6.5, 6.5], [-1050, 1050], [0, 1], [-6.5, 6.5], [-5.05e5, 5.05e5], [0, 1]}; % two rows, three columns in figure
+x_tick = {-6:6, -1000:250:1000, 0:0.2:1, -6:6, -5e5:1.25e5:5e5, 0:0.2:1};
+binsizes = [1, 150, 0.1, 1, 7.5e4, 0.1]; % for histograms
 
 all_hist_colors = {{colors.wh.hist}, {colors.HT.hist, colors.pca.hist}};
 all_fit_colors = {{colors.wh.fit}, {colors.HT.hist, colors.pca.hist}};
@@ -56,10 +55,10 @@ for d_i = 1:length(datas) % one row each for Withholding (Carey Q), HT and PCA (
         if m_i == 3
             cfg_plot.fit = 'none';
             cfg_plot.insert_zero = 0;
+            cfg_plot.plot_vert_zero = 0;
         end
 
         plot_hist2(cfg_plot, matrix_obj); % ht, then pca
-
     end
 end
 
@@ -92,7 +91,7 @@ h = shadedErrorBar(x, mean_across_w, std_across_w);
 set(h.mainLine, 'LineWidth', 1);
 hold on;
 set(gca, 'XTick', [], 'YTick', [ylim(1):dy:ylim(2)], 'XLim', [x(1) x(end)], ...
-    'YLim', [ylim(1) ylim(2)], 'FontSize', 24, 'LineWidth', 1, 'TickDir', 'out');
+    'YLim', [ylim(1) ylim(2)], 'FontSize', 12, 'LineWidth', 1, 'TickDir', 'out');
 box off;
 xlabel('Time'); ylabel('Z-score')
 
@@ -119,6 +118,6 @@ x = 1:num_pcs;
 h = errorbar(x, mean_var_pcs, std_var_pcs, 'LineStyle', '-', 'LineWidth', 1);
 hold on;
 plot(x, mean_var_pcs, '.', 'MarkerSize', 15, 'Color', [0 0.4470 0.7410]);
-set(gca, 'FontSize', 24, 'LineWidth', 1, 'TickDir', 'out');
+set(gca, 'FontSize', 12, 'LineWidth', 1, 'TickDir', 'out');
 xlabel('Number of PCs'); ylabel('Explained Variance (%)')
 box off;

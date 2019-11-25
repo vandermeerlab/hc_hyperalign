@@ -41,9 +41,14 @@ cfg_plot.hist_colors = {colors.HT.hist, colors.pca.hist};
 cfg_plot.fit_colors = {colors.HT.fit, colors.pca.fit};
 
 for d_i = 1:length(datas) % one row each for Carey, ADR
-    [z_score, mean_shuffles, proportion] = calculate_common_metrics([], actual_dists_mat{d_i}, ...
+    cfg_metric = [];
+    cfg_metric.use_adr_data = 0;
+    if d_i == 2
+        cfg_metric.use_adr_data = 1;
+    end
+    [z_score, mean_shuffles, proportion] = calculate_common_metrics(cfg_metric, actual_dists_mat{d_i}, ...
         id_dists_mat{d_i}, sf_dists_mat{d_i});
-    [z_score_pca, mean_shuffles_pca, proportion_pca] = calculate_common_metrics([], actual_dists_mat_pca{d_i}, ...
+    [z_score_pca, mean_shuffles_pca, proportion_pca] = calculate_common_metrics(cfg_metric, actual_dists_mat_pca{d_i}, ...
         id_dists_mat_pca{d_i}, sf_dists_mat_pca{d_i});
 
     matrix_objs = {{z_score.out_zscore_mat, z_score_pca.out_zscore_mat}, ...
@@ -60,10 +65,12 @@ for d_i = 1:length(datas) % one row each for Carey, ADR
         cfg_plot.binsize = binsizes(m_i);
         cfg_plot.ax = this_ax;
         cfg_plot.insert_zero = 1; % plot zero xtick
+        cfg_plot.plot_vert_zero = 1;
         cfg_plot.fit = 'vline'; % 'gauss', 'kernel', 'vline' or 'none (no fit)
         if m_i == 3
             cfg_plot.fit = 'none';
             cfg_plot.insert_zero = 0;
+            cfg_plot.plot_vert_zero = 0;
         end
 
         plot_hist2(cfg_plot, matrix_obj); % ht, then pca
