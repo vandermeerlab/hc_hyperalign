@@ -31,8 +31,8 @@ function [z_score, mean_shuffles, proportion, M_ID] = calculate_common_metrics(c
     z_score.out_zscore_mat = out_zscore_mat;
     z_score.out_zscore_prop = sum(sum(out_zscore_mat < 0)) / sum(sum(~isnan(out_zscore_mat)));
 
-    % Signed rank test (zscore; two tailed)
-    z_score.sr_p_zscore = signrank(out_zscore_mat(:), 0);
+    % Signed rank test vs. 0 (two tailed)
+    z_score.sr_p = signrank(out_zscore_mat(:)å);
 
     %% Matrix of differences between actual distance (identity distance) and mean of shuffled distance.
     actual_mean_sf = actual_dists_mat - mean(sf_dists_mat, 3);
@@ -40,8 +40,9 @@ function [z_score, mean_shuffles, proportion, M_ID] = calculate_common_metrics(c
 
     % Proportion of distance obtained from M smaller than mean of shuffled distance.
     mean_shuffles.out_actual_mean_sf_prop = sum(sum(out_actual_mean_sf < 0)) / sum(sum(~isnan(out_actual_mean_sf)));
-    % Binomial stats
-    mean_shuffles.bino_p_mean = calculate_bino_p(sum(sum(out_actual_mean_sf < 0)), sum(sum(~isnan(out_actual_mean_sf))), 0.5);
+    % Signed rank test vs. 0 (two tailed)
+    mean_shuffles.sr_p = signrank(out_actual_mean_sf(:));
+
     % Normalize into 0 to 1
     % norm_mean_sf = out_actual_mean_sf - min(out_actual_mean_sf(:));
     % norm_mean_sf = out_actual_mean_sf;
@@ -51,6 +52,9 @@ function [z_score, mean_shuffles, proportion, M_ID] = calculate_common_metrics(c
     %% Proportion of actual distance and identity distance smaller than shuffled distances
     actual_sf_mat = sum(actual_dists_mat > sf_dists_mat, 3);
     proportion.out_actual_sf_mat = set_withsubj_nan(cfg, actual_sf_mat) / size(sf_dists_mat, 3);
+    % One-sample Kolmogorov-Smirnov test against uniform
+    uniform_pd = makedist('Uniform');
+    [~, proportion.ks_p] = kstest(x,'CDF',uniform_pd);
 
     % Proportion of distance obtained from M smaller than identity mapping
     % M_ID.out_M_ID = set_withsubj_nan(cfg, (actual_dists_mat - id_dists_mat));
