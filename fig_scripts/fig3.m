@@ -58,7 +58,7 @@ cfg_cell_plot.sub_ids_starts = {sub_ids.start.carey, sub_ids.start.adr};
 cfg_cell_plot.sub_ids_ends = {sub_ids.end.carey, sub_ids.end.adr};
 cfg_cell_plot.ylim = [-0.1, 0.5];
 
-[mean_coefs, sd_coefs, all_coefs_types] = plot_cell_by_cell(cfg_cell_plot, datas, themes);
+[mean_coefs, sem_coefs_types, all_coefs_types] = plot_cell_by_cell(cfg_cell_plot, datas, themes);
 
 % Wilcoxon signed rank test for Carey and ADR cell-by-cell
 ranksum(all_coefs_types{1}, all_coefs_types{2})

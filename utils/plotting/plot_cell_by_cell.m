@@ -1,4 +1,4 @@
-function [mean_coefs_types, sd_coefs_types, all_coefs_types] = plot_cell_by_cell(cfg_in, datas, themes)
+function [mean_coefs_types, sem_coefs_types, all_coefs_types] = plot_cell_by_cell(cfg_in, datas, themes)
     % Plot cell-by-cell correlation across subjects
     cfg_def = [];
     cfg_def.fs = 12;
@@ -14,8 +14,7 @@ function [mean_coefs_types, sd_coefs_types, all_coefs_types] = plot_cell_by_cell
     
     rng(mean('hyperalignment'));
     mean_coefs_types = zeros(length(datas), 1);
-    % sem_coefs_types = zeros(length(datas), 1);
-    sd_coefs_types = zeros(length(datas), 1);
+    sem_coefs_types = zeros(length(datas), 1);
     all_coefs_types = cell(length(datas), 1);
 
     for d_i = 1:length(datas)
@@ -27,31 +26,27 @@ function [mean_coefs_types, sd_coefs_types, all_coefs_types] = plot_cell_by_cell
             sub_ids_start = cfg.sub_ids_starts{1};
             sub_ids_end = cfg.sub_ids_ends{1};
         end
-        mean_coefs = zeros(1, length(sub_ids_start));
+        
+        cell_coefs = [];
+        for i = 1:length(data)
+            whiten_left = data{i}.left + 0.00001 * rand(size(data{i}.left));
+            whiten_right = data{i}.right + 0.00001 * rand(size(data{i}.right));
 
-        for s_i = 1:length(sub_ids_start)
-            cell_coefs = [];
-            for w_i = sub_ids_start(s_i):sub_ids_end(s_i)
-                whiten_left = data{w_i}.left + 0.00001 * rand(size(data{w_i}.left));
-                whiten_right = data{w_i}.right + 0.00001 * rand(size(data{w_i}.right));
-
-                for c_i = 1:size(data{w_i}.left, 1)
-                    [coef] = corrcoef(whiten_left(c_i, :), whiten_right(c_i, :));
-                    cell_coefs = [cell_coefs, coef(1, 2)];
-                end
+            for j = 1:size(whiten_left, 1)
+                [coef] = corrcoef(whiten_left(j, :), whiten_right(j, :));
+                cell_coefs = [cell_coefs, coef(1, 2)];
             end
-            mean_coefs(s_i) = mean(cell_coefs, 'omitnan');
         end
-        mean_coefs_types(d_i) = mean(mean_coefs);
-        % sem_coefs_types(d_i) = std(mean_coefs) / sqrt(length(mean_coefs));
-        sd_coefs_types(d_i) = std(mean_coefs);
-        all_coefs_types{d_i} = mean_coefs;
+
+        mean_coefs_types(d_i) = nanmean(cell_coefs);
+        sem_coefs_types(d_i) = nanstd(cell_coefs) / sqrt(length(sub_ids_start));
+        all_coefs_types{d_i} = cell_coefs;
     end
 
     dx = 0.1;
     x = dx * (1:length(datas));
     xpad = 0.05;
-    h = errorbar(x, mean_coefs_types, sd_coefs_types, 'LineStyle', 'none', 'LineWidth', 2);
+    h = errorbar(x, mean_coefs_types, sem_coefs_types, 'LineStyle', 'none', 'LineWidth', 2);
     set(h, 'Color', 'k');
     hold on;
     plot(x, mean_coefs_types, '.k', 'MarkerSize', 20);
