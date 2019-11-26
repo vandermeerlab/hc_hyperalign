@@ -1,4 +1,4 @@
-function [mean_coefs_types, sd_coefs_types, all_coefs_types] = plot_off_diag_PV(cfg_in, datas, themes)
+function [mean_coefs_types, sem_coefs_types, all_coefs_types] = plot_off_diag_PV(cfg_in, datas, themes)
     % Plot Population Vector analysis
     cfg_def = [];
     cfg_def.fs = 12;
@@ -13,7 +13,7 @@ function [mean_coefs_types, sd_coefs_types, all_coefs_types] = plot_off_diag_PV(
     end
 
     mean_coefs_types = zeros(length(datas), 1);
-    sd_coefs_types = zeros(length(datas), 1);
+    sem_coefs_types = zeros(length(datas), 1);
 
     for d_i = 1:length(datas)
         data = datas{d_i};
@@ -35,14 +35,14 @@ function [mean_coefs_types, sd_coefs_types, all_coefs_types] = plot_off_diag_PV(
         off_diag_coefs = diag(mean_coefs(1:w_len/2, (w_len/2+1):end));
         
         mean_coefs_types(d_i) = mean(off_diag_coefs);
-        sd_coefs_types(d_i) = std(off_diag_coefs);
+        sem_coefs_types(d_i) = std(off_diag_coefs) / sqrt(length(off_diag_coefs));
         all_coefs_types{d_i} = off_diag_coefs;
     end
 
     dx = 0.1;
     x = dx * (1:length(datas));
     xpad = 0.05;
-    h = errorbar(x, mean_coefs_types, sd_coefs_types, 'LineStyle', 'none', 'LineWidth', 2);
+    h = errorbar(x, mean_coefs_types, sem_coefs_types, 'LineStyle', 'none', 'LineWidth', 2);
     set(h, 'Color', 'k');
     hold on;
     plot(x, mean_coefs_types, '.k', 'MarkerSize', 20);
