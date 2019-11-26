@@ -10,7 +10,7 @@ for d_i = 1:length(datas)
 end
 
 %% Source-target figures in Carey
-[z_score, mean_shuffles, proportion] = calculate_common_metrics([], actual_dists_mat{1}, ...
+[z_score_m, mean_shuffles_m, proportion_m] = calculate_common_metrics([], actual_dists_mat{1}, ...
     id_dists_mat{1}, sf_dists_mat{1});
 
 titles = {'HT z-score vs. shuffle', 'HT distance - shuffled dist.', 'p(HT dist. > shuffled dist.)'};
@@ -18,7 +18,7 @@ titles = {'HT z-score vs. shuffle', 'HT distance - shuffled dist.', 'p(HT dist. 
 cfg_plot = [];
 clims = {[-6 6], [-1000 1000], [0 1]};
 
-matrix_obj = {z_score.out_zscore_mat, mean_shuffles.out_actual_mean_sf, proportion.out_actual_sf_mat};
+matrix_obj = {z_score_m.out_zscore_mat, mean_shuffles_m.out_actual_mean_sf, proportion_m.out_actual_sf_mat};
 for m_i = 1:length(matrix_obj)
     this_ax = subplot(3, 3, m_i);
 
@@ -46,14 +46,14 @@ for d_i = 1:length(datas) % one row each for Carey, ADR
     if d_i == 2
         cfg_metric.use_adr_data = 1;
     end
-    [z_score, mean_shuffles, proportion] = calculate_common_metrics(cfg_metric, actual_dists_mat{d_i}, ...
+    [z_score{d_i}, mean_shuffles{d_i}, proportion{d_i}] = calculate_common_metrics(cfg_metric, actual_dists_mat{d_i}, ...
         id_dists_mat{d_i}, sf_dists_mat{d_i});
-    [z_score_pca, mean_shuffles_pca, proportion_pca] = calculate_common_metrics(cfg_metric, actual_dists_mat_pca{d_i}, ...
+    [z_score_pca{d_i}, mean_shuffles_pca{d_i}, proportion_pca{d_i}] = calculate_common_metrics(cfg_metric, actual_dists_mat_pca{d_i}, ...
         id_dists_mat_pca{d_i}, sf_dists_mat_pca{d_i});
 
-    matrix_objs = {{z_score.out_zscore_mat, z_score_pca.out_zscore_mat}, ...
-        {mean_shuffles.out_actual_mean_sf, mean_shuffles_pca.out_actual_mean_sf}, ...
-        {proportion.out_actual_sf_mat, proportion_pca.out_actual_sf_mat}};
+    matrix_objs = {{z_score{d_i}.out_zscore_mat, z_score_pca{d_i}.out_zscore_mat}, ...
+        {mean_shuffles{d_i}.out_actual_mean_sf, mean_shuffles_pca{d_i}.out_actual_mean_sf}, ...
+        {proportion{d_i}.out_actual_sf_mat, proportion_pca{d_i}.out_actual_sf_mat}};
 
     for m_i = 1:length(matrix_objs) % loop over columns
         this_ax = subplot(3, 3, (3 * d_i) + m_i);
@@ -77,3 +77,14 @@ for d_i = 1:length(datas) % one row each for Carey, ADR
 
     end
 end
+
+%% Stats of HT vs. PCA-only
+% Z-score of HT vs PCA-only in Carey
+calculate_bino_p(sum(sum(z_score{1}.out_zscore_mat < z_score_pca{1}.out_zscore_mat)), sum(sum(~isnan(z_score{1}.out_zscore_mat))), 0.5)
+% Z-score of HT vs PCA-only in ADR
+calculate_bino_p(sum(sum(z_score{2}.out_zscore_mat < z_score_pca{2}.out_zscore_mat)), sum(sum(~isnan(z_score{2}.out_zscore_mat))), 0.5)
+
+% Mean of HT vs PCA-only in Carey
+calculate_bino_p(sum(sum(mean_shuffles{1}.out_actual_mean_sf < mean_shuffles_pca{1}.out_actual_mean_sf)), sum(sum(~isnan(mean_shuffles{1}.out_actual_mean_sf))), 0.5)
+% Mean of HT vs PCA-only in ADR
+calculate_bino_p(sum(sum(mean_shuffles{2}.out_actual_mean_sf < mean_shuffles_pca{2}.out_actual_mean_sf)), sum(sum(~isnan(mean_shuffles{2}.out_actual_mean_sf))), 0.5)
