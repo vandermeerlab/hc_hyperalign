@@ -2,6 +2,8 @@ function [TC] = get_tuning_curve(cfg_in, session_path)
     % Adapted from https://github.com/vandermeerlab/vandermeerlab/blob/master/code-matlab/example_workflows/WORKFLOW_PlotOrderedRaster.m
 
     cfg_def.use_matched_trials = 1;
+    cfg_def.removeInterneurons = 0;
+    cfg_def.int_thres = 10;
     cfg_def.minSpikes = 25;
 
     mfun = mfilename;
@@ -16,6 +18,16 @@ function [TC] = get_tuning_curve(cfg_in, session_path)
     cfg_spikes = {};
     cfg_spikes.load_questionable_cells = 1;
     S = LoadSpikes(cfg_spikes);
+
+    if cfg.removeInterneurons
+        channels = FindFiles('*.Ncs');
+        cfg_lfp = []; cfg_lfp.fc = {channels{1}};
+        lfp = LoadCSC(cfg_lfp);
+
+        cfg_int = []; cfg_int.showFRhist = 0;
+        cfg_int.max_fr = cfg.int_thres;
+        S = RemoveInterneuronsHC(cfg_int,S, lfp);
+    end
 
     %% set up data structs for 2 experimental conditions -- see lab wiki for this task at:
     % http://ctnsrv.uwaterloo.ca/vandermeerlab/doku.php?id=analysis:task:motivationalt
@@ -82,9 +94,7 @@ function [TC] = get_tuning_curve(cfg_in, session_path)
     %% get tuning curves, see lab wiki at:
     % http://ctnsrv.uwaterloo.ca/vandermeerlab/doku.php?id=analysis:nsb2015:week12
     for iCond = 1:nCond
-
-        cfg_tc = []; cfg_tc.smoothingKernel = gausskernel(1 / 0.05, 0.02 / 0.05); cfg_tc.minOcc = 0.25;
-        % cfg_tc = []; cfg_tc.smoothingKernel = gausskernel(11, 1); cfg_tc.minOcc = 0.25;
+        cfg_tc = []; cfg_tc.smoothingKernel = gausskernel(11, 1); cfg_tc.minOcc = 0.25;
         expCond(iCond).tc = TuningCurves(cfg_tc,expCond(iCond).S,expCond(iCond).linpos);
         [~,expCond(iCond).cp_bin] = histc(expCond(iCond).cp.data, expCond(iCond).tc.usr.binEdges);
 

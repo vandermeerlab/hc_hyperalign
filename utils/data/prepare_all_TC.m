@@ -1,6 +1,7 @@
 function [TC, restrictionLabels] = prepare_all_TC(cfg_in)
     % Get processed data
     cfg_def.only_use_cp = 1;
+    cfg_def.normalization = 0;
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);
 
@@ -26,5 +27,9 @@ function [TC, restrictionLabels] = prepare_all_TC(cfg_in)
     for i = 1:length(TC)
         TC{i}.left = TC{i}.left.tc(:, keep_idx);
         TC{i}.right = TC{i}.right.tc(:, keep_idx);
+        if cfg.normalization
+            TC{i}.left = zscore(TC{i}.left, 0, 2);
+            TC{i}.right = zscore(TC{i}.right, 0, 2);
+        end
     end
 end

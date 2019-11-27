@@ -5,6 +5,7 @@ function [Q] = get_processed_Q(cfg_in, session_path)
     cfg_def.use_adr_data = 0;
     cfg_def.removeInterneurons = 0;
     cfg_def.int_thres = 10;
+    cfg_def.normalization = 'none';
     cfg_def.minSpikes = 25;
 
     mfun = mfilename;
@@ -26,7 +27,7 @@ function [Q] = get_processed_Q(cfg_in, session_path)
         channels = FindFiles('*.Ncs');
         cfg_lfp = []; cfg_lfp.fc = {channels{1}};
         lfp = LoadCSC(cfg_lfp);
-        
+
         cfg_int = []; cfg_int.showFRhist = 0;
         cfg_int.max_fr = cfg.int_thres;
         S = RemoveInterneuronsHC(cfg_int,S, lfp);
@@ -63,14 +64,24 @@ function [Q] = get_processed_Q(cfg_in, session_path)
     Q_whole = MakeQfromS(cfg_Q, S);
     % Restrict Q with only matched trials
     [Q_L, Q_R] = get_last_n_sec_LR(Q_whole, L_tend, R_tend, cfg.last_n_sec);
-    Q = aver_Q_acr_trials(Q_L, Q_R);
-    % if strcmp(cfg.normalization, 'norm_average')
-    %     Q_matched = restrict(Q_whole, tstart, tend);
-    %     % Q_matched.data = Q_matched.data - mean(Q_matched.data, 2);
-    %     Q_matched.data = zscore(Q_matched.data, 0, 2);
-    %     [Q_L, Q_R] = get_last_n_sec_LR(Q_matched, L_tend, R_tend, cfg.last_n_sec);
-    %     Q = aver_Q_acr_trials(Q_L, Q_R);
-    % end
+    if strcmp(cfg.normalization, 'none')
+        Q = aver_Q_acr_trials(Q_L, Q_R);
+    elseif strcmp(cfg.normalization, 'average_norm')
+        Q = normalize_Q('ind', aver_Q_acr_trials(Q_L, Q_R));
+    elseif strcmp(cfg.normalization, 'norm_average')
+        [Q_L, Q_R] = get_last_n_sec_LR(Q_whole, L_tend, R_tend, cfg.last_n_sec);
+        w_len = size(Q_L{1}, 2);
+        Q_L_norm = zscore(horzcat(Q_L{:}), 0, 2);
+        Q_R_norm = zscore(horzcat(Q_R{:}), 0, 2);
+        for i = 1:length(Q_L)
+            Q_L{i} = Q_L_norm(:, (i-1)*w_len+1:i*w_len);
+            Q_R{i} = Q_R_norm(:, (i-1)*w_len+1:i*w_len);
+        end
+        Q = aver_Q_acr_trials(Q_L, Q_R);
+    end
+    % Normalize across whole session, which we don't consider for now.
+    % Q_matched = restrict(Q_whole, tstart, tend);
+    % Q_matched.data = zscore(Q_matched.data, 0, 2);
 end
 
 % Keep only last few seconds for left and right trials
