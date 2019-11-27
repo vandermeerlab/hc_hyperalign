@@ -54,14 +54,16 @@ set(gcf, 'Position', [316 253 1160 653]);
 %% Cell-by-cell correlation across subjects
 cfg_cell_plot = [];
 cfg_cell_plot.ax = subplot(2, 3, 3);
-cfg_cell_plot.sub_ids_starts = {sub_ids.start.carey, sub_ids.start.adr};
-cfg_cell_plot.sub_ids_ends = {sub_ids.end.carey, sub_ids.end.adr};
-cfg_cell_plot.ylim = [-0.1, 0.5];
+cfg_cell_plot.num_subjs = [length(sub_ids.start.carey), length(sub_ids.start.adr)];
+cfg_cell_plot.ylim = [-0.2, 0.6];
 
 [mean_coefs, sem_coefs_types, all_coefs_types] = plot_cell_by_cell(cfg_cell_plot, datas, themes);
 
-% Wilcoxon signed rank test for Carey and ADR cell-by-cell
+% Wilcoxon rank sum test for Carey and ADR
 ranksum(all_coefs_types{1}, all_coefs_types{2})
+
+% Wilcoxon signed rank test for Carey vs 0
+signrank(all_coefs_types{1})
 %% Population Vector analysis
 cfg_pv_plot = [];
 cfg_pv_plot.clim = [-0.2 1];
@@ -74,6 +76,7 @@ end
 %% Plot off-diagonal of Population Vector correlation
 cfg_off_pv_plot = [];
 cfg_off_pv_plot.ax = subplot(2, 3, 6);
+cfg_off_pv_plot.num_subjs = [length(sub_ids.start.carey), length(sub_ids.start.adr)];
 cfg_off_pv_plot.ylim = [0, 1];
 
 [mean_coefs, sem_coefs_types, all_coefs_types] = plot_off_diag_PV(cfg_off_pv_plot, datas, themes);

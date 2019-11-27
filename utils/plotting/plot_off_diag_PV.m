@@ -30,12 +30,13 @@ function [mean_coefs_types, sem_coefs_types, all_coefs_types] = plot_off_diag_PV
             end
             coefs{i} = w_coefs;
         end
-
-        mean_coefs = mean(cat(3, coefs{:}), 3);
-        off_diag_coefs = diag(mean_coefs(1:w_len/2, (w_len/2+1):end));
+        off_diag_coefs = zeros(w_len/2, length(data));
+        for c_i = 1:length(coefs)
+            off_diag_coefs(:, c_i) = diag(coefs{c_i}(1:w_len/2, (w_len/2+1):end));
+        end
         
-        mean_coefs_types(d_i) = mean(off_diag_coefs);
-        sem_coefs_types(d_i) = std(off_diag_coefs) / sqrt(length(off_diag_coefs));
+        mean_coefs_types(d_i) = nanmean(off_diag_coefs(:));
+        sem_coefs_types(d_i) = nanstd(off_diag_coefs(:)) / sqrt(cfg.num_subjs(d_i));
         all_coefs_types{d_i} = off_diag_coefs;
     end
 

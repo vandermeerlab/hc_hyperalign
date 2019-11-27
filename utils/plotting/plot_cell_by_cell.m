@@ -19,13 +19,6 @@ function [mean_coefs_types, sem_coefs_types, all_coefs_types] = plot_cell_by_cel
 
     for d_i = 1:length(datas)
         data = datas{d_i};
-        if length(cfg.sub_ids_starts) > 1
-            sub_ids_start = cfg.sub_ids_starts{d_i};
-            sub_ids_end = cfg.sub_ids_ends{d_i};
-        else
-            sub_ids_start = cfg.sub_ids_starts{1};
-            sub_ids_end = cfg.sub_ids_ends{1};
-        end
         
         cell_coefs = [];
         for i = 1:length(data)
@@ -39,7 +32,7 @@ function [mean_coefs_types, sem_coefs_types, all_coefs_types] = plot_cell_by_cel
         end
 
         mean_coefs_types(d_i) = nanmean(cell_coefs);
-        sem_coefs_types(d_i) = nanstd(cell_coefs) / sqrt(length(sub_ids_start));
+        sem_coefs_types(d_i) = nanstd(cell_coefs) / sqrt(cfg.num_subjs(d_i));
         all_coefs_types{d_i} = cell_coefs;
     end
 
