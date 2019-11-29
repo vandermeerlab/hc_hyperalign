@@ -42,11 +42,23 @@ cfg_plot = [];
 cfg_plot.hist_colors = {colors.HT.hist};
 cfg_plot.fit_colors = {colors.HT.fit};
 
-for d_i = 1:length(datas)
-    [z_score] = calculate_common_metrics([], horzcat(actual_dists_mat{d_i}{:}), ...
-    horzcat(id_dists_mat{d_i}{:}), horzcat(sf_dists_mat{d_i}{:}));
+z_scores_sim = cell(length(datas), 1);
 
-    matrix_objs = {{z_score.out_zscore_mat}};
+for d_i = 1:length(datas)
+    len = length(actual_dists_mat{d_i});
+    z = zeros(len, len*len);
+    mean_z = zeros(len, 1);
+    for z_i = 1:len
+        [z_score] = calculate_common_metrics([], actual_dists_mat{d_i}{z_i}, ...
+            id_dists_mat{d_i}{z_i}, sf_dists_mat{d_i}{z_i});
+        z(:, ((z_i-1)*len)+1:z_i*len) = z_score.out_zscore_mat;
+        mean_z(z_i) = mean(nanmean(z_score.out_zscore_mat));
+    end
+    z_scores_sim{d_i}.out_zscore_mat = z;
+    z_scores_sim{d_i}.out_zscore_prop = sum(sum((z < 0))) / sum(sum(~isnan(z)));
+    z_scores_sim{d_i}.sr_p = signrank(mean_z(:));
+    
+    matrix_objs = {{z_scores_sim{d_i}.out_zscore_mat}};
     for m_i = 1:length(matrix_objs)
         this_ax = subplot(4, 3, (3*(d_i-1) + 2));
         p_i = (m_i - 1) * 4 + d_i; % % plot index to access x_limits etc defined above
@@ -73,41 +85,33 @@ for d_i = 1:length(datas)
     plot_PV(cfg_pv_plot, horzcat(data{:}));
 end
 
+%% Plot off-diagonal of Population Vector correlation
+datas = {horzcat(Q_ind{:}), horzcat(Q_xor{:}), horzcat(Q_same_ps{:}), horzcat(Q_sim_HT{:}), Q};
+themes = {'ind.', 'x-or', 'same params', 'sim. HT', 'Carey'};
+
+cfg_off_pv_plot = [];
+cfg_off_pv_plot.ax = subplot(2, 1, 1);
+cfg_off_pv_plot.num_subjs = [repmat(19, 1, 4), length(sub_ids.start.carey)];
+cfg_off_pv_plot.ylim = [-0.3, 0.5];
+[mean_coefs, sem_coefs_types, all_coefs_types] = plot_off_diag_PV(cfg_off_pv_plot, datas, themes);
+
+% Wilcoxon rank sum test for sim.HT and Carey
+ranksum(all_coefs_types{4}(:), all_coefs_types{5}(:))
+
 %% Cell-by-cell correlation across subjects
 datas = {horzcat(Q_ind{:}), horzcat(Q_xor{:}), horzcat(Q_same_ps{:}), horzcat(Q_sim_HT{:}), Q};
 themes = {'ind.', 'x-or', 'same params', 'sim. HT', 'Carey'};
 
 figure;
 cfg_cell_plot = [];
-cfg_cell_plot.ax = subplot(2, 1, 1);
-sub_ids_starts = [sub_ids.start.carey];
-sub_ids_ends = [sub_ids.end.carey];
-for i = 2:length(Q)
-    sub_ids_starts = [sub_ids_starts, sub_ids.start.carey + (19*(i-1))];
-    sub_ids_ends = [sub_ids_ends, sub_ids.end.carey + (19*(i-1))];
-end
-cfg_cell_plot.sub_ids_starts = cell(size(datas));
-cfg_cell_plot.sub_ids_ends = cell(size(datas));
-for i = 1:length(datas)
-    if i ~= length(datas)
-        cfg_cell_plot.sub_ids_starts{i} = sub_ids_starts;
-        cfg_cell_plot.sub_ids_ends{i} = sub_ids_ends;
-    else
-        cfg_cell_plot.sub_ids_starts{i} = sub_ids.start.carey;
-        cfg_cell_plot.sub_ids_ends{i} = sub_ids.end.carey;
-    end
-end
-cfg_cell_plot.ylim = [-0.1, 0.5];
+cfg_cell_plot.ax = subplot(2, 1, 2);
+cfg_cell_plot.num_subjs = [repmat(19, 1, 4), length(sub_ids.start.carey)];
 
-plot_cell_by_cell(cfg_cell_plot, datas, themes)
+cfg_cell_plot.ylim = [-0.2, 0.5];
+
+[mean_coefs, sem_coefs_types, all_coefs_types] = plot_cell_by_cell(cfg_cell_plot, datas, themes);
 
 set(gcf, 'Position', [680 301 559 677]);
 
-%% Plot off-diagonal of Population Vector correlation
-datas = {horzcat(Q_ind{:}), horzcat(Q_xor{:}), horzcat(Q_same_ps{:}), horzcat(Q_sim_HT{:}), Q};
-themes = {'ind.', 'x-or', 'same params', 'sim. HT', 'Carey'};
-
-cfg_off_pv_plot = [];
-cfg_off_pv_plot.ax = subplot(2, 1, 2);
-cfg_off_pv_plot.ylim = [-0.3, 0.5];
-plot_off_diag_PV(cfg_off_pv_plot, datas, themes);
+% Wilcoxon rank sum test for sim.HT and Carey
+ranksum(all_coefs_types{4}(:), all_coefs_types{5}(:))

@@ -82,7 +82,6 @@ end
 % Z-score of HT vs PCA-only in Carey
 calculate_bino_p(sum(sum(z_score{1}.out_zscore_mat < z_score_pca{1}.out_zscore_mat)), sum(sum(~isnan(z_score{1}.out_zscore_mat))), 0.5)
 % Z-score of HT vs PCA-only in ADR
-calculate_bino_p(sum(sum(z_score{2}.out_zscore_mat < z_score_pca{2}.out_zscore_mat)), sum(sum(~isnan(z_score{2}.out_zscore_mat))), 0.5)
 
 % Mean of HT vs PCA-only in Carey
 calculate_bino_p(sum(sum(mean_shuffles{1}.out_actual_mean_sf < mean_shuffles_pca{1}.out_actual_mean_sf)), sum(sum(~isnan(mean_shuffles{1}.out_actual_mean_sf))), 0.5)

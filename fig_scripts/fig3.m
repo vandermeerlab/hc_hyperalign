@@ -82,4 +82,4 @@ cfg_off_pv_plot.ylim = [0, 1];
 [mean_coefs, sem_coefs_types, all_coefs_types] = plot_off_diag_PV(cfg_off_pv_plot, datas, themes);
 
 % Wilcoxon signed rank test for Carey and ADR off-diagonal
-ranksum(all_coefs_types{1}, all_coefs_types{2})
+ranksum(all_coefs_types{1}(:), all_coefs_types{2}(:))

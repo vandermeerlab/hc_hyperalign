@@ -21,7 +21,7 @@ for d_i = 1:length(datas)
     title(themes{d_i});
 end
 
-set(gcf, 'Position', [572 1 941 954]);
+set(gcf, 'Position', [586 42 941 954]);
 
 %% Hyperalignment procedure
 for d_i = 1:length(datas)
