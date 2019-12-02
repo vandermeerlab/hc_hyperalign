@@ -5,9 +5,11 @@ sub_ids = get_sub_ids_start_end();
 
 %%
 % Correlation analysis in various simulations: L_R_same_mu, L_R_same_peak, L_R_same_sig
-Q_same_mu = L_R_ind(struct('same_params', [1, 0, 0]));
-Q_same_peak = L_R_ind(struct('same_params', [0, 1, 0]));
-Q_same_sig = L_R_ind(struct('same_params', [0, 0, 1]));
+n_units = cellfun(@(x) size(x.left, 1), Q);
+Q_same_mu = L_R_ind(struct('same_params', [1, 0, 0], 'n_units', n_units));
+Q_same_peak = L_R_ind(struct('same_params', [0, 1, 0], 'n_units', n_units));
+Q_same_sig = L_R_ind(struct('same_params', [0, 0, 1], 'n_units', n_units));
+
 
 datas = {Q_same_mu, Q_same_peak, Q_same_sig};
 themes = {'same time', 'same FR', 'same width'};
@@ -49,16 +51,17 @@ cfg_plot.fit_colors = {colors.HT.fit};
 
 for d_i = 1:length(datas)
     len = length(actual_dists_mat{d_i});
-    z = zeros(len, len*len);
-    mean_z = zeros(len, 1);
+%     z = zeros(len, len*len);
+    z = zeros(len, len, len);
     for z_i = 1:len
         [z_score] = calculate_common_metrics([], actual_dists_mat{d_i}{z_i}, ...
             id_dists_mat{d_i}{z_i}, sf_dists_mat{d_i}{z_i});
-        z(:, ((z_i-1)*len)+1:z_i*len) = z_score.out_zscore_mat;
-        mean_z(z_i) = mean(nanmean(z_score.out_zscore_mat));
+%         z(:, ((z_i-1)*len)+1:z_i*len) = z_score.out_zscore_mat;
+        z(:, :, z_i) = z_score.out_zscore_mat;
     end
-    z_scores_sim{d_i}.out_zscore_mat = z;
-    z_scores_sim{d_i}.out_zscore_prop = sum(sum((z < 0))) / sum(sum(~isnan(z)));
+    mean_z = nanmean(z, 3);
+    z_scores_sim{d_i}.out_zscore_mat = z(:);
+    z_scores_sim{d_i}.out_zscore_prop = sum(sum((mean_z < 0))) / sum(sum(~isnan(mean_z)));
     z_scores_sim{d_i}.sr_p = signrank(mean_z(:));
     
     matrix_objs = {{z_scores_sim{d_i}.out_zscore_mat}};
@@ -92,6 +95,7 @@ end
 datas = {horzcat(Q_same_mu{:}), horzcat(Q_same_peak{:}), horzcat(Q_same_sig{:}), Q};
 themes = {'same time', 'same FR', 'same width', 'Carey'};
 
+figure;
 cfg_off_pv_plot = [];
 cfg_off_pv_plot.ax = subplot(2, 1, 1);
 cfg_off_pv_plot.num_subjs = [repmat(19, 1, 3), length(sub_ids.start.carey)];
@@ -105,7 +109,6 @@ ranksum(all_coefs_types{1}(:), all_coefs_types{4}(:))
 datas = {horzcat(Q_same_mu{:}), horzcat(Q_same_peak{:}), horzcat(Q_same_sig{:}), Q};
 themes = {'same time', 'same FR', 'same width', 'Carey'};
 
-figure;
 cfg_cell_plot = [];
 cfg_cell_plot.ax = subplot(2, 1, 2);
 cfg_cell_plot.num_subjs = [repmat(19, 1, 3), length(sub_ids.start.carey)];

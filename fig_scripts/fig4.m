@@ -42,20 +42,19 @@ cfg_plot = [];
 cfg_plot.hist_colors = {colors.HT.hist};
 cfg_plot.fit_colors = {colors.HT.fit};
 
-z_scores_sim = cell(length(datas), 1);
-
 for d_i = 1:length(datas)
     len = length(actual_dists_mat{d_i});
-    z = zeros(len, len*len);
-    mean_z = zeros(len, 1);
+%     z = zeros(len, len*len);
+    z = zeros(len, len, len);
     for z_i = 1:len
         [z_score] = calculate_common_metrics([], actual_dists_mat{d_i}{z_i}, ...
             id_dists_mat{d_i}{z_i}, sf_dists_mat{d_i}{z_i});
-        z(:, ((z_i-1)*len)+1:z_i*len) = z_score.out_zscore_mat;
-        mean_z(z_i) = mean(nanmean(z_score.out_zscore_mat));
+%         z(:, ((z_i-1)*len)+1:z_i*len) = z_score.out_zscore_mat;
+        z(:, :, z_i) = z_score.out_zscore_mat;
     end
-    z_scores_sim{d_i}.out_zscore_mat = z;
-    z_scores_sim{d_i}.out_zscore_prop = sum(sum((z < 0))) / sum(sum(~isnan(z)));
+    mean_z = nanmean(z, 3);
+    z_scores_sim{d_i}.out_zscore_mat = z(:);
+    z_scores_sim{d_i}.out_zscore_prop = sum(sum((mean_z < 0))) / sum(sum(~isnan(mean_z)));
     z_scores_sim{d_i}.sr_p = signrank(mean_z(:));
     
     matrix_objs = {{z_scores_sim{d_i}.out_zscore_mat}};
@@ -89,6 +88,7 @@ end
 datas = {horzcat(Q_ind{:}), horzcat(Q_xor{:}), horzcat(Q_same_ps{:}), horzcat(Q_sim_HT{:}), Q};
 themes = {'ind.', 'x-or', 'same params', 'sim. HT', 'Carey'};
 
+figure;
 cfg_off_pv_plot = [];
 cfg_off_pv_plot.ax = subplot(2, 1, 1);
 cfg_off_pv_plot.num_subjs = [repmat(19, 1, 4), length(sub_ids.start.carey)];
@@ -102,7 +102,6 @@ ranksum(all_coefs_types{4}(:), all_coefs_types{5}(:))
 datas = {horzcat(Q_ind{:}), horzcat(Q_xor{:}), horzcat(Q_same_ps{:}), horzcat(Q_sim_HT{:}), Q};
 themes = {'ind.', 'x-or', 'same params', 'sim. HT', 'Carey'};
 
-figure;
 cfg_cell_plot = [];
 cfg_cell_plot.ax = subplot(2, 1, 2);
 cfg_cell_plot.num_subjs = [repmat(19, 1, 4), length(sub_ids.start.carey)];

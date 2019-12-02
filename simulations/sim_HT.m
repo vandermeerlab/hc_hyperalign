@@ -2,7 +2,7 @@ function [giant_sim_data, sim_corr_right] = sim_HT(cfg_in)
     % Last 2.4 second, dt = 50ms, or last 41 bins (after all choice points) for TC
     cfg_def.w_len = 48;
     % Number of neurons; set to different random number for each session if not specified.
-    cfg_def.n_units = [];
+    cfg_def.n_units = 30;
     cfg_def.sample_real_data = 0;
 
     mfun = mfilename;
@@ -37,12 +37,10 @@ function [giant_sim_data, sim_corr_right] = sim_HT(cfg_in)
     sim_data = cell(size(data));
     % Make two Qs - first: source, second: target
     for s_i = 1:length(sim_data)
-        if ~isempty(cfg.n_units)
+        if length(cfg.n_units) == 1
             n_units = cfg.n_units;
         else
-            n_units = randi([60, 120]);
-            % Make the number of neurons as same in real data.
-            % n_units = size(data{s_i}.left, 1);
+            n_units = cfg.n_units(s_i);
         end
         if cfg.sample_real_data
             [sim_data{s_i}.left, sim_indices{s_i}] = datasample(all_left, n_units, 'Replace', false);
@@ -69,23 +67,20 @@ function [giant_sim_data, sim_corr_right] = sim_HT(cfg_in)
         [sim_proj_data{sim_i}, sim_eigvecs{sim_i}, sim_pca_mean{sim_i}] = perform_pca(sim_data{sim_i}, NumComponents);
     end
 
-    giant_sim_data = cell(size(data));
-    for s_i = 1:length(data)
-        giant_sim_data{s_i} = sim_data;
-    end
+    giant_sim_data = repmat({sim_data}, 1, length(cfg.n_units));
 
     %% Hyperalign real data and simulated data pair version
     for d_i = 1:length(data)
         for s_i = 1:length(sim_data)
-        hyper_input = {proj_data{d_i}, sim_proj_data{s_i}};
-        [aligned_left, aligned_right, transforms] = get_aligned_left_right(hyper_input);
+            hyper_input = {proj_data{d_i}, sim_proj_data{s_i}};
+            [aligned_left, aligned_right, transforms] = get_aligned_left_right(hyper_input);
 
-        [~, ~, M] = procrustes(aligned_right{1}', aligned_left{1}', 'scaling', false);
-        predicted_aligned = p_transform(M, aligned_left{2});
-        project_back_pca = inv_p_transform(transforms{2}, [aligned_left{2}, predicted_aligned]);
-        project_back_data = sim_eigvecs{s_i} * project_back_pca + sim_pca_mean{s_i};
+            [~, ~, M] = procrustes(aligned_right{1}', aligned_left{1}', 'scaling', false);
+            predicted_aligned = p_transform(M, aligned_left{2});
+            project_back_pca = inv_p_transform(transforms{2}, [aligned_left{2}, predicted_aligned]);
+            project_back_data = sim_eigvecs{s_i} * project_back_pca + sim_pca_mean{s_i};
 
-        giant_sim_data{d_i}{s_i}.right = project_back_data(:, cfg.w_len+1:end);
+            giant_sim_data{d_i}{s_i}.right = project_back_data(:, cfg.w_len+1:end);
         end
     end
 
