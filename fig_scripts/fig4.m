@@ -44,12 +44,10 @@ cfg_plot.fit_colors = {colors.HT.fit};
 
 for d_i = 1:length(datas)
     len = length(actual_dists_mat{d_i});
-%     z = zeros(len, len*len);
     z = zeros(len, len, len);
     for z_i = 1:len
         [z_score] = calculate_common_metrics([], actual_dists_mat{d_i}{z_i}, ...
             id_dists_mat{d_i}{z_i}, sf_dists_mat{d_i}{z_i});
-%         z(:, ((z_i-1)*len)+1:z_i*len) = z_score.out_zscore_mat;
         z(:, :, z_i) = z_score.out_zscore_mat;
     end
     mean_z = nanmean(z, 3);
@@ -85,7 +83,7 @@ for d_i = 1:length(datas)
 end
 
 %% Plot off-diagonal of Population Vector correlation
-datas = {horzcat(Q_ind{:}), horzcat(Q_xor{:}), horzcat(Q_same_ps{:}), horzcat(Q_sim_HT{:}), Q};
+datas = {Q_ind{1}, Q_xor{1}, Q_same_ps{1}, horzcat(Q_sim_HT{:}), Q};
 themes = {'ind.', 'x-or', 'same params', 'sim. HT', 'Carey'};
 
 figure;
@@ -99,7 +97,7 @@ cfg_off_pv_plot.ylim = [-0.3, 0.5];
 ranksum(all_coefs_types{4}(:), all_coefs_types{5}(:))
 
 %% Cell-by-cell correlation across subjects
-datas = {horzcat(Q_ind{:}), horzcat(Q_xor{:}), horzcat(Q_same_ps{:}), horzcat(Q_sim_HT{:}), Q};
+datas = {Q_ind{1}, Q_xor{1}, Q_same_ps{1}, horzcat(Q_sim_HT{:}), Q};
 themes = {'ind.', 'x-or', 'same params', 'sim. HT', 'Carey'};
 
 cfg_cell_plot = [];
