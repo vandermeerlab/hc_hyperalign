@@ -35,7 +35,7 @@ for d_i = 1:length(datas)
         id_dists_mat{d_i}, sf_dists_mat{d_i});
 
     matrix_obj = {M_ID.out_actual_dists, M_ID.out_id_dists};
-    bino_ps(d_i) = calculate_bino_p(sum(sum(matrix_obj{1} < matrix_obj{2})), sum(sum(~isnan(matrix_obj{1}))), 0.5);
+    bino_ps(d_i) = M_ID.bino_p_id;
     signrank_ps(d_i) = signrank(matrix_obj{1}(:),  matrix_obj{2}(:));
     this_ax = subplot(2, 3, d_i);
 

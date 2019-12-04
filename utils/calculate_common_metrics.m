@@ -62,8 +62,8 @@ function [z_score, mean_shuffles, proportion, M_ID] = calculate_common_metrics(c
     out_id_dists = set_withsubj_nan(cfg, id_dists_mat);
     M_ID.out_actual_dists = out_actual_dists;
     M_ID.out_id_dists = out_id_dists;
-    M_ID.out_id_prop = sum(sum(out_actual_dists < out_id_dists)) / sum(sum(~isnan(out_actual_dists)));
+    M_ID.out_id_prop = sum(sum(out_actual_dists <= out_id_dists)) / sum(sum(~isnan(out_actual_dists)));
 
     % Binomial stats
-    M_ID.bino_p_id = calculate_bino_p(sum(sum(out_actual_dists < out_id_dists)), sum(sum(~isnan(out_actual_dists))), 0.5);
+    M_ID.bino_p_id = calculate_bino_p(sum(sum(out_actual_dists <= out_id_dists)), sum(sum(~isnan(out_actual_dists))), 0.5);
 end

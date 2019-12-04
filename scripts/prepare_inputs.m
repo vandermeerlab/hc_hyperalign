@@ -30,6 +30,7 @@ cfg_data.removeInterneurons = 1;
 %% Get simulated inputs.
 cfg_sim = [];
 cfg_sim.n_units = cellfun(@(x) size(x.left, 1), Q);
+
 Q_xor = L_xor_R(cfg_sim);
 Q_ind = L_R_ind(cfg_sim);
 Q_sim_HT = sim_HT(cfg_sim);
