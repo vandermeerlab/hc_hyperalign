@@ -35,6 +35,7 @@ Q_xor = L_xor_R(cfg_sim);
 Q_ind = L_R_ind(cfg_sim);
 Q_sim_HT = sim_HT(cfg_sim);
 
+cfg_sim.p_has_field = 0.9;
 cfg_sim.same_params = [1, 1, 1];
 Q_same_ps = L_R_ind(cfg_sim);
 
