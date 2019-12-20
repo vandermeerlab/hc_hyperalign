@@ -2,7 +2,7 @@ colors = get_hyper_colors();
 
 %% Hyperalignment procedure
 % Carey: 1, ADR: 2;
-datas = {Q, adr_Q};
+datas = {Q};
 for d_i = 1:length(datas)
     data = datas{d_i};
     [actual_dists_mat{d_i}, id_dists_mat{d_i}, sf_dists_mat{d_i}] = predict_with_shuffles([], data, @predict_with_L_R);
@@ -87,3 +87,14 @@ calculate_bino_p(sum(sum(z_score{1}.out_zscore_mat <= z_score_pca{1}.out_zscore_
 calculate_bino_p(sum(sum(mean_shuffles{1}.out_actual_mean_sf <= mean_shuffles_pca{1}.out_actual_mean_sf)), sum(sum(~isnan(mean_shuffles{1}.out_actual_mean_sf))), 0.5)
 % Mean of HT vs PCA-only in ADR
 calculate_bino_p(sum(sum(mean_shuffles{2}.out_actual_mean_sf <= mean_shuffles_pca{2}.out_actual_mean_sf)), sum(sum(~isnan(mean_shuffles{2}.out_actual_mean_sf))), 0.5)
+
+%% Effect size
+for d_i = 1:length(datas)
+    matrix_objs = {z_score{d_i}.out_zscore_mat, z_score_pca{d_i}.out_zscore_mat, ...
+        mean_shuffles{d_i}.out_actual_mean_sf, mean_shuffles_pca{d_i}.out_actual_mean_sf};
+    mean_std{d_i} = zeros(length(matrix_objs), 2);
+    for m_i = 1:length(matrix_objs)
+        mean_std{d_i}(m_i, 1) = nanmean(matrix_objs{m_i}(:));
+        mean_std{d_i}(m_i, 2) = nanstd(matrix_objs{m_i}(:));
+    end
+end

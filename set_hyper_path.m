@@ -38,7 +38,7 @@ end
 % get base file path where repo lives
 switch machinename
     case {'mac'} % add case for your machine
-        base_fp = '/Users/mac/Dropbox (Dartmouth College)/Projects/hc_hyperalign';
+        base_fp = '/Users/mac/Dropbox (Dartmouth College)/Projects/Code/hc_hyperalign';
     case {'PROMETHEUS'}
         base_fp = 'C:\Users\mvdmlab\Documents\GitHub\hc_hyperalign';
 end
