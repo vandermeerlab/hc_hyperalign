@@ -66,13 +66,17 @@ function [Q] = get_processed_Q(cfg_in, session_path)
     [Q_L, Q_R] = get_last_n_sec_LR(Q_whole, L_tend, R_tend, cfg.last_n_sec);
     if strcmp(cfg.normalization, 'none')
         Q = aver_Q_acr_trials(Q_L, Q_R);
-    elseif strcmp(cfg.normalization, 'average_norm')
-        Q = normalize_Q('ind', aver_Q_acr_trials(Q_L, Q_R));
+    elseif strcmp(cfg.normalization, 'average_norm_Z')
+        Q = normalize_Q('ind_Z', aver_Q_acr_trials(Q_L, Q_R));
+    elseif strcmp(cfg.normalization, 'average_norm_l2')
+        Q = normalize_Q('ind_l2', aver_Q_acr_trials(Q_L, Q_R));
     elseif strcmp(cfg.normalization, 'norm_average')
         [Q_L, Q_R] = get_last_n_sec_LR(Q_whole, L_tend, R_tend, cfg.last_n_sec);
         w_len = size(Q_L{1}, 2);
-        Q_L_norm = zscore(horzcat(Q_L{:}), 0, 2);
-        Q_R_norm = zscore(horzcat(Q_R{:}), 0, 2);
+        % Q_L_norm = zscore(horzcat(Q_L{:}), 0, 2);
+        % Q_R_norm = zscore(horzcat(Q_R{:}), 0, 2);
+        Q_L_norm = row_wise_norm(horzcat(Q_L{:}));
+        Q_R_norm = row_wise_norm(horzcat(Q_R{:}));
         for i = 1:length(Q_L)
             Q_L{i} = Q_L_norm(:, (i-1)*w_len+1:i*w_len);
             Q_R{i} = Q_R_norm(:, (i-1)*w_len+1:i*w_len);

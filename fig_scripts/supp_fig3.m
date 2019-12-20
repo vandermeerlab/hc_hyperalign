@@ -3,25 +3,22 @@ rng(mean('hyperalignment'));
 colors = get_hyper_colors();
 sub_ids = get_sub_ids_start_end();
 
-datas = {Q, Q_norm, TC, TC_norm};
-themes = {'Q(int. rm)', 'Q(int. rm) norm.', 'TC(int. rm)', 'TC(int. rm) norm.'};
-
+datas = {Q, TC, Q_norm_l2, TC_norm_l2, Q_norm_Z, TC_norm_Z};
 %% Example inputs
 n_units = 30;
-% Use indices in Q_int_rm in case index chosen from Q does not exist in
+% Use indices in Q in case index chosen from Q does not exist in
 % Q_int_rm.
-% ex_idx = datasample(1:length(Q_int_rm{1}.left), n_units, 'Replace', false);
+% ex_idx = datasample(1:length(Q{1}.left), n_units, 'Replace', false);
 
 for d_i = 1:length(datas)
-    subplot(4, 2, (2*(d_i-1) + 1))
+    subplot(3, 4, (2*(d_i-1) + 1))
     imagesc([datas{d_i}{1}.left(1:n_units, :), datas{d_i}{1}.right(1:n_units, :)]);
     colorbar;
     set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 12);
     ylabel('neuron');
-    title(themes{d_i});
 end
 
-set(gcf, 'Position', [586 42 941 954]);
+set(gcf, 'Position', [67 73 1784 898]);
 
 %% Hyperalignment procedure
 for d_i = 1:length(datas)
@@ -44,8 +41,7 @@ for d_i = 1:length(datas)
 
     matrix_objs = {{z_score{d_i}.out_zscore_mat}};
     for m_i = 1:length(matrix_objs)
-        this_ax = subplot(4, 2, (2*(d_i-1) + 2));
-        p_i = (m_i - 1) * 4 + d_i; % % plot index to access x_limits etc defined above
+        this_ax = subplot(3, 4, (2*(d_i-1) + 2));
         matrix_obj = matrix_objs{m_i};
 
         cfg_plot.xlim = x_limits;
@@ -56,6 +52,7 @@ for d_i = 1:length(datas)
         cfg_plot.fit = 'vline'; % 'gauss', 'kernel', 'vline' or 'none (no fit)
 
         plot_hist2(cfg_plot, matrix_obj);
+        ylabel('count')
 
     end
 end

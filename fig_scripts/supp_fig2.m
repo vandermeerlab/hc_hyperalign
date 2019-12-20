@@ -85,7 +85,7 @@ norm_out_dists = zscore(out_dists, 0, 2);
 mean_across_w = mean(norm_out_dists, 1);
 std_across_w = std(norm_out_dists, 1);
 
-subplot(1, 2, 1);
+subplot(2, 1, 1);
 
 dy = 1;
 x = 1:length(mean_across_w);
@@ -100,7 +100,7 @@ set(gca, 'XTick', [], 'YTick', [ylim(1):dy:ylim(2)], 'XLim', [x(1) x(end)], ...
 box off;
 xlabel('Time'); ylabel('Z-score')
 
-set(gcf, 'Position', [560 363 1047 585]);
+set(gcf, 'Position', [560 121 531 827]);
 
 %% Variance explained as a function of number of PCs
 num_pcs = 20;
@@ -118,7 +118,7 @@ end
 mean_var_pcs = mean(cum_vars, 1);
 std_var_pcs = std(cum_vars, 1);
 
-subplot(1, 2, 2);
+subplot(2, 1, 2);
 x = 1:num_pcs;
 h = errorbar(x, mean_var_pcs, std_var_pcs, 'LineStyle', '-', 'LineWidth', 1);
 hold on;
