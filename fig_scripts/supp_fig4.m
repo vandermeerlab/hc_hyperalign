@@ -2,6 +2,7 @@
 rng(mean('hyperalignment'));
 colors = get_hyper_colors();
 sub_ids = get_sub_ids_start_end();
+num_subjs = length(sub_ids.start.carey);
 
 %%
 % Correlation analysis in various simulations: L_R_same_mu, L_R_same_peak, L_R_same_sig
@@ -96,9 +97,11 @@ themes = {'same time', 'same FR', 'same width', 'Carey'};
 figure;
 cfg_off_pv_plot = [];
 cfg_off_pv_plot.ax = subplot(2, 1, 1);
-cfg_off_pv_plot.num_subjs = [repmat(19, 1, 3), length(sub_ids.start.carey)];
+cfg_off_pv_plot.num_subjs = repmat(num_subjs, 1, 4);
 cfg_off_pv_plot.ylim = [-0.3, 0.5];
 [mean_coefs, sem_coefs_types, all_coefs_types] = plot_off_diag_PV(cfg_off_pv_plot, datas, themes);
+
+set(gcf, 'Position', [680 315 532 663]);
 
 % Wilcoxon rank sum test for sim.HT and Carey
 ranksum(all_coefs_types{1}(:), all_coefs_types{4}(:))
@@ -109,13 +112,13 @@ themes = {'same time', 'same FR', 'same width', 'Carey'};
 
 cfg_cell_plot = [];
 cfg_cell_plot.ax = subplot(2, 1, 2);
-cfg_cell_plot.num_subjs = [repmat(19, 1, 3), length(sub_ids.start.carey)];
+cfg_cell_plot.num_subjs = repmat(num_subjs, 1, 4);
 
 cfg_cell_plot.ylim = [-0.2, 0.5];
 
 [mean_coefs, sem_coefs_types, all_coefs_types] = plot_cell_by_cell(cfg_cell_plot, datas, themes);
 
+set(gcf, 'Position', [680 315 532 663]);
+
 % Wilcoxon rank sum test for sim.HT and Carey
 ranksum(all_coefs_types{1}(:), all_coefs_types{4}(:))
-
-set(gcf, 'Position', [680 315 532 663]);
