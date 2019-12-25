@@ -65,10 +65,19 @@ end
 set(gcf, 'Position', [306 209 1255 746]);
 
 %% Stats of HT vs. PCA-only
-% Z-score of HT vs PCA-only in Carey TC
-calculate_bino_p(sum(sum(z_score.out_zscore_mat <= z_score_pca.out_zscore_mat)), sum(sum(~isnan(z_score.out_zscore_mat))), 0.5)
-% Mean of HT vs PCA-only in Carey TC
-calculate_bino_p(sum(sum(mean_shuffles.out_actual_mean_sf <= mean_shuffles_pca.out_actual_mean_sf)), sum(sum(~isnan(mean_shuffles.out_actual_mean_sf))), 0.5)
+
+%% Z-score of HT vs PCA-only in Carey TC
+z_score_ht_less_pca = sum(sum(z_score.out_zscore_mat <= z_score_pca.out_zscore_mat))
+pair_count = sum(sum(~isnan(z_score.out_zscore_mat)))
+prop_ht_less_pca = z_score_ht_less_pca / pair_count
+calculate_bino_p(z_score_ht_less_pca, pair_count, 0.5)
+
+%% Mean of HT vs PCA-only in Carey TC
+mean_ht_less_pca = sum(sum(mean_shuffles.out_actual_mean_sf <= mean_shuffles_pca.out_actual_mean_sf))
+pair_count = sum(sum(~isnan(mean_shuffles.out_actual_mean_sf)))
+prop_ht_less_pca = mean_ht_less_pca / pair_count
+calculate_bino_p(mean_ht_less_pca, pair_count, 0.5)
+
 %% Calculate errors across locations/time
 cfg_pre = [];
 cfg_pre.dist_dim = 1;

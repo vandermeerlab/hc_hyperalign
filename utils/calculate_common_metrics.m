@@ -15,7 +15,7 @@ function [z_score, mean_shuffles, proportion, M_ID] = calculate_common_metrics(c
             cfg.sub_ids_ends = sub_ids.end.carey;
         end
     end
-
+    n_subjs = length(cfg.sub_ids_starts);
     %% Matrix of zscores of actual distance among shuffle distances.
     zscore_mat = zeros(size(actual_dists_mat));
     percent_mat = zeros(size(actual_dists_mat));
@@ -30,6 +30,9 @@ function [z_score, mean_shuffles, proportion, M_ID] = calculate_common_metrics(c
     out_zscore_mat = set_withsubj_nan(cfg, zscore_mat);
     z_score.out_zscore_mat = out_zscore_mat;
     z_score.out_zscore_prop = sum(sum(out_zscore_mat < 0)) / sum(sum(~isnan(out_zscore_mat)));
+    % Mean and SEM
+    z_score.out_mean = nanmean(out_zscore_mat(:));
+    z_score.out_sem = nanstd(out_zscore_mat(:)) / sqrt(n_subjs * (n_subjs - 1));
 
     % Signed rank test vs. 0 (two tailed)
     z_score.sr_p = signrank(out_zscore_mat(:));
@@ -42,6 +45,10 @@ function [z_score, mean_shuffles, proportion, M_ID] = calculate_common_metrics(c
     mean_shuffles.out_actual_mean_sf_prop = sum(sum(out_actual_mean_sf < 0)) / sum(sum(~isnan(out_actual_mean_sf)));
     % Signed rank test vs. 0 (two tailed)
     mean_shuffles.sr_p = signrank(out_actual_mean_sf(:));
+    
+    % Mean and SEM
+    mean_shuffles.out_mean = nanmean(out_actual_mean_sf(:));
+    mean_shuffles.out_sem = nanstd(out_actual_mean_sf(:)) / sqrt(n_subjs * (n_subjs - 1));
 
     % Normalize into 0 to 1
     % norm_mean_sf = out_actual_mean_sf - min(out_actual_mean_sf(:));

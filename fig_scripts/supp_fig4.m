@@ -2,7 +2,7 @@
 rng(mean('hyperalignment'));
 colors = get_hyper_colors();
 sub_ids = get_sub_ids_start_end();
-num_subjs = length(sub_ids.start.carey);
+n_subjs = length(sub_ids.start.carey);
 
 %%
 % Correlation analysis in various simulations: L_R_same_mu, L_R_same_peak, L_R_same_sig
@@ -62,6 +62,8 @@ for d_i = 1:length(datas)
     z_scores_sim{d_i}.out_zscore_mat = z(:);
     z_scores_sim{d_i}.out_zscore_prop = sum(sum((mean_z < 0))) / sum(sum(~isnan(mean_z)));
     z_scores_sim{d_i}.sr_p = signrank(mean_z(:));
+    z_scores_sim{d_i}.out_mean = nanmean(mean_z(:));
+    z_scores_sim{d_i}.out_sem = nanstd(mean_z(:)) / sqrt(n_subjs * (n_subjs - 1));
     
     matrix_objs = {{z_scores_sim{d_i}.out_zscore_mat}};
     for m_i = 1:length(matrix_objs)
@@ -97,7 +99,7 @@ themes = {'same time', 'same FR', 'same width', 'Carey'};
 figure;
 cfg_off_pv_plot = [];
 cfg_off_pv_plot.ax = subplot(2, 1, 1);
-cfg_off_pv_plot.num_subjs = repmat(num_subjs, 1, 4);
+cfg_off_pv_plot.num_subjs = repmat(n_subjs, 1, 4);
 cfg_off_pv_plot.ylim = [-0.3, 0.5];
 [mean_coefs, sem_coefs_types, all_coefs_types] = plot_off_diag_PV(cfg_off_pv_plot, datas, themes);
 
@@ -112,7 +114,7 @@ themes = {'same time', 'same FR', 'same width', 'Carey'};
 
 cfg_cell_plot = [];
 cfg_cell_plot.ax = subplot(2, 1, 2);
-cfg_cell_plot.num_subjs = repmat(num_subjs, 1, 4);
+cfg_cell_plot.num_subjs = repmat(n_subjs, 1, 4);
 
 cfg_cell_plot.ylim = [-0.2, 0.5];
 
