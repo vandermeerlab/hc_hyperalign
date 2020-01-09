@@ -67,7 +67,7 @@ function [giant_sim_data, sim_corr_right] = sim_HT(cfg_in)
         [sim_proj_data{sim_i}, sim_eigvecs{sim_i}, sim_pca_mean{sim_i}] = perform_pca(sim_data{sim_i}, NumComponents);
     end
 
-    giant_sim_data = repmat({sim_data}, 1, length(cfg.n_units));
+    giant_sim_data = repmat({sim_data}, 1, length(data));
 
     %% Hyperalign real data and simulated data pair version
     for d_i = 1:length(data)
