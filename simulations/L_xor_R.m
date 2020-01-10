@@ -7,7 +7,7 @@ function [Q] = L_xor_R(cfg_in)
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);
 
-    rng(mean('hyperalignment'));
+    % rng(mean('hyperalignment'));
     for d_i = 1:19
         for q_i = 1:19
             if length(cfg.n_units) == 1

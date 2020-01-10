@@ -3,7 +3,7 @@
 w_len = 48;
 % Or last 41 bins (after all choice points) for TC
 % w_len = 41;
-rng(mean('hyperalignment'));
+% rng(mean('hyperalignment'));
 
 for q_i = 1:19
     [w_xor, w_same_mu, w_ind] = get_rand_discrete_probs();

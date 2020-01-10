@@ -12,7 +12,7 @@ function [actual_dists_mat, id_dists_mat, sf_dists_mat] = predict_with_shuffles(
     [actual_dists_mat, id_dists_mat] = func(cfg, data);
 
     % Shuffling operations
-    rng(mean('hyperalignment'));
+    % rng(mean('hyperalignment'));
     sf_dists_mat  = zeros(length(data), length(data), cfg.n_shuffles);
 
     for i = 1:cfg.n_shuffles

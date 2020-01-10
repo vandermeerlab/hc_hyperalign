@@ -197,7 +197,6 @@ for n_i = 1:length(hyper_inputs)
 end
 
 %% Hyperalignment procedure
-rng(mean('hyperalignment'));
 for nm_i = 1:length(hyper_types)
     data = hyper_inputs{nm_i};
     cfg_pre = [];
@@ -286,7 +285,7 @@ for n_i = 1:length(corr_inputs)
 end
 
 %% Cell-by-cell correlations across subjects
-rng(mean('hyperalignment'));
+% rng(mean('hyperalignment'));
 corr_inputs = {Q_xor, Q_ind, Q_same_mu, Q};
 corr_types = {'x-or', 'ind.', 'ind.\\(same $\mu$)', 'data'};
 

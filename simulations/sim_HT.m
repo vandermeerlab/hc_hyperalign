@@ -33,7 +33,7 @@ function [giant_sim_data, sim_corr_right] = sim_HT(cfg_in)
         proj_data{rd_i} = perform_pca(data{rd_i}, NumComponents);
     end
 
-    rng(mean('mvdmlab'));
+    % rng(mean('mvdmlab'));
     sim_data = cell(size(data));
     % Make two Qs - first: source, second: target
     for s_i = 1:length(sim_data)

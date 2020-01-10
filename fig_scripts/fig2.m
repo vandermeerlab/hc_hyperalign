@@ -1,3 +1,4 @@
+rng(mean('hyperalignment'));
 colors = get_hyper_colors();
 
 %% Hyperalignment procedure

@@ -11,15 +11,15 @@ function [mean_coefs_types, sem_coefs_types, all_coefs_types] = plot_cell_by_cel
     else
         cfg.ax = gca;
     end
-    
-    rng(mean('hyperalignment'));
+
+    % rng(mean('hyperalignment'));
     mean_coefs_types = zeros(length(datas), 1);
     sem_coefs_types = zeros(length(datas), 1);
     all_coefs_types = cell(length(datas), 1);
 
     for d_i = 1:length(datas)
         data = datas{d_i};
-        
+
         cell_coefs = [];
         for i = 1:length(data)
             whiten_left = data{i}.left + 0.00001 * rand(size(data{i}.left));

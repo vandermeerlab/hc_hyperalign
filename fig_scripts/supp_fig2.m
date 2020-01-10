@@ -1,3 +1,4 @@
+rng(mean('hyperalignment'));
 colors = get_hyper_colors();
 
 %% Hyperalignment procedure
@@ -45,7 +46,7 @@ for d_i = 1:length(datas) % one row each for Withholding (Carey Q), HT and PCA (
         p_i = (d_i - 1) * 3 + m_i; % plot index to access x_limits etc defined above
         this_ax = subplot(2, 3, p_i);
         matrix_obj = matrix_objs{m_i};
-        
+
         cfg_plot.xlim = x_limits{p_i};
         cfg_plot.xtick = x_tick{p_i};
         cfg_plot.binsize = binsizes(p_i);
