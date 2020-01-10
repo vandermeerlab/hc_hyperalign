@@ -98,9 +98,6 @@ cfg_off_pv_plot.ylim = [-0.3, 0.5];
 
 set(gcf, 'Position', [680 301 559 677]);
 
-% Wilcoxon rank sum test for sim.HT and Carey
-ranksum(all_coefs_types{4}(:), all_coefs_types{5}(:))
-
 %% Cell-by-cell correlation across subjects
 datas = {Q_ind{1}, Q_xor{1}, Q_same_ps{1}, horzcat(Q_sim_HT{:}), Q};
 themes = {'ind.', 'x-or', 'same params', 'sim. HT', 'Carey'};
@@ -114,6 +111,3 @@ cfg_cell_plot.ylim = [-0.2, 0.5];
 [mean_coefs, sem_coefs_types, all_coefs_types] = plot_cell_by_cell(cfg_cell_plot, datas, themes);
 
 set(gcf, 'Position', [680 301 559 677]);
-
-% Wilcoxon rank sum test for sim.HT and Carey
-ranksum(all_coefs_types{4}(:), all_coefs_types{5}(:))
