@@ -7,12 +7,14 @@ function [Q] = L_R_ind(cfg_in)
     cfg_def.p_has_field = 0.5;
     % Number of neurons
     cfg_def.n_units = 30;
+    % Number of iterations
+    cfg_def.n_iters = 100;
 
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);
 
     % rng(mean('hyperalignment'));
-    for d_i = 1:19
+    for d_i = 1:cfg.n_iters
         for q_i = 1:19
             if length(cfg.n_units) == 1
                 n_units = cfg.n_units;

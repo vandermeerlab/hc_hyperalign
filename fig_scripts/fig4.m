@@ -8,15 +8,18 @@ n_subjs = length(sub_ids.start.carey);
 cfg_sim = [];
 cfg_sim.n_units = cellfun(@(x) size(x.left, 1), Q);
 
-Q_xor = L_xor_R(cfg_sim);
+% Q_xor = L_xor_R(cfg_sim);
 Q_ind = L_R_ind(cfg_sim);
-Q_sim_HT = sim_HT(cfg_sim);
+% Q_sim_HT = sim_HT(cfg_sim);
 
-cfg_sim.same_params = [1, 1, 1];
-Q_same_ps = L_R_ind(cfg_sim);
+% cfg_sim.same_params = [1, 1, 1];
+% Q_same_ps = L_R_ind(cfg_sim);
 
-datas = {Q_ind, Q_xor, Q_same_ps, Q_sim_HT};
-themes = {'ind.', 'x-or', 'ind.(same params)', 'sim. HT'};
+% datas = {Q_ind, Q_xor, Q_same_ps, Q_sim_HT};
+% themes = {'ind.', 'x-or', 'ind.(same params)', 'sim. HT'};
+
+datas = {Q_ind};
+themes = {'ind.'};
 %% Example inputs
 cfg_ex = [];
 cfg_ex.n_units = 30;
