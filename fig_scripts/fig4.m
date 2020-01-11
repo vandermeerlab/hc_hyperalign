@@ -1,9 +1,20 @@
+%%
 rng(mean('hyperalignment'));
 colors = get_hyper_colors();
 sub_ids = get_sub_ids_start_end();
 n_subjs = length(sub_ids.start.carey);
 
-% Correlation analysis in various simulations: L_R_ind, L_xor_R, L_R_same_params, sim_HT
+%% Get simulated inputs.
+cfg_sim = [];
+cfg_sim.n_units = cellfun(@(x) size(x.left, 1), Q);
+
+Q_xor = L_xor_R(cfg_sim);
+Q_ind = L_R_ind(cfg_sim);
+Q_sim_HT = sim_HT(cfg_sim);
+
+cfg_sim.same_params = [1, 1, 1];
+Q_same_ps = L_R_ind(cfg_sim);
+
 datas = {Q_ind, Q_xor, Q_same_ps, Q_sim_HT};
 themes = {'ind.', 'x-or', 'ind.(same params)', 'sim. HT'};
 %% Example inputs

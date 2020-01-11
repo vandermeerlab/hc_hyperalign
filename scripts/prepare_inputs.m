@@ -26,17 +26,6 @@ cfg_data.use_adr_data = 1;
 cfg_data.removeInterneurons = 1;
 [adr_Q] = prepare_all_Q(cfg_data);
 
-%% Get simulated inputs.
-cfg_sim = [];
-cfg_sim.n_units = cellfun(@(x) size(x.left, 1), Q);
-
-Q_xor = L_xor_R(cfg_sim);
-Q_ind = L_R_ind(cfg_sim);
-Q_sim_HT = sim_HT(cfg_sim);
-
-cfg_sim.same_params = [1, 1, 1];
-Q_same_ps = L_R_ind(cfg_sim);
-
 %% Get Carey TC inputs.
 cfg_data = [];
 cfg_data.only_use_cp = 1;

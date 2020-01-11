@@ -4,8 +4,7 @@ colors = get_hyper_colors();
 sub_ids = get_sub_ids_start_end();
 n_subjs = length(sub_ids.start.carey);
 
-%%
-% Correlation analysis in various simulations: L_R_same_mu, L_R_same_peak, L_R_same_sig
+%% Get simulated inputs.
 n_units = cellfun(@(x) size(x.left, 1), Q);
 Q_same_mu = L_R_ind(struct('same_params', [1, 0, 0], 'n_units', n_units));
 Q_same_peak = L_R_ind(struct('same_params', [0, 1, 0], 'n_units', n_units));
