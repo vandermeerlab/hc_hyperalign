@@ -3,12 +3,13 @@ function [Q] = L_xor_R(cfg_in)
     cfg_def.w_len = 48;
     % Number of neurons
     cfg_def.n_units = 30;
+    % Number of iterations
+    cfg_def.n_iters = 100;
 
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);
 
-    % rng(mean('hyperalignment'));
-    for d_i = 1:19
+    for d_i = 1:cfg.n_iters
         for q_i = 1:19
             if length(cfg.n_units) == 1
                 n_units = cfg.n_units;

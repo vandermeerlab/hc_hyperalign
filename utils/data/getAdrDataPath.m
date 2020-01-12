@@ -60,6 +60,8 @@ switch machinename
         base_fp = 'D:\data\promoted\';
     case 'CALLISTO'
         base_fp = 'E:\data\promoted\';
+    case 'mac'
+        base_fp = '/Users/mac/Dropbox (Dartmouth College)/Data/ADR/';
     case 'USERDEFINED'
         base_fp = cfg.userpath;
 end

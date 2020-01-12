@@ -31,11 +31,11 @@ for d_i = 1:length(datas)
     if d_i == 2
         cfg_metric.use_adr_data = 1;
     end
-    [~, ~, ~, M_ID] = calculate_common_metrics(cfg_metric, actual_dists_mat{d_i}, ...
+    [~, ~, ~, M_ID{d_i}] = calculate_common_metrics(cfg_metric, actual_dists_mat{d_i}, ...
         id_dists_mat{d_i}, sf_dists_mat{d_i});
 
-    matrix_obj = {M_ID.out_actual_dists, M_ID.out_id_dists};
-    bino_ps(d_i) = M_ID.bino_p_id;
+    matrix_obj = {M_ID{d_i}.out_actual_dists, M_ID{d_i}.out_id_dists};
+    bino_ps(d_i) = M_ID{d_i}.bino_p_id;
     signrank_ps(d_i) = signrank(matrix_obj{1}(:),  matrix_obj{2}(:));
     this_ax = subplot(2, 3, d_i);
 

@@ -7,20 +7,16 @@ n_subjs = length(sub_ids.start.carey);
 %% Get simulated inputs.
 cfg_sim = [];
 cfg_sim.n_units = cellfun(@(x) size(x.left, 1), Q);
-cfg_sim.n_iters = 20;
 
-% Q_xor = L_xor_R(cfg_sim);
+Q_xor = L_xor_R(cfg_sim);
 Q_ind = L_R_ind(cfg_sim);
-% Q_sim_HT = sim_HT(cfg_sim);
+Q_sim_HT = sim_HT(cfg_sim);
 
-% cfg_sim.same_params = [1, 1, 1];
-% Q_same_ps = L_R_ind(cfg_sim);
+cfg_sim.same_params = [1, 1, 1];
+Q_same_ps = L_R_ind(cfg_sim);
 
-% datas = {Q_ind, Q_xor, Q_same_ps, Q_sim_HT};
-% themes = {'ind.', 'x-or', 'ind.(same params)', 'sim. HT'};
-
-datas = {Q_ind};
-themes = {'ind.'};
+datas = {Q_ind, Q_xor, Q_same_ps, Q_sim_HT};
+themes = {'ind-ind', 'x-or', 'ind-same-all', 'sim. HT'};
 %% Example inputs
 cfg_ex = [];
 cfg_ex.n_units = 30;
@@ -104,7 +100,7 @@ end
 
 %% Plot off-diagonal of Population Vector correlation
 datas = {Q_ind{1}, Q_xor{1}, Q_same_ps{1}, horzcat(Q_sim_HT{:}), Q};
-themes = {'ind.', 'x-or', 'same params', 'sim. HT', 'Carey'};
+themes = {'ind-ind', 'x-or', 'ind-same-all', 'sim. HT', 'Carey'};
 
 figure;
 cfg_off_pv_plot = [];
@@ -117,7 +113,7 @@ set(gcf, 'Position', [680 301 559 677]);
 
 %% Cell-by-cell correlation across subjects
 datas = {Q_ind{1}, Q_xor{1}, Q_same_ps{1}, horzcat(Q_sim_HT{:}), Q};
-themes = {'ind.', 'x-or', 'same params', 'sim. HT', 'Carey'};
+themes = {'ind-ind', 'x-or', 'ind-same-all', 'sim. HT', 'Carey'};
 
 cfg_cell_plot = [];
 cfg_cell_plot.ax = subplot(2, 1, 2);

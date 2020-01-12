@@ -12,7 +12,7 @@ Q_same_sig = L_R_ind(struct('same_params', [0, 0, 1], 'n_units', n_units));
 
 
 datas = {Q_same_mu, Q_same_peak, Q_same_sig};
-themes = {'same time', 'same FR', 'same width'};
+themes = {'ind-same-time', 'ind-same-FR', 'ind-same-width'};
 
 %% Example inputs
 n_units = 30;
@@ -93,7 +93,7 @@ end
 
 %% Plot off-diagonal of Population Vector correlation
 datas = {Q_same_mu{1}, Q_same_peak{1}, Q_same_sig{1}, Q};
-themes = {'same time', 'same FR', 'same width', 'Carey'};
+themes = {'ind-same-time', 'ind-same-FR', 'ind-same-width', 'Carey'};
 
 figure;
 cfg_off_pv_plot = [];
@@ -106,7 +106,7 @@ set(gcf, 'Position', [680 315 532 663]);
 
 %% Cell-by-cell correlation across subjects
 datas = {Q_same_mu{1}, Q_same_peak{1}, Q_same_sig{1}, Q};
-themes = {'same time', 'same FR', 'same width', 'Carey'};
+themes = {'ind-same-time', 'ind-same-FR', 'ind-same-width', 'Carey'};
 
 cfg_cell_plot = [];
 cfg_cell_plot.ax = subplot(2, 1, 2);

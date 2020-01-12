@@ -285,7 +285,6 @@ for n_i = 1:length(corr_inputs)
 end
 
 %% Cell-by-cell correlations across subjects
-% rng(mean('hyperalignment'));
 corr_inputs = {Q_xor, Q_ind, Q_same_mu, Q};
 corr_types = {'x-or', 'ind.', 'ind.\\(same $\mu$)', 'data'};
 
