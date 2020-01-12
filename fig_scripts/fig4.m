@@ -7,6 +7,7 @@ n_subjs = length(sub_ids.start.carey);
 %% Get simulated inputs.
 cfg_sim = [];
 cfg_sim.n_units = cellfun(@(x) size(x.left, 1), Q);
+cfg_sim.n_iters = 20;
 
 % Q_xor = L_xor_R(cfg_sim);
 Q_ind = L_R_ind(cfg_sim);
@@ -57,16 +58,18 @@ cfg_plot = [];
 cfg_plot.hist_colors = {colors.HT.hist};
 cfg_plot.fit_colors = {colors.HT.fit};
 
+
 for d_i = 1:length(datas)
-    len = length(actual_dists_mat{d_i});
-    z = zeros(len, len, len);
-    for z_i = 1:len
+    iter_len = length(actual_dists_mat{d_i});
+    sess_len = length(actual_dists_mat{d_i}{1});
+    z = zeros(sess_len, sess_len, iter_len);
+    for z_i = 1:iter_len
         [z_score] = calculate_common_metrics([], actual_dists_mat{d_i}{z_i}, ...
             id_dists_mat{d_i}{z_i}, sf_dists_mat{d_i}{z_i});
         z(:, :, z_i) = z_score.out_zscore_mat;
     end
     mean_z = nanmean(z, 3);
-    z_scores_sim{d_i}.out_zscore_mat = z(:);
+    z_scores_sim{d_i}.out_zscore_mat = mean_z(:);
     z_scores_sim{d_i}.out_zscore_prop = sum(sum((mean_z < 0))) / sum(sum(~isnan(mean_z)));
     z_scores_sim{d_i}.sr_p = signrank(mean_z(:));
     z_scores_sim{d_i}.out_mean = nanmean(mean_z(:));
