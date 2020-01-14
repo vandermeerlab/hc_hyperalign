@@ -20,9 +20,10 @@ themes = {'ind-ind', 'x-or', 'ind-same-all', 'sim. HT'};
 %% Example inputs
 cfg_ex = [];
 cfg_ex.n_units = 30;
+cfg_ex.n_iters = 1;
 ex_xor = L_xor_R(cfg_ex);
 ex_ind = L_R_ind(cfg_ex);
-ex_same_ps = L_R_ind(struct('same_params', [1, 1, 1], 'n_units', 30));
+ex_same_ps = L_R_ind(struct('same_params', [1, 1, 1], 'n_units', 30, 'n_iters', 1));
 ex_sim_HT = sim_HT(cfg_ex);
 
 ex_datas = {ex_ind, ex_xor, ex_same_ps, ex_sim_HT};
@@ -44,6 +45,7 @@ for d_i = 1:length(datas)
         [actual_dists_mat{d_i}{q_i}, id_dists_mat{d_i}{q_i}, sf_dists_mat{d_i}{q_i}] = predict_with_shuffles([], data{q_i}, @predict_with_L_R);
     end
 end
+
 
 %% HT prediction in various simulations.
 x_limits = [-6.5, 6.5];

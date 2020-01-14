@@ -10,15 +10,14 @@ Q_same_mu = L_R_ind(struct('same_params', [1, 0, 0], 'n_units', n_units));
 Q_same_peak = L_R_ind(struct('same_params', [0, 1, 0], 'n_units', n_units));
 Q_same_sig = L_R_ind(struct('same_params', [0, 0, 1], 'n_units', n_units));
 
-
 datas = {Q_same_mu, Q_same_peak, Q_same_sig};
 themes = {'ind-same-time', 'ind-same-FR', 'ind-same-width'};
 
 %% Example inputs
 n_units = 30;
-ex_same_mu = L_R_ind(struct('same_params', [1, 0, 0], 'n_units', n_units));
-ex_same_peak = L_R_ind(struct('same_params', [0, 1, 0], 'n_units', n_units));
-ex_same_sig = L_R_ind(struct('same_params', [0, 0, 1], 'n_units', n_units));
+ex_same_mu = L_R_ind(struct('same_params', [1, 0, 0], 'n_units', n_units, 'n_iters', 1));
+ex_same_peak = L_R_ind(struct('same_params', [0, 1, 0], 'n_units', n_units, 'n_iters', 1));
+ex_same_sig = L_R_ind(struct('same_params', [0, 0, 1], 'n_units', n_units, 'n_iters', 1));
 
 ex_datas = {ex_same_mu, ex_same_peak, ex_same_sig};
 for d_i = 1:length(ex_datas)
