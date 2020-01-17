@@ -2,13 +2,11 @@ rng(mean('hyperalignment'));
 colors = get_hyper_colors();
 sub_ids = get_sub_ids_start_end();
 
-% Correlation analysis in Carey and ADR
+% Carey: 1, ADR: 2;
 datas = {Q, adr_Q};
 themes = {'Carey', 'ADR'};
 
 %% Hyperalignment procedure
-% Carey: 1, ADR: 2;
-datas = {Q, adr_Q};
 for d_i = 1:length(datas)
     data = datas{d_i};
     [actual_dists_mat{d_i}, id_dists_mat{d_i}, sf_dists_mat{d_i}] = predict_with_shuffles([], data, @predict_with_L_R);
@@ -51,19 +49,24 @@ for d_i = 1:length(datas)
 end
 
 set(gcf, 'Position', [316 253 1160 653]);
+
 %% Cell-by-cell correlation across subjects
+for d_i = 1:length(datas)
+    cell_coefs{d_i} = cell2mat(calculate_cell_coefs(datas{d_i}));
+end
+
 cfg_cell_plot = [];
 cfg_cell_plot.ax = subplot(2, 3, 3);
 cfg_cell_plot.num_subjs = [length(sub_ids.start.carey), length(sub_ids.start.adr)];
 cfg_cell_plot.ylim = [-0.2, 0.6];
 
-[mean_coefs, sem_coefs_types, all_coefs_types] = plot_cell_by_cell(cfg_cell_plot, datas, themes);
+[mean_coefs, sem_coefs_types] = plot_cell_by_cell(cfg_cell_plot, cell_coefs, themes);
 
 % Wilcoxon rank sum test for Carey and ADR
-ranksum(all_coefs_types{1}, all_coefs_types{2})
+ranksum(cell_coefs{1}, cell_coefs{2})
 
 % Wilcoxon signed rank test for Carey vs 0
-signrank(all_coefs_types{1})
+signrank(cell_coefs{1})
 %% Population Vector analysis
 for d_i = 1:length(datas)
     data = datas{d_i};

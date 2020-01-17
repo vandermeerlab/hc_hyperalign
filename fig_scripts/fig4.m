@@ -91,20 +91,24 @@ for d_i = 1:length(datas)
     end
 end
 
-%% Population Vector analysis
+%% Population Vector correlation and Cell-by-cell correlation analysis
 for d_i = 1:length(datas)
     data = datas{d_i};
     iter_len = length(data);
     sess_len = length(data{1});
-    % Average PV matrix across all iterations for each session.
+    % Average PV matrices and cell coefficients across all iterations for each session.
     for sess_i = 1:sess_len
         for iter_i = 1:iter_len
             data_acr_iters{sess_i}{iter_i} = data{iter_i}{sess_i};
         end
         PV_coefs_acr_iters = calculate_PV_coefs(data_acr_iters{sess_i});
-        mean_coefs_acr_iters{sess_i} = mean(cat(3, PV_coefs_acr_iters{:}), 3);
+        mean_PV_coefs_acr_iters{sess_i} = mean(cat(3, PV_coefs_acr_iters{:}), 3);
+
+        cell_coefs_acr_iters = calculate_cell_coefs(data_acr_iters{sess_i});
+        mean_cell_coefs_acr_iters{sess_i} = mean(cat(3, cell_coefs_acr_iters{:}), 3);
     end
-    PV_coefs{d_i} = mean_coefs_acr_iters;
+    PV_coefs{d_i} = mean_PV_coefs_acr_iters;
+    cell_coefs{d_i} = cell2mat(mean_cell_coefs_acr_iters);
 end
 
 %% Plot Population Vector correlation coefficents matrix
@@ -115,7 +119,7 @@ for d_i = 1:length(datas)
     plot_PV(cfg_pv_plot, PV_coefs{d_i});
 end
 
-%% Plot off-diagonal of Population Vector correlation
+%% Plot off-diagonal of Population Vector correlation across subjects
 PV_coefs{5} = calculate_PV_coefs(Q);
 themes = {'ind-ind', 'x-or', 'ind-same-all', 'sim. HT', 'Carey'};
 
@@ -132,8 +136,8 @@ end
 
 set(gcf, 'Position', [680 301 559 677]);
 
-%% Cell-by-cell correlation across subjects
-datas = {horzcat(Q_ind{:}), horzcat(Q_xor{:}), horzcat(Q_same_ps{:}), horzcat(Q_sim_HT{:}), Q};
+%% Plot Cell-by-cell correlation across subjects
+cell_coefs{5} = cell2mat(calculate_cell_coefs(Q));
 themes = {'ind-ind', 'x-or', 'ind-same-all', 'sim. HT', 'Carey'};
 
 cfg_cell_plot = [];
@@ -142,6 +146,6 @@ cfg_cell_plot.num_subjs = repmat(n_subjs, 1, 5);
 
 cfg_cell_plot.ylim = [-0.2, 0.5];
 
-[mean_coefs, sem_coefs_types, all_coefs_types] = plot_cell_by_cell(cfg_cell_plot, datas, themes);
+[mean_coefs, sem_coefs_types] = plot_cell_by_cell(cfg_cell_plot, cell_coefs, themes);
 
 set(gcf, 'Position', [680 301 559 677]);

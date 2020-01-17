@@ -1,4 +1,4 @@
-function [mean_coefs] = plot_PV(cfg_in, coefs)
+function plot_PV(cfg_in, coefs)
     % Plot Population Vector analysis
     cfg_def = [];
     cfg_def.fs = 12;
