@@ -42,7 +42,7 @@ end
 %% HT prediction in various simulations.
 x_limits = [-6.5, 6.5];
 x_tick = -6:6;
-binsizes = 1;
+binsizes = 0.5;
 
 cfg_plot = [];
 cfg_plot.hist_colors = {colors.HT.hist};
