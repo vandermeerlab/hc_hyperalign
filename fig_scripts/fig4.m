@@ -92,16 +92,31 @@ for d_i = 1:length(datas)
 end
 
 %% Population Vector analysis
+for d_i = 1:length(datas)
+    data = datas{d_i};
+    iter_len = length(data);
+    sess_len = length(data{1});
+    % Average PV matrix across all iterations for each session.
+    for sess_i = 1:sess_len
+        for iter_i = 1:iter_len
+            data_acr_iters{sess_i}{iter_i} = data{iter_i}{sess_i};
+        end
+        PV_coefs_acr_iters = calculate_PV_coefs(data_acr_iters{sess_i});
+        mean_coefs_acr_iters{sess_i} = mean(cat(3, PV_coefs_acr_iters{:}), 3);
+    end
+    PV_coefs{d_i} = mean_coefs_acr_iters;
+end
+
+%% Plot Population Vector correlation coefficents matrix
 cfg_pv_plot = [];
 cfg_pv_plot.clim = [-0.2 1];
 for d_i = 1:length(datas)
-    data = datas{d_i};
     cfg_pv_plot.ax = subplot(4, 3, (3*(d_i-1) + 3));
-    plot_PV(cfg_pv_plot, horzcat(data{:}));
+    plot_PV(cfg_pv_plot, PV_coefs{d_i});
 end
 
 %% Plot off-diagonal of Population Vector correlation
-datas = {Q_ind{1}, Q_xor{1}, Q_same_ps{1}, horzcat(Q_sim_HT{:}), Q};
+PV_coefs{5} = calculate_PV_coefs(Q);
 themes = {'ind-ind', 'x-or', 'ind-same-all', 'sim. HT', 'Carey'};
 
 figure;
@@ -109,12 +124,16 @@ cfg_off_pv_plot = [];
 cfg_off_pv_plot.ax = subplot(2, 1, 1);
 cfg_off_pv_plot.num_subjs = repmat(n_subjs, 1, 5);
 cfg_off_pv_plot.ylim = [-0.3, 0.5];
-[mean_coefs, sem_coefs_types, all_coefs_types] = plot_off_diag_PV(cfg_off_pv_plot, datas, themes);
+
+for d_i = 1:length(PV_coefs)
+    off_diag_PV_coefs{d_i} = get_off_dig_PV(PV_coefs{d_i});
+end
+plot_off_diag_PV(cfg_off_pv_plot, off_diag_PV_coefs, themes);
 
 set(gcf, 'Position', [680 301 559 677]);
 
 %% Cell-by-cell correlation across subjects
-datas = {Q_ind{1}, Q_xor{1}, Q_same_ps{1}, horzcat(Q_sim_HT{:}), Q};
+datas = {horzcat(Q_ind{:}), horzcat(Q_xor{:}), horzcat(Q_same_ps{:}), horzcat(Q_sim_HT{:}), Q};
 themes = {'ind-ind', 'x-or', 'ind-same-all', 'sim. HT', 'Carey'};
 
 cfg_cell_plot = [];

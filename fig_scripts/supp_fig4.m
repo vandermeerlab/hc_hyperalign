@@ -49,15 +49,16 @@ cfg_plot.hist_colors = {colors.HT.hist};
 cfg_plot.fit_colors = {colors.HT.fit};
 
 for d_i = 1:length(datas)
-    len = length(actual_dists_mat{d_i});
-    z = zeros(len, len, len);
-    for z_i = 1:len
+    iter_len = length(actual_dists_mat{d_i});
+    sess_len = length(actual_dists_mat{d_i}{1});
+    z = zeros(sess_len, sess_len, iter_len);
+    for z_i = 1:iter_len
         [z_score] = calculate_common_metrics([], actual_dists_mat{d_i}{z_i}, ...
             id_dists_mat{d_i}{z_i}, sf_dists_mat{d_i}{z_i});
         z(:, :, z_i) = z_score.out_zscore_mat;
     end
     mean_z = nanmean(z, 3);
-    z_scores_sim{d_i}.out_zscore_mat = z(:);
+    z_scores_sim{d_i}.out_zscore_mat = mean_z(:);
     z_scores_sim{d_i}.out_zscore_prop = sum(sum((mean_z < 0))) / sum(sum(~isnan(mean_z)));
     z_scores_sim{d_i}.sr_p = signrank(mean_z(:));
     z_scores_sim{d_i}.out_mean = nanmean(mean_z(:));
@@ -82,16 +83,31 @@ for d_i = 1:length(datas)
 end
 
 %% Population Vector analysis
+for d_i = 1:length(datas)
+    data = datas{d_i};
+    iter_len = length(data);
+    sess_len = length(data{1});
+    % Average PV matrix across all iterations for each session.
+    for sess_i = 1:sess_len
+        for iter_i = 1:iter_len
+            data_acr_iters{sess_i}{iter_i} = data{iter_i}{sess_i};
+        end
+        PV_coefs_acr_iters = calculate_PV_coefs(data_acr_iters{sess_i});
+        mean_coefs_acr_iters{sess_i} = mean(cat(3, PV_coefs_acr_iters{:}), 3);
+    end
+    PV_coefs{d_i} = mean_coefs_acr_iters;
+end
+
+%% Plot Population Vector correlation coefficents matrix
 cfg_pv_plot = [];
 cfg_pv_plot.clim = [-0.2 1];
 for d_i = 1:length(datas)
-    data = datas{d_i};
     cfg_pv_plot.ax = subplot(3, 3, (3*(d_i-1) + 3));
-    plot_PV(cfg_pv_plot, horzcat(data{:}));
+    plot_PV(cfg_pv_plot, PV_coefs{d_i});
 end
 
 %% Plot off-diagonal of Population Vector correlation
-datas = {Q_same_mu{1}, Q_same_peak{1}, Q_same_sig{1}, Q};
+PV_coefs{4} = calculate_PV_coefs(Q);
 themes = {'ind-same-time', 'ind-same-FR', 'ind-same-width', 'Carey'};
 
 figure;
@@ -99,12 +115,16 @@ cfg_off_pv_plot = [];
 cfg_off_pv_plot.ax = subplot(2, 1, 1);
 cfg_off_pv_plot.num_subjs = repmat(n_subjs, 1, 4);
 cfg_off_pv_plot.ylim = [-0.3, 0.5];
-[mean_coefs, sem_coefs_types, all_coefs_types] = plot_off_diag_PV(cfg_off_pv_plot, datas, themes);
+
+for d_i = 1:length(PV_coefs)
+    off_diag_PV_coefs{d_i} = get_off_dig_PV(PV_coefs{d_i});
+end
+plot_off_diag_PV(cfg_off_pv_plot, off_diag_PV_coefs, themes);
 
 set(gcf, 'Position', [680 315 532 663]);
 
 %% Cell-by-cell correlation across subjects
-datas = {Q_same_mu{1}, Q_same_peak{1}, Q_same_sig{1}, Q};
+datas = {horzcat(Q_same_mu{:}), horzcat(Q_same_peak{:}), horzcat(Q_same_sig{:}), Q};
 themes = {'ind-same-time', 'ind-same-FR', 'ind-same-width', 'Carey'};
 
 cfg_cell_plot = [];

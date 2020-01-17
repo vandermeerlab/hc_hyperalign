@@ -65,12 +65,17 @@ ranksum(all_coefs_types{1}, all_coefs_types{2})
 % Wilcoxon signed rank test for Carey vs 0
 signrank(all_coefs_types{1})
 %% Population Vector analysis
+for d_i = 1:length(datas)
+    data = datas{d_i};
+    PV_coefs{d_i} = calculate_PV_coefs(data);
+end
+
+%% Plot Population Vector correlation coefficents matrix
 cfg_pv_plot = [];
 cfg_pv_plot.clim = [-0.2 1];
 for d_i = 1:length(datas)
-    data = datas{d_i};
     cfg_pv_plot.ax = subplot(2, 3, 3 + d_i);
-    plot_PV(cfg_pv_plot, data);
+    plot_PV(cfg_pv_plot, PV_coefs{d_i});
 end
 
 %% Plot off-diagonal of Population Vector correlation
@@ -79,7 +84,10 @@ cfg_off_pv_plot.ax = subplot(2, 3, 6);
 cfg_off_pv_plot.num_subjs = [length(sub_ids.start.carey), length(sub_ids.start.adr)];
 cfg_off_pv_plot.ylim = [0, 1];
 
-[mean_coefs, sem_coefs_types, all_coefs_types] = plot_off_diag_PV(cfg_off_pv_plot, datas, themes);
+for d_i = 1:length(datas)
+    off_diag_PV_coefs{d_i} = get_off_dig_PV(PV_coefs{d_i});
+end
+[mean_coefs, sem_coefs_types] = plot_off_diag_PV(cfg_off_pv_plot, off_diag_PV_coefs, themes);
 
 % Wilcoxon signed rank test for Carey and ADR off-diagonal
-ranksum(all_coefs_types{1}(:), all_coefs_types{2}(:))
+ranksum(off_diag_coefs{1}(:), off_diag_coefs{2}(:))

@@ -1,10 +1,9 @@
-function plot_PV(cfg_in, data)
+function [mean_coefs] = plot_PV(cfg_in, coefs)
     % Plot Population Vector analysis
     cfg_def = [];
     cfg_def.fs = 12;
     cfg_def.ax = []; % handle to axes to plot in, e.g. ax = subplot(221)
     cfg_def.clim = [];
-    cfg_def.need_concat = true;
 
     cfg = ProcessConfig(cfg_def, cfg_in);
 
@@ -12,22 +11,6 @@ function plot_PV(cfg_in, data)
         axes(cfg.ax);
     else
         cfg.ax = gca;
-    end
-
-    if cfg.need_concat
-        data = cellfun(@(x) [x.left, x.right], data, 'UniformOutput', false);
-    end
-    coefs = cell(1, length(data));
-    w_len = size(data{1}, 2);
-    for i = 1:length(data)
-        w_coefs = zeros(w_len, w_len);
-        for j = 1:w_len
-            for k = 1:w_len
-                [coef] = corrcoef(data{i}(:, j), data{i}(:, k));
-                w_coefs(j, k) = coef(1, 2);
-            end
-        end
-        coefs{i} = w_coefs;
     end
 
     mean_coefs = mean(cat(3, coefs{:}), 3);
