@@ -146,6 +146,6 @@ cfg_cell_plot.num_subjs = repmat(n_subjs, 1, 5);
 
 cfg_cell_plot.ylim = [-0.2, 0.5];
 
-[mean_coefs, sem_coefs_types] = plot_cell_by_cell(cfg_cell_plot, cell_coefs, themes);
+[mean_cell_coefs, sem_cell_coefs_types] = plot_cell_by_cell(cfg_cell_plot, cell_coefs, themes);
 
 set(gcf, 'Position', [680 301 559 677]);

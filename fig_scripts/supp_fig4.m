@@ -92,13 +92,13 @@ for d_i = 1:length(datas)
         for iter_i = 1:iter_len
             data_acr_iters{sess_i}{iter_i} = data{iter_i}{sess_i};
         end
-        PV_coefs_acr_iters = calculate_PV_coefs(data_acr_iters{sess_i});
-        mean_PV_coefs_acr_iters{sess_i} = mean(cat(3, PV_coefs_acr_iters{:}), 3);
+%         PV_coefs_acr_iters = calculate_PV_coefs(data_acr_iters{sess_i});
+%         mean_PV_coefs_acr_iters{sess_i} = mean(cat(3, PV_coefs_acr_iters{:}), 3);
 
         cell_coefs_acr_iters = calculate_cell_coefs(data_acr_iters{sess_i});
         mean_cell_coefs_acr_iters{sess_i} = mean(cat(3, cell_coefs_acr_iters{:}), 3);
     end
-    PV_coefs{d_i} = mean_PV_coefs_acr_iters;
+%     PV_coefs{d_i} = mean_PV_coefs_acr_iters;
     cell_coefs{d_i} = cell2mat(mean_cell_coefs_acr_iters);
 end
 
@@ -137,6 +137,6 @@ cfg_cell_plot.num_subjs = repmat(n_subjs, 1, 4);
 
 cfg_cell_plot.ylim = [-0.2, 0.5];
 
-[mean_coefs, sem_coefs_types] = plot_cell_by_cell(cfg_cell_plot, cell_coefs, themes);
+[mean_cell_coefs, sem_cell_coefs_types] = plot_cell_by_cell(cfg_cell_plot, cell_coefs, themes);
 
 set(gcf, 'Position', [680 315 532 663]);
