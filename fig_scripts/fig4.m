@@ -128,7 +128,7 @@ cfg_off_pv_plot.ylim = [-0.3, 0.5];
 for d_i = 1:length(PV_coefs)
     off_diag_PV_coefs{d_i} = get_off_dig_PV(PV_coefs{d_i});
 end
-plot_off_diag_PV(cfg_off_pv_plot, off_diag_PV_coefs, themes);
+[mean_PV_coefs_types, sem_PV_coefs_types] = plot_off_diag_PV(cfg_off_pv_plot, off_diag_PV_coefs, themes);
 
 set(gcf, 'Position', [680 301 559 677]);
 
