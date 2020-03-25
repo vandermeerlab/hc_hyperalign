@@ -1,4 +1,6 @@
 rng(mean('hyperalignment'));
+exp_cond = {'left', 'right'};
+sub_ids = get_sub_ids_start_end();
 
 %% Sorting neurons by the temporal (spatial) order of fields
 data = TC;
@@ -47,32 +49,105 @@ for p_i = 1:length(data)
 end
 
 %% FR across time/locations (normalized or not; before or after hypertransform)
-data = Q;
+data = Q_norm_l2;
+[actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R([], data);
+out_predicted_Q_mat = set_withsubj_nan([], predicted_Q_mat);
 
-exp_cond = {'left', 'right'};
+w_len = size(data{1}.left, 2);
+dt = 0.05;
 
-for d_i = 1:length(data)
-    figure;
-    for exp_i = 1:length(exp_cond)
-        FR = data{d_i}.(exp_cond{exp_i});
-        mean_across_w = mean(FR, 1);
-        std_across_w = std(FR, 1);
-
-        subplot(1, 2, exp_i);
-        title(exp_cond{exp_i});
-
-        dy = 1;
-        x = 1:length(mean_across_w);
-        xpad = 1;
-        ylim = [-2, 2];
-
-        h = shadedErrorBar(x, mean_across_w, std_across_w);
-        set(h.mainLine, 'LineWidth', 1);
-        hold on;
-        set(gca, 'XTick', [], 'YTick', [ylim(1):dy:ylim(2)], 'XLim', [x(1) x(end)], ...
-        'YLim', [ylim(1) ylim(2)], 'FontSize', 12, 'LineWidth', 1, 'TickDir', 'out');
-        box off;
-        xlabel('Time'); ylabel('FR')
+FR_data = out_predicted_Q_mat;
+for exp_i = 1:length(exp_cond)
+    FR_acr_sess.(exp_cond{exp_i}) = [];
+    if exp_i == 1
+        keep_idx = 1:w_len;
+    else
+        keep_idx = w_len+1:w_len*2;
     end
-    saveas(gcf, sprintf('Q_%d.jpg', d_i));
+    for d_i = 1:length(FR_data(:))
+        if ~isnan(FR_data{d_i})
+            FR = FR_data{d_i}(:, keep_idx);
+            FR_acr_sess.(exp_cond{exp_i}) = [FR_acr_sess.(exp_cond{exp_i}); FR];
+        end
+    end
 end
+
+%% Plot FR across time/locations
+figure;
+
+for exp_i = 1:length(exp_cond)
+    mean_across_w = mean(FR_acr_sess.(exp_cond{exp_i}), 1);
+    std_across_w = std(FR_acr_sess.(exp_cond{exp_i}), 1);
+    
+    subplot(1, 2, exp_i);
+    title(exp_cond{exp_i});
+
+    dy = 0.5;
+    x = 1:length(mean_across_w);
+    xpad = 1;
+    ylim = [-0.5, 0.5];
+
+    h = shadedErrorBar(x, mean_across_w, std_across_w);
+    set(h.mainLine, 'LineWidth', 1);
+    hold on;
+    set(gca, 'XTick', [], 'YTick', [ylim(1):dy:ylim(2)], 'XLim', [x(1) x(end)], ...
+    'YLim', [ylim(1) ylim(2)], 'FontSize', 12, 'LineWidth', 1, 'TickDir', 'out');
+    box off;
+    xlabel('Time'); ylabel('FR')
+end
+saveas(gcf, 'Q_norm_l2.jpg');
+
+%% Plot FR differences between sessions
+dt = 0.05;
+for i = 1:length(Q)
+    mean_FR{i} = mean([Q{i}.left, Q{i}.right], 'all') / dt;
+end
+
+FR_diff = zeros(length(Q));
+for sr_i = 1:length(Q)
+    for tar_i = 1:length(Q)
+       if sr_i ~= tar_i
+           FR_diff(sr_i, tar_i) = abs(mean_FR{sr_i} - mean_FR{tar_i});
+       end
+    end
+end
+out_FR_diff = set_withsubj_nan([], FR_diff);
+
+plot_matrix([], out_FR_diff);
+saveas(gcf, 'FR_diff.jpg');
+
+%% Plot running speed between left and right
+data = SPD;
+
+for exp_i = 1:length(exp_cond)
+    exp_spd{exp_i} = [];
+    for d_i = 1:length(SPD)
+        exp_spd{exp_i} = [exp_spd{exp_i}, SPD{d_i}.(exp_cond{exp_i})];
+    end
+end
+
+cfg_cell_plot = [];
+cfg_cell_plot.num_subjs = [length(sub_ids.start.carey), length(sub_ids.start.carey)];
+cfg_cell_plot.ylim = [50, 150];
+cfg_cell_plot.dy = 25;
+
+[mean_spds, sem_spds] = plot_cell_by_cell(cfg_cell_plot, exp_spd, exp_cond);
+saveas(gcf, 'spd_L_R.jpg');
+
+%% Plot running speed differences between sessions
+for i = 1:length(SPD)
+    mean_SPD{i} = mean([SPD{i}.left, SPD{i}.right], 'all');
+end
+
+SPD_diff = zeros(length(SPD));
+for sr_i = 1:length(SPD)
+    for tar_i = 1:length(SPD)
+       if sr_i ~= tar_i
+           SPD_diff(sr_i, tar_i) = abs(mean_SPD{sr_i} - mean_SPD{tar_i});
+       end
+    end
+end
+out_SPD_diff = set_withsubj_nan([], SPD_diff);
+
+plot_matrix([], out_SPD_diff);
+saveas(gcf, 'SPD_diff.jpg');

@@ -20,7 +20,7 @@ cfg_data.normalization = 'average_norm_Z';
 
 cfg_data.normalization = 'average_norm_l2';
 [Q_norm_l2] = prepare_all_Q(cfg_data);
-%% Get ADR Q input
+%% Get ADR Q inputs.
 cfg_data = [];
 cfg_data.use_adr_data = 1;
 cfg_data.removeInterneurons = 1;
@@ -41,3 +41,6 @@ cfg_data.normalization = 'ind_Z';
 
 cfg_data.normalization = 'ind_l2';
 [TC_norm_l2] = prepare_all_TC(cfg_data);
+
+%% Get Carey running speed inputs.
+SPD = prepare_all_SPD([]);
