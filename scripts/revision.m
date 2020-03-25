@@ -1,11 +1,36 @@
 rng(mean('hyperalignment'));
+
 exp_cond = {'left', 'right'};
 sub_ids = get_sub_ids_start_end();
 
 %% Sorting neurons by the temporal (spatial) order of fields
-data = TC;
+data = Q;
 [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R([], data);
 
+w_len = size(data{1}.left, 2);
+for i = 1:length(data)
+    max_time = zeros(w_len, w_len);
+    for j = 1:length(data)
+        if i ~= j
+            predicted = predicted_Q_mat{j, i};
+            for neu_i = 1:size(predicted, 1)
+                if ~all(predicted(neu_i) == 0)
+                    [~, max_L] = max(predicted(neu_i, 1:w_len));
+                    [~, max_R] = max(predicted(neu_i, w_len+1:end));
+                    max_time(max_L, max_R) = max_time(max_L, max_R) + 1;
+                end
+            end
+        end
+    end
+   imagesc(max_time); colorbar;
+    set(gca,'YDir','normal');
+    xlabel('Left');
+    ylabel('Right');
+    saveas(gcf, sprintf('Target_%d.jpg', i));
+    close;
+end
+
+%% Plotting source and target (ordered by L of source)
 for i = 1:length(data)
     target_sname = ['/Users/mac/Desktop/hyperalign_revision/sorted_TC/predicted/', sprintf('TC_%d', i)];
     mkdir(target_sname);
@@ -54,8 +79,6 @@ data = Q_norm_l2;
 out_predicted_Q_mat = set_withsubj_nan([], predicted_Q_mat);
 
 w_len = size(data{1}.left, 2);
-dt = 0.05;
-
 FR_data = out_predicted_Q_mat;
 for exp_i = 1:length(exp_cond)
     FR_acr_sess.(exp_cond{exp_i}) = [];
@@ -114,7 +137,6 @@ end
 out_FR_diff = set_withsubj_nan([], FR_diff);
 
 plot_matrix([], out_FR_diff);
-saveas(gcf, 'FR_diff.jpg');
 
 %% Plot running speed between left and right
 data = SPD;
@@ -132,7 +154,6 @@ cfg_cell_plot.ylim = [50, 150];
 cfg_cell_plot.dy = 25;
 
 [mean_spds, sem_spds] = plot_cell_by_cell(cfg_cell_plot, exp_spd, exp_cond);
-saveas(gcf, 'spd_L_R.jpg');
 
 %% Plot running speed differences between sessions
 for i = 1:length(SPD)
@@ -150,4 +171,3 @@ end
 out_SPD_diff = set_withsubj_nan([], SPD_diff);
 
 plot_matrix([], out_SPD_diff);
-saveas(gcf, 'SPD_diff.jpg');
