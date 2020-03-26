@@ -67,6 +67,10 @@ switch machinename
         base_fp = cfg.userpath;
 end
 
+% <added>
+base_fp = 'C:\Users\willb\Documents\van der Meer Lab\Data';
+% </added>
+
 fd = {};
 
 curr_pwd = pwd;

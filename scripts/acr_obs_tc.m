@@ -1,15 +1,21 @@
 % Get processed data
+fprintf('GETTING PROCESSED DATA\n'); % <ADDED>
+
 cfg_data = [];
 cfg_data.only_use_cp = 1;
 TC = prepare_all_TC(cfg_data);
 
 % PCA
+fprintf('STARTING PCA\n'); % <ADDED>
+
 NumComponents = 10;
 for tc_i = 1:length(TC)
     proj_TC{tc_i} = perform_pca(TC{tc_i}, NumComponents);
 end
 
 % Hyperalignment
+fprintf('STARTING HYPERALIGNMENT\n'); % <ADDED>
+
 [aligned_left, aligned_right] = get_aligned_left_right(proj_TC);
 
 actual_dists_mat = zeros(length(TC));
@@ -18,6 +24,8 @@ id_dists_mat = zeros(length(TC));
 aligned_source = aligned_left;
 aligned_target = aligned_right;
 for sr_i = 1:length(TC)
+    fprintf('IN THE HYPERALIGNMENT LOOP\n'); % <ADDED>
+    
     % Find the transform for source subject from left to right in the common space.
     [~, ~, M{sr_i}] = procrustes(aligned_target{sr_i}', aligned_source{sr_i}');
     predicted = cellfun(@(x) p_transform(M{sr_i}, x), aligned_source, 'UniformOutput', false);
