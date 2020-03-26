@@ -2,7 +2,7 @@ rng(mean('hyperalignment'));
 
 sub_ids = get_sub_ids_start_end();
 %% Sorting neurons by the temporal (spatial) order of fields
-data = TC;
+data = Q;
 [~, ~, predicted_Q_mat] = predict_with_L_R([], data);
 out_predicted_Q_mat = set_withsubj_nan([], predicted_Q_mat);
 
@@ -11,12 +11,13 @@ max_fields = zeros(w_len, w_len);
 
 for i = 1:length(data)
     for j = 1:length(data)
-        predicted = out_predicted_Q_mat{i, j};
-        if ~isnan(predicted)
-            for neu_i = 1:size(predicted, 1)
-                if ~all(predicted(neu_i) == 0)
-                    [~, max_L] = max(predicted(neu_i, 1:w_len));
-                    [~, max_R] = max(predicted(neu_i, w_len+1:end));
+        Q_sess = out_predicted_Q_mat{i, j};
+%         Q_sess = [data{i}.left, data{i}.right];
+        if ~isnan(Q_sess)
+            for neu_i = 1:size(Q_sess, 1)
+                if ~all(Q_sess(neu_i) == 0)
+                    [~, max_L] = max(Q_sess(neu_i, 1:w_len));
+                    [~, max_R] = max(Q_sess(neu_i, w_len+1:end));
                     max_fields(max_L, max_R) = max_fields(max_L, max_R) + 1;
                 end
             end
