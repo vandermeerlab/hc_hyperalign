@@ -16,14 +16,14 @@ for p_i = 1:length(data_paths_carey)
     % possible gaps in recording, so can't just take first and last spike
     lfp_dt = median(diff(lfp.tvec));
     total_exp_time = length(lfp.tvec).*lfp_dt;
-    
+
     nCells = length(S.t);
     this_fr = zeros(nCells, 1);
     for iC = 1:nCells
-        
+
         this_t = S.t{iC};
         this_fr(iC) = length(this_t)./total_exp_time;
-        
+
     end
     py_idx = setdiff(1:nCells, int_idx_carey{p_i});
     py_mean_FR_carey = vertcat(py_mean_FR_carey, this_fr(py_idx));
@@ -67,9 +67,9 @@ py_mean_FR_adr = [];
 int_mean_FR_adr = [];
 for p_i = 1:length(data_paths_adr)
     cd(data_paths_adr{p_i});
-    
+
     S = LoadSpikes([]);
-    
+
     channels = FindFiles('*.Ncs');
     cfg_lfp = {};
     cfg_lfp.fc = {channels{1}};
@@ -79,14 +79,14 @@ for p_i = 1:length(data_paths_adr)
     % possible gaps in recording, so can't just take first and last spike
     lfp_dt = median(diff(lfp.tvec));
     total_exp_time = length(lfp.tvec).*lfp_dt;
-    
+
     nCells = length(S.t);
     this_fr = zeros(nCells, 1);
     for iC = 1:nCells
-        
+
         this_t = S.t{iC};
         this_fr(iC) = length(this_t)./total_exp_time;
-        
+
     end
     py_idx = setdiff(1:nCells, int_idx_adr{p_i});
     py_mean_FR_adr = vertcat(py_mean_FR_adr, this_fr(py_idx));

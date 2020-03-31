@@ -1,29 +1,23 @@
 # hc_hyperalign
 
-This is a project started at 2018 [MIND](https://summer-mind.github.io/) hackthon. The purpose of this project is to investigate correlation in ensemble hippocampal (place) cells neural activity between different experimental conditions using hyperalignment.
+The codebase of the paper: [Between-subject prediction reveals a shared representational geometry in the rodent hippocampus](https://www.biorxiv.org/content/10.1101/2020.01.27.922062v1) (This project was started at 2018 [MIND](https://summer-mind.github.io/) hackthon.) The idea of the project is to investigate relationship of ensemble hippocampal (place) cells activity between different experimental conditions across subjects using hyperalignment.
 
 ## Entry points
 
 Clone and check out the `hyperalignment` branch of the vandermeerlab main codebase.
 
-Before you try to do anything below. Use `set_hyper_path` and check for path setup, and `getTmazeDataPath` for data setup (may need to edit these to add you local path).
+Before you try to do anything below, edit `set_hyper_path` for path setup (corresponds to your local path), and `getTmazeDataPath` and `getAdrDataPath` in `utils/data` folder for data setup.
 
-### Scripts
-`scripts/acr_obs` is the file for analysis for current procedure.
+Then execute `set_hyper_path` in your matlab command window.
 
-`scripts/acr_obs_withhold` is the file for withholding analysis.
+### Running Scripts
 
-`scripts/acr_obs_only_pca` is the file for analysis without hyperalignment.
+Each figure has a corresponding script in
+`fig_scripts` folder and data preparation script used in fig 2, supp. fig 2, fig 3 and supp. fig 3 is located at `scripts/prepare_inputs`.
 
-### Simulations
-`L_R_ind` is for the independent simulation.
+Note that they might share the common scripts with only different parameter used (for flexibly testing different data input). For example, Q in figure 2 includes interneurons, so `cfg_data.removeInterneurons = 0;`, but figure 3 and so on excludes interneurons (`cfg_data.removeInterneurons = 1;`).
 
-`L_xor_R` is for the `x-or` simulation
-
-`same_M_diff_L` is for the generation of hyper-pair.
-
-### Plots
-You can find figure producing scrtips in `scripts/plotting`. Before that, for preparing the data structure, check `scripts/common`.
+You should adjust the parameters before preparing the data input. (We might finalize the data input used and this is no longer required.)
 
 ## Acknowledgement
 shadedErrorBar: https://github.com/raacampbell/shadedErrorBar
