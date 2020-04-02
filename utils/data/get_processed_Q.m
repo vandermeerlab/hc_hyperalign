@@ -1,12 +1,11 @@
 function [Q] = get_processed_Q(cfg_in, session_path)
-
     cfg_def.last_n_sec = 2.4;
     cfg_def.use_matched_trials = 1;
     cfg_def.use_adr_data = 0;
     cfg_def.removeInterneurons = 0;
     cfg_def.int_thres = 10;
     cfg_def.normalization = 'none';
-    cfg_def.minSpikes = 25;
+    % cfg_def.minSpikes = 25;
 
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);
