@@ -15,7 +15,9 @@ for i = 1:length(data)
 %         Q_sess = [data{i}.left, data{i}.right];
         if ~isnan(Q_sess)
             for neu_i = 1:size(Q_sess, 1)
-                if ~all(Q_sess(neu_i) == 0)
+                FR_left_same = Q_sess(neu_i, 1:w_len) == Q_sess(neu_i, 1);
+                FR_right_same = Q_sess(neu_i, w_len+1:end) == Q_sess(neu_i, w_len+1);
+                if ~all(FR_left_same) && ~all(FR_right_same)
                     [~, max_L] = max(Q_sess(neu_i, 1:w_len));
                     [~, max_R] = max(Q_sess(neu_i, w_len+1:end));
                     max_fields(max_L, max_R) = max_fields(max_L, max_R) + 1;
