@@ -16,5 +16,7 @@ function [Q, restrictionLabels] = prepare_all_Q(cfg_in)
 
     for p_i = 1:length(data_paths)
         [Q{p_i}] = get_processed_Q(cfg, data_paths{p_i});
+        Q{p_i}.left = Q{p_i}.left(:, 2:end-1);
+        Q{p_i}.right = Q{p_i}.right(:, 2:end-1);
     end
 end
