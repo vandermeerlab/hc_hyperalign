@@ -1,5 +1,6 @@
 rng(mean('hyperalignment'));
 
+colors = get_hyper_colors();
 sub_ids = get_sub_ids_start_end();
 
 %% Plot left vs. right fields for both actual and predicted data
@@ -335,19 +336,48 @@ plot_matrix([], out_FR_diff);
 data = SPD;
 exp_cond = {'left', 'right'};
 
-for exp_i = 1:length(exp_cond)
-    exp_spd{exp_i} = [];
-    for d_i = 1:length(SPD)
-        exp_spd{exp_i} = [exp_spd{exp_i}, SPD{d_i}.(exp_cond{exp_i})];
+sub_ids_start = sub_ids.start.carey;
+sub_ids_end = sub_ids.end.carey;
+
+figure;
+for sub_i = 1:length(sub_ids_start)
+    for exp_i = 1:length(exp_cond)
+        exp_spd = [];
+        sub_sessions = sub_ids_start(sub_i):sub_ids_end(sub_i);
+        for sess_i = sub_sessions
+            exp_spd = [exp_spd, SPD{sess_i}.(exp_cond{exp_i})];
+        end
+        mean_exp_spd.(exp_cond{exp_i}) = nanmean(exp_spd);
+        std_exp_spd.(exp_cond{exp_i}) = nanstd(exp_spd) / sqrt(length(sub_sessions));
     end
+    x = 1:length(exp_cond);
+    y = [mean_exp_spd.left, mean_exp_spd.right];
+    err = [std_exp_spd.left, std_exp_spd.right];
+    errorbar(x, y, err);
+    hold on;
+    plot(x, y, '.', 'MarkerSize', 20);
+    hold on;
 end
 
-cfg_cell_plot = [];
-cfg_cell_plot.num_subjs = [length(sub_ids.start.carey), length(sub_ids.start.carey)];
-cfg_cell_plot.ylim = [50, 150];
-cfg_cell_plot.dy = 25;
+xpad = 0.5;
+set(gca, 'XTick', x, 'YTick', 25:50:175, 'XTickLabel', exp_cond, ...
+    'XLim', [x(1)-xpad x(end)+xpad], 'YLim', [25, 175], 'FontSize', 24, ...
+    'LineWidth', 1, 'TickDir', 'out');
+box off;
 
-[mean_spds, sem_spds] = plot_cell_by_cell(cfg_cell_plot, exp_spd, exp_cond);
+% for exp_i = 1:length(exp_cond)
+%     exp_spd{exp_i} = [];
+%     for d_i = 1:length(SPD)
+%         exp_spd{exp_i} = [exp_spd{exp_i}, SPD{d_i}.(exp_cond{exp_i})];
+%     end
+% end
+
+% cfg_cell_plot = [];
+% cfg_cell_plot.num_subjs = [length(sub_ids.start.carey), length(sub_ids.start.carey)];
+% cfg_cell_plot.ylim = [50, 150];
+% cfg_cell_plot.dy = 25;
+% 
+% [mean_spds, sem_spds] = plot_cell_by_cell(cfg_cell_plot, exp_spd, exp_cond);
 
 %% Plot running speed differences between sessions
 for i = 1:length(SPD)
