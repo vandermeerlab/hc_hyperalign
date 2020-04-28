@@ -2,8 +2,10 @@ rng(mean('hyperalignment'));
 
 sub_ids = get_sub_ids_start_end();
 
-%% Sorting neurons by the temporal (spatial) order of fields
+%% Plot left vs. right fields for both actual and predicted data
 data = Q;
+dt = 0.05;
+
 [~, ~, predicted_Q_mat] = predict_with_L_R([], data);
 out_predicted_Q_mat = set_withsubj_nan([], predicted_Q_mat);
 w_len = size(data{1}.left, 2);
@@ -16,37 +18,92 @@ for d_i = 1:length(datas)
     max_fields = zeros(w_len, w_len);
     for sess_i = 1:length(data(:))
         if d_i == 1
-            Q_sess = [data{sess_i}.left, data{sess_i}.right];
+            Q_sess = [data{sess_i}.left / dt, data{sess_i}.right / dt];
         else
-            Q_sess = out_predicted_Q_mat{sess_i};
+            Q_sess = out_predicted_Q_mat{sess_i} / dt;
         end
         if ~isnan(Q_sess)
             for neu_i = 1:size(Q_sess, 1)
-                FR_left_same = abs(Q_sess(neu_i, 1:w_len) - Q_sess(neu_i, 1)) < 1e-4;
-                FR_right_same = abs(Q_sess(neu_i, w_len+1:end) - Q_sess(neu_i, w_len+1)) < 1e-4;
-                if ~all(FR_left_same) && ~all(FR_right_same)
-                    [~, max_L] = max(Q_sess(neu_i, 1:w_len));
-                    [~, max_R] = max(Q_sess(neu_i, w_len+1:end));
+                FR_thres = 5;
+                [L_max, max_L] = max(Q_sess(neu_i, 1:w_len));
+                [R_max, max_R] = max(Q_sess(neu_i, w_len+1:end));
+
+                FR_left_same = abs(Q_sess(neu_i, 1:w_len) - L_max) < 3;
+                FR_right_same = abs(Q_sess(neu_i, w_len+1:end) - R_max) < 3;
+
+                if L_max > FR_thres && R_max > FR_thres && ~all(FR_left_same) && ~all(FR_right_same)
                     max_fields(max_L, max_R) = max_fields(max_L, max_R) + 1;
                 end
             end
         end
     end
     max_fields = max_fields / sum(sum(max_fields));
-    
+
     subplot(2, 2, d_i);
     imagesc(max_fields); colorbar;
     set(gca,'YDir','normal');
     xlabel('Left');
     ylabel('Right');
     title(exp_cond{d_i});
-    
+
     subplot(2, 2, d_i + 2);
     plot(1:length(max_fields), sum(max_fields, 1));
 end
 
-%% Plot left vs. right fields for both actual and predicted data
 
+%% DetectPlaceCells1D version of the above
+data = Q;
+dt = 0.05;
+
+[~, ~, predicted_Q_mat] = predict_with_L_R([], data);
+out_predicted_Q_mat = set_withsubj_nan([], predicted_Q_mat);
+w_len = size(data{1}.left, 2);
+
+datas = {Q, out_predicted_Q_mat};
+exp_cond = {'actual', 'predicted'};
+
+for d_i = 1:length(datas)
+    data = datas{d_i};
+    max_fields = zeros(w_len, w_len);
+    for sess_i = 1:length(data(:))
+        if d_i == 1
+            Q_sess = [data{sess_i}.left / dt, data{sess_i}.right / dt];
+        else
+            Q_sess = out_predicted_Q_mat{sess_i} / dt;
+        end
+        if ~isnan(Q_sess)
+            for neu_i = 1:size(Q_sess, 1)
+                L = Q_sess(neu_i, 1:w_len);
+                R = Q_sess(neu_i, w_len+1:end);
+
+                L_fields = DetectPlaceCells1D([], L);
+                R_fields = DetectPlaceCells1D([], R);
+
+                for c_i = 1:length(L_fields.template_idx)
+                    L_cell_idx = L_fields.template_idx(c_i);
+                    R_cell_idx = find(R_fields.template_idx == L_cell_idx);
+                    if ~isempty(R_cell_idx)
+                        L_field = L_fields.peak_idx(L_cell_idx);
+                        R_field = R_fields.peak_idx(R_cell_idx);
+
+                        max_fields(L_field, R_field) = max_fields(L_field, R_field) + 1;
+                    end
+                end
+            end
+        end
+    end
+%     max_fields = max_fields / sum(sum(max_fields));
+
+    subplot(2, 2, d_i);
+    imagesc(max_fields); colorbar;
+    set(gca,'YDir','normal');
+    xlabel('Left');
+    ylabel('Right');
+    title(exp_cond{d_i});
+
+    subplot(2, 2, d_i + 2);
+    plot(1:length(max_fields), sum(max_fields, 1));
+end
 
 %% Plotting source and target (ordered by L of source)
 data = TC;
@@ -94,10 +151,8 @@ for p_i = 1:length(data)
     end
 end
 
-%% FR across time/locations (normalized or not; before or after hypertransform)
+%% FR across time/locations (raw and normalized) for each session
 data = Q;
-% [~, ~, predicted_Q_mat] = predict_with_L_R([], data);
-% out_predicted_Q_mat = set_withsubj_nan([], predicted_Q_mat);
 
 dt = {0.05, 1};
 w_len = size(data{1}.left, 2);
@@ -108,26 +163,15 @@ ylim = {[0, 3], [-0.5, 1.5]};
 ylab = {'FR', 'Z-score'};
 
 FR_data = {Q, Q_norm_Z};
-% for data_i = 1:length(FR_data)
-%     for exp_i = 1:length(exp_cond)
-%         FR_acr_sess{data_i}.(exp_cond{exp_i}) = [];
-    %     if exp_i == 1
-    %         keep_idx = 1:w_len;
-    %     else
-    %         keep_idx = w_len+1:w_len*2;
-    %     end
 for s_i = 1:length(FR_data{1}(:))
     figure;
     for data_i = 1:length(FR_data)
-        FR = [FR_data{data_i}{s_i}.left, FR_data{data_i}{s_i}.left] / dt{data_i};
+        FR = [FR_data{data_i}{s_i}.left, FR_data{data_i}{s_i}.right] / dt{data_i};
         subplot(3, 2, data_i);
         imagesc(FR); colorbar;
         for exp_i = 1:length(exp_cond)
-    %         if ~isnan(FR_data{d_i})
-    %           FR = FR_data{d_i}(:, keep_idx);
             FR_exp = FR_data{data_i}{s_i}.(exp_cond{exp_i}) / dt{data_i};
-%                 FR_acr_sess{data_i}.(exp_cond{exp_i}) = [FR_acr_sess{data_i}.(exp_cond{exp_i}); FR];
-    %         end
+
             mean_across_w = mean(FR_exp, 1);
             std_across_w = std(FR_exp, 1);
 
@@ -146,8 +190,46 @@ for s_i = 1:length(FR_data{1}(:))
             title(exp_cond{exp_i});
         end
     end
-%     saveas(gcf, sprintf('Q_%d.jpg', s_i));
-%     close;
+    saveas(gcf, sprintf('Q_%d.jpg', s_i));
+    close;
+end
+
+%% FR across time/locations (raw and normalized) combined across sessions
+data = TC;
+
+dt = {1, 1};
+w_len = size(data{1}.left, 2);
+exp_cond = {'left', 'right'};
+
+dy = {1, 0.5};
+ylim = {[0, 3], [-0.5, 1.5]};
+ylab = {'FR', 'Z-score'};
+
+FR_data = {TC, TC_norm_Z};
+
+figure;
+for data_i = 1:length(FR_data)
+    for exp_i = 1:length(exp_cond)
+        subplot(2, 2, data_i + 2*(exp_i-1));
+            
+        FR_acr_sess = [];
+        for s_i = 1:length(FR_data{1}(:))
+            FR_exp = FR_data{data_i}{s_i}.(exp_cond{exp_i}) / dt{data_i};
+            FR_acr_sess = [FR_acr_sess; FR_exp];
+        end
+        mean_across_w = mean(FR_acr_sess, 1);
+        
+        x = 1:length(mean_across_w);
+        xpad = 1;
+
+        h = plot(x, mean_across_w, 'b');
+        hold on;
+        set(gca, 'XTick', [], 'YTick', [ylim{data_i}(1):dy{data_i}:ylim{data_i}(2)], 'XLim', [x(1)-1 x(end)+1], ...
+        'YLim', [ylim{data_i}(1) ylim{data_i}(2)], 'FontSize', 12, 'LineWidth', 1, 'TickDir', 'out');
+        box off;
+        xlabel('Location'); ylabel(ylab{data_i});
+        title(exp_cond{exp_i});
+    end
 end
 
 %% FR left actual, right (actual, predicted and differences)
@@ -201,7 +283,7 @@ for d_i = 1:length(FR_data_plots)
     x = 1:length(mean_across_w);
     xpad = 1;
     ylim = ylims{d_i};
-    
+
     if d_i == 3
         h1 = plot(x, mean_across_w, 'k--', 'LineWidth', 1);
     elseif d_i == 4
@@ -222,7 +304,7 @@ for d_i = 1:length(FR_data_plots)
     hold on;
     yt = ylim(1):dy:ylim(2);
     ytl = {ylim(1), '', (ylim(1) + ylim(2)) / 2, '', ylim(2)};
-    
+
     set(gca, 'XTick', [], 'YTick', yt, 'YTickLabel', ytl, ...
     'XLim', [x(1) x(end)], 'YLim', [ylim(1) ylim(2)], 'FontSize', 12, 'LineWidth', 1,...
     'TickDir', 'out', 'FontSize', 24);

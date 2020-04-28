@@ -83,16 +83,35 @@ function [Q] = get_processed_Q(cfg_in, session_path)
     elseif strcmp(cfg.normalization, 'average_norm_l2')
         Q = normalize_Q('ind_l2', aver_Q_acr_trials(Q_L, Q_R));
     elseif strcmp(cfg.normalization, 'norm_average')
-        [Q_L, Q_R] = get_last_n_sec_LR(Q_whole, L_tend, R_tend, cfg.last_n_sec);
+        Q_L_matched = restrict(Q_whole, L_tstart, L_tend);
+        % Q_L_matched.data = zscore(Q_L_matched.data, 0, 2);
+        Q_L_matched.data = row_wise_norm(Q_L_matched.data);
+
+        Q_R_matched = restrict(Q_whole, R_tstart, R_tend);
+        % Q_R_matched.data = zscore(Q_R_matched.data, 0, 2);
+        Q_L_matched.data = row_wise_norm(Q_L_matched.data);
+
+        dt = 0.05;
+        for l_i = 1:length(L_tend)
+            Q_L{l_i} = restrict(Q_L_matched, L_tend(l_i) - (cfg.last_n_sec + dt), L_tend(l_i) + dt);
+            Q_L{l_i} = Q_L{l_i}.data;
+        end
+        for r_i = 1:length(R_tend)
+            Q_R{r_i} = restrict(Q_R_matched, R_tend(r_i) - (cfg.last_n_sec + dt), R_tend(r_i) + dt);
+            Q_R{r_i} = Q_R{r_i}.data;
+        end
+
+        % [Q_L, Q_R] = get_last_n_sec_LR(Q_matched, L_tend, R_tend, cfg.last_n_sec, cfg_Q.dt);
         w_len = size(Q_L{1}, 2);
+
         % Q_L_norm = zscore(horzcat(Q_L{:}), 0, 2);
         % Q_R_norm = zscore(horzcat(Q_R{:}), 0, 2);
-        Q_L_norm = row_wise_norm(horzcat(Q_L{:}));
-        Q_R_norm = row_wise_norm(horzcat(Q_R{:}));
-        for i = 1:length(Q_L)
-            Q_L{i} = Q_L_norm(:, (i-1)*w_len+1:i*w_len);
-            Q_R{i} = Q_R_norm(:, (i-1)*w_len+1:i*w_len);
-        end
+        % Q_L_norm = row_wise_norm(horzcat(Q_L{:}));
+        % Q_R_norm = row_wise_norm(horzcat(Q_R{:}));
+        % for i = 1:length(Q_L)
+        %     Q_L{i} = Q_L_norm(:, (i-1)*w_len+1:i*w_len);
+        %     Q_R{i} = Q_R_norm(:, (i-1)*w_len+1:i*w_len);
+        % end
         Q = aver_Q_acr_trials(Q_L, Q_R);
     end
     % Normalize across whole session, which we don't consider for now.
