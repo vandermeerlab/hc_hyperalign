@@ -324,6 +324,9 @@ sub_ids_end = sub_ids.end.carey;
 sub_colors = {colors.HT.hist, colors.pca.hist, colors.wh.hist, colors.ID.hist};
 
 figure;
+set(gcf, 'Position', [152 406 1691 488]);
+
+subplot(1, 3, 1);
 for sub_i = 1:length(sub_ids_start)
     for exp_i = 1:length(exp_cond)
         exp_data{sub_i}.(exp_cond{exp_i}) = [];
@@ -347,7 +350,7 @@ for sub_i = 1:length(sub_ids_start)
 end
 
 xpad = 0.25;
-ypad = 50;
+ypad = 75;
 ylim = [25, 175];
 set(gca, 'XTick', x, 'YTick', ylim(1):ypad:ylim(end), 'XTickLabel', exp_cond, ...
     'XLim', [x(1)-xpad x(end)+xpad], 'YLim', ylim, 'FontSize', 24, ...
@@ -373,13 +376,13 @@ p = anovan(exp_data_vector, {exp_vector subj_vector}, ...
 
 %% Plot SPD/FR differences between left and right (across different sessions) or between sessions
 
-data = Q;
-dt = 0.05;
+data = SPD;
+dt = 1;
 for i = 1:length(data)
-%     mean_data{i} = (mean(data{i}.right(:)) - mean(data{i}.left(:))) / dt;
+    mean_data{i} = (mean(data{i}.right(:)) - mean(data{i}.left(:))) / dt;
 
-    data_concat = [data{i}.left, data{i}.right];
-    mean_data{i} = mean(data_concat(:)) / dt;
+%     data_concat = [data{i}.left, data{i}.right];
+%     mean_data{i} = mean(data_concat(:)) / dt;
 end
 
 data_diff = zeros(length(data));
@@ -392,9 +395,12 @@ for sr_i = 1:length(data)
 end
 out_data_diff = set_withsubj_nan([], data_diff);
 
-plot_matrix([], out_data_diff);
+cfg_plot = [];
+cfg_plot.ax = subplot(1, 3, 3);
+cfg_plot.fs = 24;
+plot_matrix(cfg_plot, out_data_diff);
 
-% Compute correlation coefficent with hypertransform z-score matrix
+%% Compute correlation coefficent with hypertransform z-score matrix
 keep_idx = ~isnan(out_data_diff);
 [R, P] = corrcoef(out_data_diff(keep_idx), z_score_m.out_zscore_mat(keep_idx))
 
