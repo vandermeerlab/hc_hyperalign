@@ -314,10 +314,32 @@ for d_i = 1:length(FR_data_plots)
     title(exp_cond{d_i});
 end
 
+%% Plot FR differences between left and right (across different sessions)
+dt = 0.05;
+for i = 1:length(Q)
+    FR_exp_diff{i} = (mean(mean(Q{i}.right)) - mean(mean(Q{i}.left))) / dt;
+end
+
+FR_diff = zeros(length(Q));
+for sr_i = 1:length(Q)
+    for tar_i = 1:length(Q)
+       if sr_i ~= tar_i
+           FR_diff(sr_i, tar_i) = abs(FR_exp_diff{sr_i} - FR_exp_diff{tar_i});
+       end
+    end
+end
+out_FR_diff = set_withsubj_nan([], FR_diff);
+
+plot_matrix([], out_FR_diff);
+
+% Compute correlation coefficent with hypertransform z-score matrix
+keep_idx = ~isnan(out_FR_diff);
+[R, P] = corrcoef(out_FR_diff(keep_idx), z_score_m.out_zscore_mat(keep_idx))
+
 %% Plot FR differences between sessions
 dt = 0.05;
 for i = 1:length(Q)
-    mean_FR{i} = mean([Q{i}.left, Q{i}.right], 'all') / dt;
+    mean_FR{i} = mean(mean([Q{i}.left, Q{i}.right])) / dt;
 end
 
 FR_diff = zeros(length(Q));
@@ -332,56 +354,101 @@ out_FR_diff = set_withsubj_nan([], FR_diff);
 
 plot_matrix([], out_FR_diff);
 
-%% Plot running speed between left and right
+% Compute correlation coefficent with hypertransform z-score matrix
+keep_idx = ~isnan(out_FR_diff);
+[R, P] = corrcoef(out_FR_diff(keep_idx), z_score_m.out_zscore_mat(keep_idx))
+
+%% Plot running speed between left and right (and across subjects)
 data = SPD;
 exp_cond = {'left', 'right'};
 
 sub_ids_start = sub_ids.start.carey;
 sub_ids_end = sub_ids.end.carey;
+sub_colors = {colors.HT.hist, colors.pca.hist, colors.wh.hist, colors.ID.hist};
 
 figure;
 for sub_i = 1:length(sub_ids_start)
     for exp_i = 1:length(exp_cond)
-        exp_spd = [];
+        exp_spd{sub_i}.(exp_cond{exp_i}) = [];
         sub_sessions = sub_ids_start(sub_i):sub_ids_end(sub_i);
         for sess_i = sub_sessions
-            exp_spd = [exp_spd, SPD{sess_i}.(exp_cond{exp_i})];
+            exp_spd{sub_i}.(exp_cond{exp_i}) = [exp_spd{sub_i}.(exp_cond{exp_i}), SPD{sess_i}.(exp_cond{exp_i})];
         end
-        mean_exp_spd.(exp_cond{exp_i}) = nanmean(exp_spd);
-        std_exp_spd.(exp_cond{exp_i}) = nanstd(exp_spd) / sqrt(length(sub_sessions));
+        mean_exp_spd.(exp_cond{exp_i}) = nanmean(exp_spd{sub_i}.(exp_cond{exp_i}));
+        std_exp_spd.(exp_cond{exp_i}) = nanstd(exp_spd{sub_i}.(exp_cond{exp_i})) / sqrt(length(sub_sessions));
     end
     x = 1:length(exp_cond);
     y = [mean_exp_spd.left, mean_exp_spd.right];
     err = [std_exp_spd.left, std_exp_spd.right];
-    errorbar(x, y, err);
-    hold on;
-    plot(x, y, '.', 'MarkerSize', 20);
+    h = errorbar(x, y, err, 'LineWidth', 2);
+    set(h, 'Color', sub_colors{sub_i});
     hold on;
 end
 
-xpad = 0.5;
+xpad = 0.25;
 set(gca, 'XTick', x, 'YTick', 25:50:175, 'XTickLabel', exp_cond, ...
     'XLim', [x(1)-xpad x(end)+xpad], 'YLim', [25, 175], 'FontSize', 24, ...
     'LineWidth', 1, 'TickDir', 'out');
 box off;
 
-% for exp_i = 1:length(exp_cond)
-%     exp_spd{exp_i} = [];
-%     for d_i = 1:length(SPD)
-%         exp_spd{exp_i} = [exp_spd{exp_i}, SPD{d_i}.(exp_cond{exp_i})];
-%     end
-% end
+%% Two-way (subjects and left/right) anova on running speed
+exp_spd_vector = [];
+exp_vector = [];
+subj_vector = [];
 
-% cfg_cell_plot = [];
-% cfg_cell_plot.num_subjs = [length(sub_ids.start.carey), length(sub_ids.start.carey)];
-% cfg_cell_plot.ylim = [50, 150];
-% cfg_cell_plot.dy = 25;
-% 
-% [mean_spds, sem_spds] = plot_cell_by_cell(cfg_cell_plot, exp_spd, exp_cond);
+for sub_i = 1:length(sub_ids_start)
+    for exp_i = 1:length(exp_cond)
+        exp_spd_vector = [exp_spd_vector, exp_spd{sub_i}.(exp_cond{exp_i})];
+        exp_vector = [exp_vector, repmat(exp_i, size(exp_spd{sub_i}.(exp_cond{exp_i})))];
+        subj_vector = [subj_vector, repmat(sub_i, size(exp_spd{sub_i}.(exp_cond{exp_i})))];
+    end
+end
+
+p = anovan(exp_spd_vector, {exp_vector subj_vector}, ...
+    'model', 'interaction', 'varnames', {'left/right','subjects'});
+
+%% Plot running speed between left and right
+data = SPD;
+exp_cond = {'left', 'right'};
+
+for exp_i = 1:length(exp_cond)
+    exp_spd{exp_i} = [];
+    for d_i = 1:length(SPD)
+        exp_spd{exp_i} = [exp_spd{exp_i}, SPD{d_i}.(exp_cond{exp_i})];
+    end
+end
+
+cfg_cell_plot = [];
+cfg_cell_plot.num_subjs = [length(sub_ids.start.carey), length(sub_ids.start.carey)];
+cfg_cell_plot.ylim = [50, 150];
+cfg_cell_plot.dy = 25;
+
+[mean_spds, sem_spds] = plot_cell_by_cell(cfg_cell_plot, exp_spd, exp_cond);
+
+%% Plot running speed differences between left and right (across different sessions)
+for i = 1:length(SPD)
+    SPD_exp_diff{i} = mean(SPD{i}.right) - mean(SPD{i}.left);
+end
+
+SPD_diff = zeros(length(SPD));
+for sr_i = 1:length(SPD)
+    for tar_i = 1:length(SPD)
+       if sr_i ~= tar_i
+           SPD_diff(sr_i, tar_i) = abs(SPD_exp_diff{sr_i} - SPD_exp_diff{tar_i});
+       end
+    end
+end
+out_SPD_diff = set_withsubj_nan([], SPD_diff);
+
+plot_matrix([], out_SPD_diff);
+
+% Compute correlation coefficent with hypertransform z-score matrix
+keep_idx = ~isnan(out_SPD_diff);
+[R, P] = corrcoef(out_SPD_diff(keep_idx), z_score_m.out_zscore_mat(keep_idx))
 
 %% Plot running speed differences between sessions
 for i = 1:length(SPD)
-    mean_SPD{i} = mean([SPD{i}.left, SPD{i}.right], 'all');
+    mean_SPD{i} = mean([SPD{i}.left, SPD{i}.right]);
 end
 
 SPD_diff = zeros(length(SPD));
@@ -395,3 +462,7 @@ end
 out_SPD_diff = set_withsubj_nan([], SPD_diff);
 
 plot_matrix([], out_SPD_diff);
+
+% Compute correlation coefficent with hypertransform z-score matrix
+keep_idx = ~isnan(out_SPD_diff);
+[R, P] = corrcoef(out_SPD_diff(keep_idx), z_score_m.out_zscore_mat(keep_idx))
