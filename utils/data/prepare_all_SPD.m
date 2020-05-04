@@ -12,8 +12,11 @@ function [SPD] = prepare_all_SPD(cfg_in)
         cd(data_paths{p_i});
         LoadMetadata();
         LoadExpKeys();
-        pos = LoadPos([]);
-        spd = getLinSpd([],pos); % get speed (in "camera pixels per second")
+        % Pass conversion factor (convFact) from the ExpKeys to get
+        % position in cm/s
+        cfg_pos.convFact = ExpKeys.convFact;
+        pos = LoadPos(cfg_pos);
+        spd = getLinSpd([],pos);
         % The end times of left and right trials.
         if cfg.use_matched_trials
             [matched_left, matched_right] = GetMatchedTrials({}, metadata, ExpKeys);
