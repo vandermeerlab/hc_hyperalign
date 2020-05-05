@@ -261,6 +261,56 @@ end
 % end
 % FR_acr_sess.sf_predicted = mean(FR_acr_sess.sf_predicted, 3);
 
+%% Plot FR (diff) across time/locations
+exp_cond = {'L (actual)', 'R (actual)', 'R (actual vs. predicted)', 'R (predicted)'};
+FR_data_plots = {FR_acr_sess.left, FR_acr_sess.right, FR_acr_sess.predicted - FR_acr_sess.right, ...
+    FR_acr_sess.predicted};
+ylabs = {'FR', 'FR', 'Difference', 'FR'};
+dy = 0.25;
+ylims = {[-0.5, 0.5], [-0.5, 0.5], [-0.5, 0.5], [-0.5, 0.5]};
+
+set(gcf, 'Position', [560 80 1020 868]);
+
+for d_i = 1:length(FR_data_plots)
+    mean_across_w = mean(FR_data_plots{d_i}, 1);
+%     std_across_w = std(FR_data_plots{d_i}, 1);
+
+    subplot(2, 2, d_i);
+
+    x = 1:length(mean_across_w);
+    xpad = 1;
+    ylim = ylims{d_i};
+
+    if d_i == 3
+        h1 = plot(x, mean_across_w, 'k--', 'LineWidth', 1);
+    elseif d_i == 4
+        h1 = plot(x, mean_across_w, 'Color', [198/255 113/255 113/255], ...
+            'LineStyle', '--', 'LineWidth', 1);
+    else
+        h1 = plot(x, mean_across_w, '-k', 'LineWidth', 1);
+    end
+    if d_i == 3
+        hold on;
+        plot([x(1)-xpad x(end)+xpad], [0 0], '-k', 'LineWidth', 0.75, 'Color', [0.7 0.7 0.7]);
+    elseif d_i == 4
+        hold on;
+        h2 = plot(x, mean(FR_data_plots{2}, 1), '-k', 'LineWidth', 1);
+        lgd = legend('R predicted','R actual');
+        lgd.FontSize = 16;
+    end
+    hold on;
+    yt = ylim(1):dy:ylim(2);
+    ytl = {ylim(1), '', (ylim(1) + ylim(2)) / 2, '', ylim(2)};
+
+    set(gca, 'XTick', [], 'YTick', yt, 'YTickLabel', ytl, ...
+    'XLim', [x(1) x(end)], 'YLim', [ylim(1) ylim(2)], 'FontSize', 12, 'LineWidth', 1,...
+    'TickDir', 'out', 'FontSize', 24);
+    box off;
+    xlabel('Time'); ylabel(ylabs{d_i});
+    title(exp_cond{d_i});
+end
+
+
 %% Test: FR left actual, right (actual, predicted and differences) for each session
 data = Q;
 dt = 0.05;
@@ -354,55 +404,6 @@ for d_i = 1:length(FR_data)
     
     saveas(gcf, sprintf('Q_%d.jpg', d_i));
     close;
-end
-
-%% Plot FR (diff) across time/locations
-exp_cond = {'L (actual)', 'R (actual)', 'R (actual vs. predicted)', 'R (predicted)'};
-FR_data_plots = {FR_acr_sess.left, FR_acr_sess.right, FR_acr_sess.predicted - FR_acr_sess.right, ...
-    FR_acr_sess.predicted};
-ylabs = {'FR', 'FR', 'Difference', 'FR'};
-dy = 0.25;
-ylims = {[-0.5, 0.5], [-0.5, 0.5], [-0.5, 0.5], [-0.5, 0.5]};
-
-set(gcf, 'Position', [560 80 1020 868]);
-
-for d_i = 1:length(FR_data_plots)
-    mean_across_w = mean(FR_data_plots{d_i}, 1);
-%     std_across_w = std(FR_data_plots{d_i}, 1);
-
-    subplot(2, 2, d_i);
-
-    x = 1:length(mean_across_w);
-    xpad = 1;
-    ylim = ylims{d_i};
-
-    if d_i == 3
-        h1 = plot(x, mean_across_w, 'k--', 'LineWidth', 1);
-    elseif d_i == 4
-        h1 = plot(x, mean_across_w, 'Color', [198/255 113/255 113/255], ...
-            'LineStyle', '--', 'LineWidth', 1);
-    else
-        h1 = plot(x, mean_across_w, '-k', 'LineWidth', 1);
-    end
-    if d_i == 3
-        hold on;
-        plot([x(1)-xpad x(end)+xpad], [0 0], '-k', 'LineWidth', 0.75, 'Color', [0.7 0.7 0.7]);
-    elseif d_i == 4
-        hold on;
-        h2 = plot(x, mean(FR_data_plots{2}, 1), '-k', 'LineWidth', 1);
-        lgd = legend('R predicted','R actual');
-        lgd.FontSize = 16;
-    end
-    hold on;
-    yt = ylim(1):dy:ylim(2);
-    ytl = {ylim(1), '', (ylim(1) + ylim(2)) / 2, '', ylim(2)};
-
-    set(gca, 'XTick', [], 'YTick', yt, 'YTickLabel', ytl, ...
-    'XLim', [x(1) x(end)], 'YLim', [ylim(1) ylim(2)], 'FontSize', 12, 'LineWidth', 1,...
-    'TickDir', 'out', 'FontSize', 24);
-    box off;
-    xlabel('Time'); ylabel(ylabs{d_i});
-    title(exp_cond{d_i});
 end
 
 %% Plot SPD/FR between left and right (and across subjects)
