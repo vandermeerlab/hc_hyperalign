@@ -122,9 +122,9 @@ for p_i = 1:length(data)
 end
 
 %% FR across time/locations (raw and normalized) for each session
-data = Q;
+data = TC;
 
-dt = {0.05, 1};
+dt = {1, 1};
 w_len = size(data{1}.left, 2);
 exp_cond = {'left', 'right'};
 
@@ -132,7 +132,7 @@ dy = {1, 0.5};
 ylim = {[0, 3], [-0.5, 1.5]};
 ylab = {'FR', 'Z-score'};
 
-FR_data = {Q, Q_norm_Z};
+FR_data = {TC, TC_norm_Z};
 for s_i = 1:length(FR_data{1}(:))
     figure;
     for data_i = 1:length(FR_data)
@@ -160,14 +160,14 @@ for s_i = 1:length(FR_data{1}(:))
             title(exp_cond{exp_i});
         end
     end
-    saveas(gcf, sprintf('Q_%d.jpg', s_i));
+    saveas(gcf, sprintf('TC_%d.jpg', s_i));
     close;
 end
 
 %% FR across time/locations (raw and normalized) combined across sessions
-data = Q;
+data = TC;
 
-dt = {0.05, 1};
+dt = {1, 1};
 w_len = size(data{1}.left, 2);
 exp_cond = {'left', 'right'};
 
@@ -175,7 +175,7 @@ dy = {1, 0.5};
 ylim = {[0, 3], [-0.5, 1.5]};
 ylab = {'FR', 'Z-score'};
 
-FR_data = {Q, Q_norm_Z};
+FR_data = {TC, TC_norm_Z};
 
 figure;
 for data_i = 1:length(FR_data)
@@ -203,8 +203,8 @@ for data_i = 1:length(FR_data)
 end
 
 %% FR left actual, right (actual, predicted and differences)
-data = Q;
-dt = 0.05;
+data = Q_norm_l2;
+dt = 1;
 
 FR_acr_sess.left = [];
 FR_acr_sess.right = [];
@@ -261,13 +261,108 @@ end
 % end
 % FR_acr_sess.sf_predicted = mean(FR_acr_sess.sf_predicted, 3);
 
+%% Test: FR left actual, right (actual, predicted and differences) for each session
+data = Q;
+dt = 0.05;
+
+for i = 1:length(data)
+    % Make data (Q) into Hz first
+    data{i}.left = data{i}.left / dt;
+    data{i}.right = data{i}.right / dt;
+    
+    FR_acr_sess.left{i} = data{i}.left;
+    FR_acr_sess.right{i} = data{i}.right;
+end
+
+w_len = size(data{1}.left, 2);
+
+[~, ~, predicted_Q_mat] = predict_with_L_R([], data);
+out_predicted_Q_mat = set_withsubj_nan([], predicted_Q_mat);
+
+exp_cond = {'L (actual)', 'R (actual)'};
+FR_data_plots = {FR_acr_sess.left, FR_acr_sess.right};
+ylabs = {'FR', 'FR'};
+dy = 1;
+ylims = {[0, 4], [0, 4]};
+
+FR_acr_sess.predicted = [];
+FR_data = out_predicted_Q_mat;
+for d_i = 1:length(FR_data)
+    figure;
+    set(gcf, 'Position', [560 80 1020 868]);
+    for exp_i = 1:length(exp_cond)
+        mean_across_w = mean(FR_data_plots{exp_i}{d_i}, 1);
+        
+        subplot(2, 2, exp_i);
+        
+        x = 1:length(mean_across_w);
+        xpad = 1;
+        ylim = ylims{exp_i};
+        yt = ylim(1):dy:ylim(2);
+        ytl = {ylim(1), '', (ylim(1) + ylim(2)) / 2, '', ylim(2)};
+        
+        h1 = plot(x, mean_across_w, '-k', 'LineWidth', 1);
+        
+        set(gca, 'XTick', [], 'YTick', yt, 'YTickLabel', ytl, ...
+            'XLim', [x(1) x(end)], 'YLim', [ylim(1) ylim(2)], 'FontSize', 12, 'LineWidth', 1,...
+            'TickDir', 'out', 'FontSize', 24);
+        box off;
+        xlabel('Time'); ylabel(ylabs{exp_i});
+        title(exp_cond{exp_i});
+    end
+    
+    subplot(2, 2, 4);
+    target_FR = FR_data(:, d_i);
+    for t_i = 1:length(target_FR)
+        if ~isnan(target_FR{t_i})
+            FR_predicted = target_FR{t_i}(:, w_len+1:end);
+            h1 = plot(x, mean(FR_predicted, 1), 'LineStyle', '--', 'LineWidth', 1);
+            hold on;
+            h2 = plot(x, mean(FR_acr_sess.right{d_i}, 1), '-k', 'LineWidth', 1);
+            hold on;
+        end
+    end
+    set(gca, 'XTick', [], 'YTick', yt, 'YTickLabel', ytl, ...
+        'XLim', [x(1) x(end)], 'YLim', [ylim(1) ylim(2)], 'FontSize', 12, 'LineWidth', 1,...
+        'TickDir', 'out', 'FontSize', 24);
+    box off;
+    xlabel('Time'); ylabel('FR');
+    title('R (predicted)');
+    
+    subplot(2, 2, 3);
+    target_FR = FR_data(:, d_i);
+    for t_i = 1:length(target_FR)
+        if ~isnan(target_FR{t_i})
+            FR_predicted = target_FR{t_i}(:, w_len+1:end);
+            FR_diff = FR_predicted - FR_acr_sess.right{d_i};
+            h1 = plot(x, mean(FR_diff, 1), 'LineStyle', '--', 'LineWidth', 1);
+            hold on;
+            h2 = plot([x(1)-xpad x(end)+xpad], [0 0], '-k', 'LineWidth', 0.75, 'Color', [0.7 0.7 0.7]);
+            hold on;
+        end
+    end
+    ylim = [-2, 2];
+    yt = ylim(1):dy:ylim(2);
+    ytl = {ylim(1), '', (ylim(1) + ylim(2)) / 2, '', ylim(2)};
+    
+    set(gca, 'XTick', [], 'YTick', yt, 'YTickLabel', ytl, ...
+        'XLim', [x(1) x(end)], 'YLim', [ylim(1) ylim(2)], 'FontSize', 12, 'LineWidth', 1,...
+        'TickDir', 'out', 'FontSize', 24);
+    box off;
+    xlabel('Time'); ylabel('Difference');
+    title('R (actual vs. predicted)');
+    
+    saveas(gcf, sprintf('Q_%d.jpg', d_i));
+    close;
+end
+
 %% Plot FR (diff) across time/locations
 exp_cond = {'L (actual)', 'R (actual)', 'R (actual vs. predicted)', 'R (predicted)'};
 FR_data_plots = {FR_acr_sess.left, FR_acr_sess.right, FR_acr_sess.predicted - FR_acr_sess.right, ...
     FR_acr_sess.predicted};
 ylabs = {'FR', 'FR', 'Difference', 'FR'};
-dy = 1;
-ylims = {[1, 3], [1, 3], [-1, 1], [1, 5]};
+dy = 0.25;
+ylims = {[-0.5, 0.5], [-0.5, 0.5], [-0.5, 0.5], [-0.5, 0.5]};
 
 set(gcf, 'Position', [560 80 1020 868]);
 
