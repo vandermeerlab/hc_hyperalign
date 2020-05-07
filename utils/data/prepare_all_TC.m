@@ -19,7 +19,7 @@ function [TC, restrictionLabels] = prepare_all_TC(cfg_in)
         left_cp_bins = cellfun(@(x) (x.left.cp_bin), TC);
         right_cp_bins = cellfun(@(x) (x.right.cp_bin), TC);
         max_cp_bin = max([left_cp_bins, right_cp_bins]);
-        keep_idx = max_cp_bin+1:100;
+        keep_idx = max_cp_bin:100;
     else
         keep_idx = 1:100;
     end
@@ -29,6 +29,10 @@ function [TC, restrictionLabels] = prepare_all_TC(cfg_in)
         TC{i}.right = TC{i}.right.tc(:, keep_idx);
         if ~strcmp(cfg.normalization, 'none')
             TC{i} = normalize_Q(cfg.normalization, TC{i});
+        end
+        if cfg.only_use_cp
+            TC{i}.left = TC{i}.left(:, 2:end);
+            TC{i}.right = TC{i}.right(:, 2:end);
         end
     end
 end
