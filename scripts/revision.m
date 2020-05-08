@@ -451,7 +451,7 @@ sub_ids_end = sub_ids.end.carey;
 sub_colors = {colors.HT.hist, colors.pca.hist, colors.wh.hist, colors.ID.hist};
 
 figure;
-set(gcf, 'Position', [548 491 347 437]);
+set(gcf, 'Position', [548 366 430 562]);
 
 for sub_i = 1:length(sub_ids_start)
     for exp_i = 1:length(exp_cond)
@@ -470,8 +470,8 @@ for sub_i = 1:length(sub_ids_start)
     x = 1:length(exp_cond);
     y = [mean_exp_spd.left, mean_exp_spd.right];
     err = [std_exp_spd.left, std_exp_spd.right];
-    h = errorbar(x, y, err, 'LineWidth', 2);
-%     h = plot(x, y, '.-', 'MarkerSize', 20, 'LineWidth', 2);
+%     h = errorbar(x, y, err, 'LineWidth', 2);
+    h = plot(x, y, '.-', 'MarkerSize', 20, 'LineWidth', 2);
     set(h, 'Color', sub_colors{sub_i});
     hold on;
 end
@@ -492,8 +492,8 @@ set(gca, 'XTick', x, 'YTick', yt, 'YTickLabel', ytl, ...
     'FontSize', 20,'LineWidth', 1, 'TickDir', 'out');
 box off;
 
-% ylabel('FR');
-ylabel('cm / s');
+ylabel('firing rate');
+% ylabel('cm / s');
 
 %% Two-way (subjects and left/right) anova on SPD/FR
 exp_data_vector = [];
@@ -517,8 +517,8 @@ p = anovan(exp_data_vector, {exp_vector subj_vector}, ...
 figure;
 set(gcf, 'Position', [204 377 1368 524]);
 
-data = SPD;
-dt = 1;
+data = Q;
+dt = 0.05;
 for type_i = 1:2
     for sess_i = 1:length(data)
         if type_i == 1
@@ -545,8 +545,13 @@ for type_i = 1:2
     plot_matrix(cfg_plot, out_data_diff{type_i});
 end
 
+%% Compute hypertransform z-score
+data = Q;
+[actual_dists_mat, id_dists_mat, sf_dists_mat] = predict_with_shuffles([], data, @predict_with_L_R);
+[z_score_m] = calculate_common_metrics([], actual_dists_mat, id_dists_mat, sf_dists_mat);
+
 %% Compute correlation coefficent with hypertransform z-score matrix
-type_i = 1;
+type_i = 2;
 keep_idx = ~isnan(out_data_diff{type_i});
 [R, P] = corrcoef(out_data_diff{type_i}(keep_idx), z_score_m.out_zscore_mat(keep_idx))
 
