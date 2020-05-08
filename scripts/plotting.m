@@ -100,10 +100,10 @@ set(gca, 'LineWidth', 1, 'xticklabel', [], 'yticklabel',[], 'FontSize', 24);
 xlabel('Distances'); ylabel('Distribution');
 
 %% Plot example sessions for procedure
-sr_i = 1;
-tar_i = 10;
+sr_i = 6;
+tar_i = 1;
 idx = {sr_i, tar_i};
-data = TC;
+data = Q;
 
 % Project [L, R] to PCA space.
 NumComponents = 10;
@@ -117,7 +117,7 @@ for i = 1:length(idx)
     imagesc([data{idx{i}}.left, data{idx{i}}.right]);
     ylabel('Neurons');
     xlabel('Locations');
-    set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 40);
+    set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 24);
 
     subplot(2, 2, 2*i);
     plot_L = plot_3d_trajectory(proj_Q{idx{i}}.left);
@@ -180,7 +180,7 @@ subplot(1, 2, 2);
 imagesc([pro_Q_left, pro_Q_right]);
 ylabel('Neurons');
 xlabel('Locations');
-set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 40);
+set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 24);
 
 % Summary of main results
 %% Plot example paired_inputs

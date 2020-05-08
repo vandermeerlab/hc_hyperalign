@@ -5,6 +5,8 @@ function [Q] = get_processed_Q(cfg_in, session_path)
     cfg_def.removeInterneurons = 0;
     cfg_def.int_thres = 10;
     cfg_def.normalization = 'none';
+    % time bin
+    cfg_def.dt = 0.05;
     % cfg_def.minSpikes = 25;
 
     mfun = mfilename;
@@ -54,7 +56,7 @@ function [Q] = get_processed_Q(cfg_in, session_path)
 
     % Common binning and windowing configurations.
     cfg_Q = [];
-    cfg_Q.dt = 0.05;
+    cfg_Q.dt = cfg.dt;
     cfg_Q.smooth = 'gauss';
     cfg_Q.gausswin_size = 1;
     cfg_Q.gausswin_sd = 0.05;
@@ -78,6 +80,9 @@ function [Q] = get_processed_Q(cfg_in, session_path)
 
     if strcmp(cfg.normalization, 'none')
         Q = aver_Q_acr_trials(Q_L, Q_R);
+        % Make unit into firing rate
+        Q.left = Q.left / cfg.dt;
+        Q.right = Q.right / cfg.dt;
     elseif strcmp(cfg.normalization, 'average_norm_Z')
         Q = normalize_Q('ind_Z', aver_Q_acr_trials(Q_L, Q_R));
     elseif strcmp(cfg.normalization, 'average_norm_l2')
@@ -93,15 +98,15 @@ function [Q] = get_processed_Q(cfg_in, session_path)
 
         dt = 0.05;
         for l_i = 1:length(L_tend)
-            Q_L{l_i} = restrict(Q_L_matched, L_tend(l_i) - (cfg.last_n_sec + dt), L_tend(l_i) + dt);
+            Q_L{l_i} = restrict(Q_L_matched, L_tend(l_i) - (cfg.last_n_sec + cfg.dt), L_tend(l_i) + cfg.dt);
             Q_L{l_i} = Q_L{l_i}.data;
         end
         for r_i = 1:length(R_tend)
-            Q_R{r_i} = restrict(Q_R_matched, R_tend(r_i) - (cfg.last_n_sec + dt), R_tend(r_i) + dt);
+            Q_R{r_i} = restrict(Q_R_matched, R_tend(r_i) - (cfg.last_n_sec + cfg.dt), R_tend(r_i) + cfg.dt);
             Q_R{r_i} = Q_R{r_i}.data;
         end
 
-        % [Q_L, Q_R] = get_last_n_sec_LR(Q_matched, L_tend, R_tend, cfg.last_n_sec, cfg_Q.dt);
+        % [Q_L, Q_R] = get_last_n_sec_LR(Q_matched, L_tend, R_tend, cfg.last_n_sec, cfg.dt);
         w_len = size(Q_L{1}, 2);
 
         % Q_L_norm = zscore(horzcat(Q_L{:}), 0, 2);

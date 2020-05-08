@@ -202,16 +202,52 @@ for data_i = 1:length(FR_data)
     end
 end
 
+%% Test: Prediction error as a function of scaling factor
+data = Q;
+
+scaling_factors = 0.1:0.1:2;
+err_acr_scale = zeros(2, length(scaling_factors));
+% mean_err_acr_scale = zeros(1, length(scaling_factors));
+% std_err_acr_scale = zeros(1, length(scaling_factors));
+for i = 1:length(scaling_factors)
+    cfg_pre = [];
+    cfg_pre.predict_target = 'Q';
+    cfg_pre.scaling_factor = scaling_factors(i);
+    [actual_dists_mat] = predict_with_L_R(cfg_pre, data);
+%     out_actual_dists_mat = set_withsubj_nan([], actual_dists_mat);
+%     mean_err_acr_scale(i) = nanmean(out_actual_dists_mat(:));
+%     std_err_acr_scale(i) = nanstd(out_actual_dists_mat(:));
+    err_acr_scale(1, i) = actual_dists_mat(1, 6);
+    err_acr_scale(2, i) = actual_dists_mat(6, 1);
+end
+
+dy = 25000;
+x = 1:length(scaling_factors);
+xpad = 1;
+ylim = [0, 100000];
+
+% h = shadedErrorBar(x, mean_err_acr_scale, std_err_acr_scale);
+% set(h.mainLine, 'LineWidth', 1);
+for i = 1:2
+    subplot(2, 1, i);
+    h = plot(x, err_acr_scale(i, :), 'b');
+    hold on;
+    set(gca, 'XTick', x, 'YTick', [ylim(1):dy:ylim(2)], 'XLim', [x(1) x(end)], ...
+        'YLim', [ylim(1) ylim(2)], 'FontSize', 12, 'LineWidth', 1, 'TickDir', 'out');
+    box off;
+    xticklabels(scaling_factors);
+    xlabel('Scale'); ylabel('Error in Q space')
+end
+
 %% FR left actual, right (actual, predicted and differences)
-data = Q_norm_l2;
-dt = 1;
+data = Q;
 
 FR_acr_sess.left = [];
 FR_acr_sess.right = [];
 for i = 1:length(data)
     % Make data (Q) into Hz first
-    data{i}.left = data{i}.left / dt;
-    data{i}.right = data{i}.right / dt;
+    data{i}.left = data{i}.left;
+    data{i}.right = data{i}.right;
     
     FR_acr_sess.left = [FR_acr_sess.left; data{i}.left];
     FR_acr_sess.right = [FR_acr_sess.right; data{i}.right];
@@ -256,7 +292,7 @@ end
 % n_shuffles = size(sf_Q_mat, 3);
 % FR_acr_sess.sf_predicted = zeros([size(FR_acr_sess.predicted), n_shuffles]);
 % for s_i = 1:n_shuffles
-%     out_sf_Q_mat(:, :, s_i) = set_withsubj_nan([], sf_Q_mat(:, :, s_i));
+%     out_sf_Q_mat(:, :, s_i) = set_withsubj_nan([], sf_Q_mat(:, :, s_i));c
 %     FR_acr_sess.sf_predicted(:, :, s_i) = avg_acr_predictions(out_sf_Q_mat(:, :, s_i), w_len);
 % end
 % FR_acr_sess.sf_predicted = mean(FR_acr_sess.sf_predicted, 3);
@@ -266,8 +302,8 @@ exp_cond = {'L (actual)', 'R (actual)', 'R (actual vs. predicted)', 'R (predicte
 FR_data_plots = {FR_acr_sess.left, FR_acr_sess.right, FR_acr_sess.predicted - FR_acr_sess.right, ...
     FR_acr_sess.predicted};
 ylabs = {'FR', 'FR', 'Difference', 'FR'};
-dy = 0.25;
-ylims = {[-0.5, 0.5], [-0.5, 0.5], [-0.5, 0.5], [-0.5, 0.5]};
+dy = 0.5;
+ylims = {[0, 2], [0, 2], [-1, 1], [0, 2]};
 
 set(gcf, 'Position', [560 80 1020 868]);
 
