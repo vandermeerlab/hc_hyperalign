@@ -5,7 +5,6 @@ sub_ids = get_sub_ids_start_end();
 
 %% Plot left vs. right fields for both actual and predicted data
 data = Q;
-dt = 0.05;
 
 [~, ~, predicted_Q_mat] = predict_with_L_R([], data);
 out_predicted_Q_mat = set_withsubj_nan([], predicted_Q_mat);
@@ -42,9 +41,9 @@ for d_i = 1:length(datas)
     neu_w_fields_idx = cell(size(data));
     for sess_i = 1:length(data(:))
         if d_i == 1
-            Q_sess = [data{sess_i}.left / dt, data{sess_i}.right / dt];
+            Q_sess = [data{sess_i}.left, data{sess_i}.right];
         else
-            Q_sess = out_predicted_Q_mat{sess_i} / dt;
+            Q_sess = out_predicted_Q_mat{sess_i};
         end
         if ~isnan(Q_sess)
             for neu_i = 1:size(Q_sess, 1)
