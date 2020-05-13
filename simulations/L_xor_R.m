@@ -20,7 +20,7 @@ function [Q] = L_xor_R(cfg_in)
             Q{d_i}{q_i}.right = zeros(n_units, cfg.w_len);
             for n_i = 1:n_units
                 mu = rand() * cfg.w_len;
-                peak = rand() * 0.5 + 0.5;
+                peak = rand() * 10 + 10;
                 sig = rand() * 5 + 2;
                 left_has_field = rand() < 0.5;
                 if left_has_field

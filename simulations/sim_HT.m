@@ -36,7 +36,7 @@ function [sim_data] = sim_HT(cfg_in)
             for n_i = 1:n_units
                 if rand() < p_has_field
                     mu = rand() * cfg.w_len;
-                    peak = rand() * 0.5 + 0.5;
+                    peak = rand() * 10 + 10;
                     sig = rand() * 5 + 2;
                     sim_data{d_i}{s_i}.left(n_i, :) = gaussian_1d(cfg.w_len, peak, mu, sig);
                 end

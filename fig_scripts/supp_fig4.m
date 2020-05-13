@@ -24,6 +24,7 @@ for d_i = 1:length(ex_datas)
     subplot(3, 3, (3*(d_i-1) + 1))
     imagesc([ex_datas{d_i}{1}{1}.left, ex_datas{d_i}{1}{1}.right]);
     colorbar;
+    caxis([0, 20]);
     set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 12);
     ylabel('Cells');
     title(themes{d_i});

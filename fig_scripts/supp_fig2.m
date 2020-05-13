@@ -21,9 +21,9 @@ data = TC;
 %% Withholding (Q) and Hypertransform and PCA-only (TC) in Carey
 datas = {Q, TC};
 
-x_limits = {[-6.5, 6.5], [-1050, 1050], [0, 1], [-6.5, 6.5], [-5.05e5, 5.05e5], [0, 1]}; % two rows, three columns in figure
-x_tick = {-6:6, -1000:250:1000, 0:0.2:1, -6:6, -5e5:1.25e5:5e5, 0:0.2:1};
-binsizes = [1, 150, 0.1, 1, 7.5e4, 0.1]; % for histograms
+x_limits = {[-6.5, 6.5], [-5.05e5, 5.05e5], [0, 1], [-6.5, 6.5], [-5.05e5, 5.05e5], [0, 1]}; % two rows, three columns in figure
+x_tick = {-6:6,-5e5:1.25e5:5e5, 0:0.2:1, -6:6, -5e5:1.25e5:5e5, 0:0.2:1};
+binsizes = [1,  7.5e4, 0.1, 1, 7.5e4, 0.1]; % for histograms
 
 all_hist_colors = {{colors.wh.hist}, {colors.HT.hist, colors.pca.hist}};
 all_fit_colors = {{colors.wh.fit}, {colors.HT.hist, colors.pca.hist}};
