@@ -17,7 +17,7 @@ end
 titles = {'HT z-score vs. shuffle', 'HT distance - shuffled dist.', 'p(HT dist. > shuffled dist.)'};
 
 cfg_plot = [];
-clims = {[-6 6], [-1000 1000], [0 1]};
+clims = {[-6 6], [-5e5 1e5], [0 1]};
 
 matrix_obj = {z_score_m.out_zscore_mat, mean_shuffles_m.out_actual_mean_sf, proportion_m.out_actual_sf_mat};
 for m_i = 1:length(matrix_obj)
@@ -33,9 +33,9 @@ end
 set(gcf, 'Position', [316 185 898 721]);
 
 %% Hypertransform and PCA-only in Carey and ADR
-x_limits = {[-6.5, 6.5], [-1050, 1050], [0, 1], [-6.5, 6.5], [-1050, 1050], [0, 1]}; % two rows, three columns in figure
-x_tick = {-6:6, -1000:250:1000, 0:0.2:1, -6:6, -1000:250:1000, 0:0.2:1};
-binsizes = [1, 150, 0.1]; % for histograms
+x_limits = {[-6.5, 6.5], [-5.05e5, 5.05e5], [0, 1], [-6.5, 6.5], [-5.05e5, 5.05e5], [0, 1]}; % two rows, three columns in figure
+x_tick = {-6:6, -5e5:1.25e5:5e5, 0:0.2:1, -6:6, -5e5:1.25e5:5e5, 0:0.2:1};
+binsizes = [1, 7.5e4, 0.1]; % for histograms
 
 cfg_plot = [];
 cfg_plot.hist_colors = {colors.HT.hist, colors.pca.hist};
@@ -50,7 +50,7 @@ for d_i = 1:length(datas) % one row each for Carey, ADR
     [z_score{d_i}, mean_shuffles{d_i}, proportion{d_i}] = calculate_common_metrics(cfg_metric, actual_dists_mat{d_i}, ...
         id_dists_mat{d_i}, sf_dists_mat{d_i});
     [z_score_pca{d_i}, mean_shuffles_pca{d_i}, proportion_pca{d_i}] = calculate_common_metrics(cfg_metric, actual_dists_mat_pca{d_i}, ...
-        id_dists_mat_pca{d_i}, sf_dists_mat_pca{d_i});
+        id_dists_mat_pca{d_i}, sf_dists_mat{d_i});
 
     matrix_objs = {{z_score{d_i}.out_zscore_mat, z_score_pca{d_i}.out_zscore_mat}, ...
         {mean_shuffles{d_i}.out_actual_mean_sf, mean_shuffles_pca{d_i}.out_actual_mean_sf}, ...

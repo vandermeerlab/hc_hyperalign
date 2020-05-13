@@ -1,5 +1,7 @@
 %% Plot example sessions for procedure
-sr_i = 1;
+rng(mean('hyperalignment'));
+
+sr_i = 2;
 tar_i = 6;
 idx = {sr_i, tar_i};
 data = Q;
@@ -15,14 +17,12 @@ s_Q = Q;
 for s_i = 1:length(Q)
     shuffle_indices = randperm(size(Q{s_i}.right, 1));
     s_Q{s_i}.right = Q{s_i}.right(shuffle_indices, :);
-    if strcmp(cfg.normalization, 'none')
-        s_pca_input = s_Q{s_i};
-    else
-        s_Q_norm = normalize_Q(cfg.normalization, s_Q{s_i});
-        s_pca_input = s_Q_norm;
-    end
-    [s_proj_Q{s_i}] = perform_pca(s_pca_input, cfg.NumComponents);
+    s_pca_input = s_Q{s_i};
+    [s_proj_Q{s_i}] = perform_pca(s_pca_input, NumComponents);
 end
+
+data{sr_i} = s_Q{sr_i};
+proj_Q{sr_i} = s_proj_Q{sr_i};
 
 %% Input and PCA
 figure;
@@ -93,11 +93,10 @@ p_plot_R.Color = 'g';
 hold on;
 
 project_back_Q = eigvecs{tar_i} * project_back_pca + pca_mean{tar_i};
-pro_Q_left = project_back_Q(:, 1:w_len);
 pro_Q_right = project_back_Q(:, w_len+1:end);
 
 subplot(1, 2, 2);
-imagesc([pro_Q_left, pro_Q_right]);
+imagesc(pro_Q_right);
 ylabel('neuron');
 xlabel('time');
 set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 24);

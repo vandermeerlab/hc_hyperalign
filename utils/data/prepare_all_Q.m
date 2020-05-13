@@ -1,4 +1,4 @@
-function [Q, restrictionLabels] = prepare_all_Q(cfg_in)
+function [Q, int_idx, restrictionLabels] = prepare_all_Q(cfg_in)
     % Get processed data
     cfg_def = [];
     cfg_def.use_adr_data = 0;
@@ -13,9 +13,10 @@ function [Q, restrictionLabels] = prepare_all_Q(cfg_in)
     end
 
     Q = cell(1, length(data_paths));
+    int_idx = cell(1, length(data_paths));
 
     for p_i = 1:length(data_paths)
-        [Q{p_i}] = get_processed_Q(cfg, data_paths{p_i});
+        [Q{p_i}, int_idx{p_i}] = get_processed_Q(cfg, data_paths{p_i});
         Q{p_i}.left = Q{p_i}.left(:, 2:end-1);
         Q{p_i}.right = Q{p_i}.right(:, 2:end-1);
     end

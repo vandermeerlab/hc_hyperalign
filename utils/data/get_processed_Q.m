@@ -1,4 +1,4 @@
-function [Q] = get_processed_Q(cfg_in, session_path)
+function [Q, int_idx] = get_processed_Q(cfg_in, session_path)
     cfg_def.last_n_sec = 2.4;
     cfg_def.use_matched_trials = 1;
     cfg_def.use_adr_data = 0;
@@ -31,7 +31,7 @@ function [Q] = get_processed_Q(cfg_in, session_path)
 
         cfg_int = []; cfg_int.showFRhist = 0;
         cfg_int.max_fr = cfg.int_thres;
-        S = RemoveInterneuronsHC(cfg_int,S, lfp);
+        [S, int_idx] = RemoveInterneuronsHC(cfg_int,S, lfp);
     end
 
     % The end times of left and right trials.
