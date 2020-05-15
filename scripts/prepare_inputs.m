@@ -4,7 +4,7 @@ cfg_data.use_adr_data = 0;
 % Fig 2 and supp. fig 2 use removeInterneurons = 0, otherwise 1.
 cfg_data.removeInterneurons = 1;
 cfg_data.normalization = 'none';
-[Q] = prepare_all_Q(cfg_data);
+[Q, int_idx] = prepare_all_Q(cfg_data);
 
 % Remove cells that are significantly correlated between L and R.
 % cfg_data.removeCorrelations = 'pos';

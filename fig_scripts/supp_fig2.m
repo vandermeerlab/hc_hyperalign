@@ -16,7 +16,7 @@ data = TC;
 [z_score, mean_shuffles, proportion] = calculate_common_metrics([], actual_dists_mat, ...
     id_dists_mat, sf_dists_mat);
 [z_score_pca, mean_shuffles_pca, proportion_pca] = calculate_common_metrics([], actual_dists_mat_pca, ...
-    id_dists_mat_pca, sf_dists_mat_pca);
+    id_dists_mat_pca, sf_dists_mat);
 
 %% Withholding (Q) and Hypertransform and PCA-only (TC) in Carey
 datas = {Q, TC};

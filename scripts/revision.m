@@ -441,9 +441,8 @@ for d_i = 1:length(FR_data)
     close;
 end
 
-%% Plot SPD/FR between left and right (and across subjects)
+%% Plot SPD/FR between left and right for each subject
 data = SPD;
-dt = 1;
 exp_cond = {'left', 'right'};
 
 sub_ids_start = sub_ids.start.carey;
@@ -459,9 +458,9 @@ for sub_i = 1:length(sub_ids_start)
         sub_sessions = sub_ids_start(sub_i):sub_ids_end(sub_i);
         for sess_i = sub_sessions
             if size(data{sess_i}.(exp_cond{exp_i}), 1) == 1
-                exp_data{sub_i}.(exp_cond{exp_i}) = [exp_data{sub_i}.(exp_cond{exp_i}), data{sess_i}.(exp_cond{exp_i}) / dt];
+                exp_data{sub_i}.(exp_cond{exp_i}) = [exp_data{sub_i}.(exp_cond{exp_i}), data{sess_i}.(exp_cond{exp_i})];
             else
-                exp_data{sub_i}.(exp_cond{exp_i}) = [exp_data{sub_i}.(exp_cond{exp_i}); data{sess_i}.(exp_cond{exp_i}) / dt];
+                exp_data{sub_i}.(exp_cond{exp_i}) = [exp_data{sub_i}.(exp_cond{exp_i}); data{sess_i}.(exp_cond{exp_i})];
             end
         end
         mean_exp_spd.(exp_cond{exp_i}) = nanmean(exp_data{sub_i}.(exp_cond{exp_i})(:));
@@ -479,7 +478,7 @@ end
 xpad = 0.25;
 
 % ypad = 0.5;
-% ylim = [1, 3];
+% ylim = [0, 2];
 
 ypad = 15;
 ylim = [10, 70];
@@ -492,8 +491,8 @@ set(gca, 'XTick', x, 'YTick', yt, 'YTickLabel', ytl, ...
     'FontSize', 20,'LineWidth', 1, 'TickDir', 'out');
 box off;
 
-ylabel('firing rate');
-% ylabel('cm / s');
+% ylabel('firing rate');
+ylabel('cm / s');
 
 %% Two-way (subjects and left/right) anova on SPD/FR
 exp_data_vector = [];
@@ -517,15 +516,14 @@ p = anovan(exp_data_vector, {exp_vector subj_vector}, ...
 figure;
 set(gcf, 'Position', [204 377 1368 524]);
 
-data = Q;
-dt = 0.05;
+data = SPD;
 for type_i = 1:2
     for sess_i = 1:length(data)
         if type_i == 1
                 data_concat = [data{sess_i}.left, data{sess_i}.right];
-                mean_data{type_i}{sess_i} = mean(data_concat(:)) / dt;
+                mean_data{type_i}{sess_i} = mean(data_concat(:));
         else
-            mean_data{type_i}{sess_i} = (mean(data{sess_i}.right(:)) - mean(data{sess_i}.left(:))) / dt;
+            mean_data{type_i}{sess_i} = (mean(data{sess_i}.right(:)) - mean(data{sess_i}.left(:)));
         end
     end
     

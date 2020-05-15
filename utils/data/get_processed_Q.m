@@ -24,6 +24,7 @@ function [Q, int_idx] = get_processed_Q(cfg_in, session_path)
         cfg_spikes.load_questionable_cells = 1;
         S = LoadSpikes(cfg_spikes);
     end
+    int_idx = [];
     if cfg.removeInterneurons
         channels = FindFiles('*.Ncs');
         cfg_lfp = []; cfg_lfp.fc = {channels{1}};
