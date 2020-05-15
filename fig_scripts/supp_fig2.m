@@ -21,9 +21,10 @@ data = TC;
 %% Withholding (Q) and Hypertransform and PCA-only (TC) in Carey
 datas = {Q, TC};
 
-x_limits = {[-6.5, 6.5], [-5.05e5, 5.05e5], [0, 1], [-6.5, 6.5], [-5.05e5, 5.05e5], [0, 1]}; % two rows, three columns in figure
-x_tick = {-6:6,-5e5:1.25e5:5e5, 0:0.2:1, -6:6, -5e5:1.25e5:5e5, 0:0.2:1};
-binsizes = [1,  7.5e4, 0.1, 1, 7.5e4, 0.1]; % for histograms
+x_limits = {[-6.5, 6.5], [-5.05e5, 5.05e5], [0, 1]}; % two rows, three columns in figure
+x_tick = {-6:6,-5e5:1.25e5:5e5, 0:0.2:1};
+xtick_labels = {{-6, 6}, {sprintf('-4\\times10^{%d}', 5), sprintf('5\\times10^{%d}', 5)}, {0, 1}};
+binsizes = [1, 7.5e4, 0.1]; % for histograms
 
 all_hist_colors = {{colors.wh.hist}, {colors.HT.hist, colors.pca.hist}};
 all_fit_colors = {{colors.wh.fit}, {colors.HT.hist, colors.pca.hist}};
@@ -47,9 +48,10 @@ for d_i = 1:length(datas) % one row each for Withholding (Carey Q), HT and PCA (
         this_ax = subplot(2, 3, p_i);
         matrix_obj = matrix_objs{m_i};
 
-        cfg_plot.xlim = x_limits{p_i};
-        cfg_plot.xtick = x_tick{p_i};
-        cfg_plot.binsize = binsizes(p_i);
+        cfg_plot.xlim = x_limits{m_i};
+        cfg_plot.xtick = x_tick{m_i};
+        cfg_plot.xtick_label = xtick_labels{m_i};
+        cfg_plot.binsize = binsizes(m_i);
         cfg_plot.ax = this_ax;
         cfg_plot.insert_zero = 1; % plot zero xtick
         cfg_plot.fit = 'vline'; % 'gauss', 'kernel', 'vline' or 'none (no fit)

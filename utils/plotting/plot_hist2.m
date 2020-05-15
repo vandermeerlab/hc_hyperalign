@@ -67,6 +67,8 @@ function plot_hist2(cfg_in, data)
     box off;
     set(gca, 'FontSize', cfg.fs, 'TickDir', 'out', 'YTick', [], 'XTick', cfg.xtick, 'XLim', [cfg.xlim(1) cfg.xlim(2)]);
     xtl = make_ticklabels(cfg, cfg.xtick);
+    xtl{1} = cfg.xtick_label{1};
+    xtl{end} = cfg.xtick_label{end};
     set(gca, 'XTickLabel', xtl);
 
 end

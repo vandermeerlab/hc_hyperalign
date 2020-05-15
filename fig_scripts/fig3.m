@@ -15,6 +15,7 @@ end
 %% ID prediction in Carey and ADR
 x_limits = {[0, 2*1e5], [0, 1e5]}; % two rows, three columns in figure
 x_tick = {0:20000:2*1e5, 0:10000:1e5};
+xtick_labels = {{0, sprintf('2\\times10^{%d}', 5)}, {0, sprintf('1\\times10^{%d}', 5)}};
 binsizes = [20000, 10000]; % for histograms
 
 cfg_plot = [];
