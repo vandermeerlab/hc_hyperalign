@@ -9,11 +9,12 @@ n_units = 30;
 % Use indices in Q in case index chosen from Q does not exist in
 % Q_int_rm.
 % ex_idx = datasample(1:length(Q{1}.left), n_units, 'Replace', false);
-
+colorbar_limits = {[0, 50], [0, 50], [0, 1], [0, 1], [-2, 6], [-2, 6]};
 for d_i = 1:length(datas)
     subplot(3, 4, (2*(d_i-1) + 1))
     imagesc([datas{d_i}{1}.left(1:n_units, :), datas{d_i}{1}.right(1:n_units, :)]);
     colorbar;
+    caxis(colorbar_limits{d_i});
     set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 12);
     ylabel('neuron');
 end
