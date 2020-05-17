@@ -307,7 +307,7 @@ end
 exp_cond = {'L (actual)', 'R (actual)', 'R (actual vs. predicted)', 'R (predicted)'};
 FR_data_plots = {FR_acr_sess.left, FR_acr_sess.right, FR_acr_sess.predicted - FR_acr_sess.right, ...
     FR_acr_sess.predicted};
-ylabs = {'FR', 'FR', 'Difference', 'FR'};
+ylabs = {'firing rate', 'firing rate', 'difference', 'firing rate'};
 dy = 0.5;
 ylims = {[0, 2], [0, 2], [-1, 1], [0, 2]};
 
@@ -346,9 +346,9 @@ for d_i = 1:length(FR_data_plots)
 
     set(gca, 'XTick', [], 'YTick', yt, 'YTickLabel', ytl, ...
     'XLim', [x(1) x(end)], 'YLim', [ylim(1) ylim(2)], 'FontSize', 12, 'LineWidth', 1,...
-    'TickDir', 'out', 'FontSize', 24);
+    'TickDir', 'out', 'FontSize', 20);
     box off;
-    xlabel('Time'); ylabel(ylabs{d_i});
+    xlabel('time'); ylabel(ylabs{d_i});
     title(exp_cond{d_i});
 end
 
@@ -449,7 +449,7 @@ for d_i = 1:length(FR_data)
 end
 
 %% Plot SPD/FR between left and right for each subject
-data = SPD;
+data = Q;
 exp_cond = {'left', 'right'};
 
 sub_ids_start = sub_ids.start.carey;
@@ -484,11 +484,11 @@ end
 
 xpad = 0.25;
 
-% ypad = 0.5;
-% ylim = [0, 2];
+ypad = 0.5;
+ylim = [0, 2];
 
-ypad = 15;
-ylim = [10, 70];
+% ypad = 15;
+% ylim = [10, 70];
 
 yt = ylim(1):ypad:ylim(2);
 ytl = {ylim(1), '', (ylim(1) + ylim(2)) / 2, '', ylim(2)};
@@ -498,8 +498,8 @@ set(gca, 'XTick', x, 'YTick', yt, 'YTickLabel', ytl, ...
     'FontSize', 20,'LineWidth', 1, 'TickDir', 'out');
 box off;
 
-% ylabel('firing rate');
-ylabel('cm / s');
+ylabel('firing rate');
+% ylabel('cm / s');
 
 %% Two-way (subjects and left/right) anova on SPD/FR
 exp_data_vector = [];
