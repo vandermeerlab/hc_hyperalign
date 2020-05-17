@@ -5,7 +5,6 @@ sub_ids = get_sub_ids_start_end();
 
 %% Plot some example data L and R with predicitons (ordered by L of source).
 data = Q;
-
 [~, ~, predicted_Q_mat] = predict_with_L_R([], data);
 out_predicted_Q_mat = set_withsubj_nan([], predicted_Q_mat);
 w_len = size(data{1}.left, 2);
@@ -16,7 +15,7 @@ set(gcf, 'Position', [540 71 1139 884]);
 ex_sess_idx = [2, 5];
 for s_i = 1:length(ex_sess_idx)
     sess_idx = ex_sess_idx(s_i);
-    example_data = Q{sess_idx};
+    example_data = data{sess_idx};
     example_data.predict = [out_predicted_Q_mat{6, sess_idx}(:, w_len+1:end), ...
         out_predicted_Q_mat{9, sess_idx}(:, w_len+1:end), ...
         out_predicted_Q_mat{15, sess_idx}(:, w_len+1:end)];
@@ -33,6 +32,11 @@ for s_i = 1:length(ex_sess_idx)
 end
 
 %% Plot left vs. right fields for both actual and predicted data
+data = Q;
+[~, ~, predicted_Q_mat] = predict_with_L_R([], data);
+out_predicted_Q_mat = set_withsubj_nan([], predicted_Q_mat);
+w_len = size(data{1}.left, 2);
+
 figure;
 set(gcf, 'Position', [537 71 533 884]);
 datas = {Q, out_predicted_Q_mat};
