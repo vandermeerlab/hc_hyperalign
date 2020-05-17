@@ -40,6 +40,7 @@ for d_i = 1:length(datas)
 
     cfg_plot.xlim = x_limits{d_i};
     cfg_plot.xtick = x_tick{d_i};
+    cfg_plot.xtick_label = xtick_labels{d_i};
     cfg_plot.binsize = binsizes(d_i);
     cfg_plot.ax = this_ax;
     cfg_plot.insert_zero = 0; % plot zero xtick

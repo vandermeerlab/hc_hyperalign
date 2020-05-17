@@ -3,7 +3,7 @@ rng(mean('hyperalignment'));
 colors = get_hyper_colors();
 sub_ids = get_sub_ids_start_end();
 
-%% Plot left vs. right fields for both actual and predicted data
+%% Plot some example data L and R with predicitons (ordered by L of source).
 data = Q;
 
 [~, ~, predicted_Q_mat] = predict_with_L_R([], data);
@@ -11,32 +11,34 @@ out_predicted_Q_mat = set_withsubj_nan([], predicted_Q_mat);
 w_len = size(data{1}.left, 2);
 
 figure;
-set(gcf, 'Position', [560 245 955 703]);
+set(gcf, 'Position', [540 71 1139 884]);
 
-datas = {Q, out_predicted_Q_mat};
-exp_cond = {'actual', 'predicted'};
-for d_i = 1:length(datas)
-    data = datas{d_i};
-    
-    % Plot some example data (ordered by L of source),
-    if d_i == 1
-        example_data = data{2};
-    else
-        % example_data.left = data{6, 1}(:, 1:w_len);
-        example_data.left = Q{2}.left;
-        example_data.right = data{6, 2}(:, w_len+1:end);
-    end
+ex_sess_idx = [2, 5];
+for s_i = 1:length(ex_sess_idx)
+    sess_idx = ex_sess_idx(s_i);
+    example_data = Q{sess_idx};
+    example_data.predict = [out_predicted_Q_mat{6, sess_idx}(:, w_len+1:end), ...
+        out_predicted_Q_mat{9, sess_idx}(:, w_len+1:end), ...
+        out_predicted_Q_mat{15, sess_idx}(:, w_len+1:end)];
     
     [~, max_idx] = max(example_data.left, [], 2);
     [~, sorted_idx] = sort(max_idx);
     
-    subplot(2, 2, 1 + (d_i-1)*2)
-    imagesc([example_data.left(sorted_idx, :), example_data.right(sorted_idx, :)]);
+    subplot(2, 1, s_i)
+    imagesc([example_data.left(sorted_idx, :), example_data.right(sorted_idx, :), example_data.predict(sorted_idx, :)]);
     colorbar;
+    caxis([0, 50]);
     set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 20);
     ylabel('neuron');
-    title(exp_cond{d_i});
-    
+end
+
+%% Plot left vs. right fields for both actual and predicted data
+figure;
+set(gcf, 'Position', [537 71 533 884]);
+datas = {Q, out_predicted_Q_mat};
+exp_cond = {'actual', 'predicted'};
+for d_i = 1:length(datas)
+    data = datas{d_i};
     max_fields = zeros(w_len, w_len);
     neu_w_fields_idx = cell(size(data));
     for sess_i = 1:length(data(:))
@@ -64,9 +66,10 @@ for d_i = 1:length(datas)
     
     max_fields = max_fields / sum(sum(max_fields));
     cfg_plot = [];
-    cfg_plot.ax = subplot(2, 2, d_i * 2);
+    cfg_plot.ax = subplot(2, 1, d_i);
     cfg_plot.fs = 20;
     plot_matrix(cfg_plot, max_fields);
+    title(exp_cond{d_i});
     
 %     imagesc(max_fields); colorbar;
     set(gca,'YDir','normal');
@@ -75,20 +78,20 @@ for d_i = 1:length(datas)
 end
 
 %% Plotting source and target (ordered by L of source)
-data = TC;
+data = Q;
 [~, ~, predicted_Q_mat] = predict_with_L_R([], data);
 
 for i = 1:length(data)
-    target_sname = ['/Users/mac/Desktop/hyperalign_revision/sorted_TC/predicted/source/', sprintf('TC_%d', i)];
+    target_sname = ['/Users/mac/Desktop/hyperalign_revision/sorted_Q/predicted/source/', sprintf('Q_%d', i)];
     mkdir(target_sname);
     cd(target_sname);
     for j = 1:length(data)
-        [~, max_idx] = max(data{j}.left, [], 2);
+        [~, max_idx] = max(data{i}.left, [], 2);
         [~, sorted_idx] = sort(max_idx);
         if i ~= j
             figure;
-            imagesc(predicted_Q_mat{i, j}(sorted_idx, :)); colorbar;
-            saveas(gcf, sprintf('S_%d_T_%d.jpg', i, j));
+            imagesc(predicted_Q_mat{j, i}(sorted_idx, :)); colorbar;
+            saveas(gcf, sprintf('S_%d_T_%d.jpg', j, i));
             close;
         end
     end
@@ -516,7 +519,7 @@ p = anovan(exp_data_vector, {exp_vector subj_vector}, ...
 figure;
 set(gcf, 'Position', [204 377 1368 524]);
 
-data = SPD;
+data = Q;
 for type_i = 1:2
     for sess_i = 1:length(data)
         if type_i == 1

@@ -81,6 +81,47 @@ for d_i = 1:length(datas) % one row each for Carey, ADR
     end
 end
 
+%% Inset
+x_limits = {[0, 2*1e5], [0, 1e5]};
+x_tick = {0:20000:2*1e5, 0:10000:1e5};
+xtick_labels = {{0, sprintf('2\\times10^{%d}', 5)}, {0, sprintf('1\\times10^{%d}', 5)}};
+binsizes = [20000, 10000]; % for histograms
+
+cfg_plot = [];
+cfg_plot.hist_colors = {colors.HT.hist, colors.pca.hist};
+cfg_plot.fit_colors = {colors.HT.fit, colors.pca.fit};
+bino_ps = zeros(length(datas), 1);
+signrank_ps = zeros(length(datas), 1);
+
+for d_i = 1:length(datas)
+    cfg_metric = [];
+    cfg_metric.use_adr_data = 0;
+    if d_i == 2
+        cfg_metric.use_adr_data = 1;
+    end
+    
+    out_actual_dists = set_withsubj_nan(cfg_metric, actual_dists_mat{d_i});
+    out_actual_dists_pca = set_withsubj_nan(cfg_metric, actual_dists_mat_pca{d_i});
+    
+    matrix_obj = {out_actual_dists, out_actual_dists_pca};
+    bino_ps(d_i) = calculate_bino_p(sum(sum(out_actual_dists <= out_actual_dists_pca)), sum(sum(~isnan(out_actual_dists))), 0.5);;
+    signrank_ps(d_i) = signrank(matrix_obj{1}(:),  matrix_obj{2}(:));
+    this_ax = subplot(2, 1, d_i);
+
+    cfg_plot.xlim = x_limits{d_i};
+    cfg_plot.xtick = x_tick{d_i};
+    cfg_plot.xtick_label = xtick_labels{d_i};
+    cfg_plot.binsize = binsizes(d_i);
+    cfg_plot.ax = this_ax;
+    cfg_plot.insert_zero = 0; % plot zero xtick
+    cfg_plot.fit = 'vline'; % 'gauss', 'kernel', 'vline' or 'none (no fit)
+    cfg_plot.plot_vert_zero = 0; % plot vertical dashed line at 0
+
+    plot_hist2(cfg_plot, matrix_obj); % ht, then pca
+end
+
+set(gcf, 'Position', [316 297 353 609]);
+
 %% Stats of HT vs. PCA-only
 
 %% Z-score of HT vs PCA-only in Carey and ADR
