@@ -45,6 +45,8 @@ for d_i = 1:length(datas)
     data = datas{d_i};
     max_fields = zeros(w_len, w_len);
     neu_w_fields_idx = cell(size(data));
+    left_only_count = 0;
+    right_only_count = 0;
     for sess_i = 1:length(data(:))
         if d_i == 1
             Q_sess = [data{sess_i}.left, data{sess_i}.right];
@@ -63,6 +65,10 @@ for d_i = 1:length(datas)
                 if L_max_v > FR_thres && R_max_v > FR_thres && ~all(FR_left_same) && ~all(FR_right_same)
                     max_fields(max_L_idx, max_R_idx) = max_fields(max_L_idx, max_R_idx) + 1;
                     neu_w_fields_idx{sess_i} = [neu_w_fields_idx{sess_i}, neu_i];
+                elseif L_max_v > FR_thres && ~all(FR_left_same)
+                    left_only_count = left_only_count + 1;
+                elseif R_max_v > FR_thres && ~all(FR_right_same)
+                    right_only_count = right_only_count + 1;
                 end
             end
         end
