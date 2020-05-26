@@ -13,9 +13,10 @@ for d_i = 1:length(datas)
 end
 
 %% ID prediction in Carey and ADR
-x_limits = {[0, 600], [0, 300]}; % two rows, three columns in figure
-x_tick = {0:100:600, 0:50:300};
-binsizes = [50, 25]; % for histograms
+x_limits = {[0, 2*1e5], [0, 1e5]}; % two rows, three columns in figure
+x_tick = {0:20000:2*1e5, 0:10000:1e5};
+xtick_labels = {{0, sprintf('2\\times10^{%d}', 5)}, {0, sprintf('1\\times10^{%d}', 5)}};
+binsizes = [20000, 10000]; % for histograms
 
 cfg_plot = [];
 cfg_plot.hist_colors = {colors.HT.hist, colors.ID.hist};
@@ -39,6 +40,7 @@ for d_i = 1:length(datas)
 
     cfg_plot.xlim = x_limits{d_i};
     cfg_plot.xtick = x_tick{d_i};
+    cfg_plot.xtick_label = xtick_labels{d_i};
     cfg_plot.binsize = binsizes(d_i);
     cfg_plot.ax = this_ax;
     cfg_plot.insert_zero = 0; % plot zero xtick
@@ -93,4 +95,4 @@ end
 [mean_coefs, sem_coefs_types] = plot_off_diag_PV(cfg_off_pv_plot, off_diag_PV_coefs, themes);
 
 % Wilcoxon signed rank test for Carey and ADR off-diagonal
-ranksum(off_diag_coefs{1}(:), off_diag_coefs{2}(:))
+ranksum(off_diag_PV_coefs{1}(:), off_diag_PV_coefs{2}(:))

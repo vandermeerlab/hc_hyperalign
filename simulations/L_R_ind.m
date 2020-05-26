@@ -25,7 +25,7 @@ function [Q] = L_R_ind(cfg_in)
             Q{d_i}{q_i}.right = zeros(n_units, cfg.w_len);
             for n_i = 1:n_units
                 mu = rand() * cfg.w_len;
-                peak = rand() * 0.5 + 0.5;
+                peak = rand() * 10 + 10;
                 sig = rand() * 5 + 2;
                 if rand() < cfg.p_has_field
                     Q{d_i}{q_i}.left(n_i, :) = gaussian_1d(cfg.w_len, peak, mu, sig);
@@ -39,7 +39,7 @@ function [Q] = L_R_ind(cfg_in)
                     if cfg.same_params(2)
                         right_peak = peak;
                     else
-                        right_peak = rand() * 0.5 + 0.5;
+                        right_peak = rand() * 10 + 10;
                     end
                     if cfg.same_params(3)
                         right_sig = sig;

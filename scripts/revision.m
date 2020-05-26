@@ -3,48 +3,55 @@ rng(mean('hyperalignment'));
 colors = get_hyper_colors();
 sub_ids = get_sub_ids_start_end();
 
-%% Plot left vs. right fields for both actual and predicted data
+%% Plot some example data L and R with predicitons (ordered by L of source).
 data = Q;
-dt = 0.05;
-
 [~, ~, predicted_Q_mat] = predict_with_L_R([], data);
 out_predicted_Q_mat = set_withsubj_nan([], predicted_Q_mat);
 w_len = size(data{1}.left, 2);
 
 figure;
-set(gcf, 'Position', [560 245 955 703]);
+set(gcf, 'Position', [540 71 1139 884]);
 
-datas = {Q, out_predicted_Q_mat};
-exp_cond = {'actual', 'predicted'};
-for d_i = 1:length(datas)
-    data = datas{d_i};
-    
-    % Plot some example data (ordered by L of source),
-    if d_i == 1
-        example_data = data{2};
-    else
-        % example_data.left = data{6, 1}(:, 1:w_len);
-        example_data.left = Q{2}.left;
-        example_data.right = data{6, 2}(:, w_len+1:end);
-    end
+ex_sess_idx = [2, 5];
+for s_i = 1:length(ex_sess_idx)
+    sess_idx = ex_sess_idx(s_i);
+    example_data = data{sess_idx};
+    example_data.predict = [out_predicted_Q_mat{6, sess_idx}(:, w_len+1:end), ...
+        out_predicted_Q_mat{9, sess_idx}(:, w_len+1:end), ...
+        out_predicted_Q_mat{15, sess_idx}(:, w_len+1:end)];
     
     [~, max_idx] = max(example_data.left, [], 2);
     [~, sorted_idx] = sort(max_idx);
     
-    subplot(2, 2, 1 + (d_i-1)*2)
-    imagesc([example_data.left(sorted_idx, :), example_data.right(sorted_idx, :)]);
+    subplot(2, 1, s_i)
+    imagesc([example_data.left(sorted_idx, :), example_data.right(sorted_idx, :), example_data.predict(sorted_idx, :)]);
     colorbar;
+    caxis([0, 50]);
     set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 20);
     ylabel('neuron');
-    title(exp_cond{d_i});
-    
+end
+
+%% Plot left vs. right fields for both actual and predicted data
+data = Q;
+[~, ~, predicted_Q_mat] = predict_with_L_R([], data);
+out_predicted_Q_mat = set_withsubj_nan([], predicted_Q_mat);
+w_len = size(data{1}.left, 2);
+
+figure;
+set(gcf, 'Position', [537 71 533 884]);
+datas = {Q, out_predicted_Q_mat};
+exp_cond = {'actual', 'predicted'};
+for d_i = 1:length(datas)
+    data = datas{d_i};
     max_fields = zeros(w_len, w_len);
     neu_w_fields_idx = cell(size(data));
+    left_only_count = 0;
+    right_only_count = 0;
     for sess_i = 1:length(data(:))
         if d_i == 1
-            Q_sess = [data{sess_i}.left / dt, data{sess_i}.right / dt];
+            Q_sess = [data{sess_i}.left, data{sess_i}.right];
         else
-            Q_sess = out_predicted_Q_mat{sess_i} / dt;
+            Q_sess = out_predicted_Q_mat{sess_i};
         end
         if ~isnan(Q_sess)
             for neu_i = 1:size(Q_sess, 1)
@@ -58,6 +65,10 @@ for d_i = 1:length(datas)
                 if L_max_v > FR_thres && R_max_v > FR_thres && ~all(FR_left_same) && ~all(FR_right_same)
                     max_fields(max_L_idx, max_R_idx) = max_fields(max_L_idx, max_R_idx) + 1;
                     neu_w_fields_idx{sess_i} = [neu_w_fields_idx{sess_i}, neu_i];
+                elseif L_max_v > FR_thres && ~all(FR_left_same)
+                    left_only_count = left_only_count + 1;
+                elseif R_max_v > FR_thres && ~all(FR_right_same)
+                    right_only_count = right_only_count + 1;
                 end
             end
         end
@@ -65,9 +76,10 @@ for d_i = 1:length(datas)
     
     max_fields = max_fields / sum(sum(max_fields));
     cfg_plot = [];
-    cfg_plot.ax = subplot(2, 2, d_i * 2);
+    cfg_plot.ax = subplot(2, 1, d_i);
     cfg_plot.fs = 20;
     plot_matrix(cfg_plot, max_fields);
+    title(exp_cond{d_i});
     
 %     imagesc(max_fields); colorbar;
     set(gca,'YDir','normal');
@@ -76,20 +88,20 @@ for d_i = 1:length(datas)
 end
 
 %% Plotting source and target (ordered by L of source)
-data = TC;
+data = Q;
 [~, ~, predicted_Q_mat] = predict_with_L_R([], data);
 
 for i = 1:length(data)
-    target_sname = ['/Users/mac/Desktop/hyperalign_revision/sorted_TC/predicted/source/', sprintf('TC_%d', i)];
+    target_sname = ['/Users/mac/Desktop/hyperalign_revision/sorted_Q/predicted/source/', sprintf('Q_%d', i)];
     mkdir(target_sname);
     cd(target_sname);
     for j = 1:length(data)
-        [~, max_idx] = max(data{j}.left, [], 2);
+        [~, max_idx] = max(data{i}.left, [], 2);
         [~, sorted_idx] = sort(max_idx);
         if i ~= j
             figure;
-            imagesc(predicted_Q_mat{i, j}(sorted_idx, :)); colorbar;
-            saveas(gcf, sprintf('S_%d_T_%d.jpg', i, j));
+            imagesc(predicted_Q_mat{j, i}(sorted_idx, :)); colorbar;
+            saveas(gcf, sprintf('S_%d_T_%d.jpg', j, i));
             close;
         end
     end
@@ -122,9 +134,9 @@ for p_i = 1:length(data)
 end
 
 %% FR across time/locations (raw and normalized) for each session
-data = Q;
+data = TC;
 
-dt = {0.05, 1};
+dt = {1, 1};
 w_len = size(data{1}.left, 2);
 exp_cond = {'left', 'right'};
 
@@ -132,7 +144,7 @@ dy = {1, 0.5};
 ylim = {[0, 3], [-0.5, 1.5]};
 ylab = {'FR', 'Z-score'};
 
-FR_data = {Q, Q_norm_Z};
+FR_data = {TC, TC_norm_Z};
 for s_i = 1:length(FR_data{1}(:))
     figure;
     for data_i = 1:length(FR_data)
@@ -160,14 +172,14 @@ for s_i = 1:length(FR_data{1}(:))
             title(exp_cond{exp_i});
         end
     end
-    saveas(gcf, sprintf('Q_%d.jpg', s_i));
+    saveas(gcf, sprintf('TC_%d.jpg', s_i));
     close;
 end
 
 %% FR across time/locations (raw and normalized) combined across sessions
-data = Q;
+data = TC;
 
-dt = {0.05, 1};
+dt = {1, 1};
 w_len = size(data{1}.left, 2);
 exp_cond = {'left', 'right'};
 
@@ -175,7 +187,7 @@ dy = {1, 0.5};
 ylim = {[0, 3], [-0.5, 1.5]};
 ylab = {'FR', 'Z-score'};
 
-FR_data = {Q, Q_norm_Z};
+FR_data = {TC, TC_norm_Z};
 
 figure;
 for data_i = 1:length(FR_data)
@@ -202,16 +214,52 @@ for data_i = 1:length(FR_data)
     end
 end
 
+%% Test: Prediction error as a function of scaling factor
+data = Q;
+
+scaling_factors = 0.1:0.1:2;
+err_acr_scale = zeros(2, length(scaling_factors));
+% mean_err_acr_scale = zeros(1, length(scaling_factors));
+% std_err_acr_scale = zeros(1, length(scaling_factors));
+for i = 1:length(scaling_factors)
+    cfg_pre = [];
+    cfg_pre.predict_target = 'Q';
+    cfg_pre.scaling_factor = scaling_factors(i);
+    [actual_dists_mat] = predict_with_L_R(cfg_pre, data);
+%     out_actual_dists_mat = set_withsubj_nan([], actual_dists_mat);
+%     mean_err_acr_scale(i) = nanmean(out_actual_dists_mat(:));
+%     std_err_acr_scale(i) = nanstd(out_actual_dists_mat(:));
+    err_acr_scale(1, i) = actual_dists_mat(1, 6);
+    err_acr_scale(2, i) = actual_dists_mat(6, 1);
+end
+
+dy = 25000;
+x = 1:length(scaling_factors);
+xpad = 1;
+ylim = [0, 100000];
+
+% h = shadedErrorBar(x, mean_err_acr_scale, std_err_acr_scale);
+% set(h.mainLine, 'LineWidth', 1);
+for i = 1:2
+    subplot(2, 1, i);
+    h = plot(x, err_acr_scale(i, :), 'b');
+    hold on;
+    set(gca, 'XTick', x, 'YTick', [ylim(1):dy:ylim(2)], 'XLim', [x(1) x(end)], ...
+        'YLim', [ylim(1) ylim(2)], 'FontSize', 12, 'LineWidth', 1, 'TickDir', 'out');
+    box off;
+    xticklabels(scaling_factors);
+    xlabel('Scale'); ylabel('Error in Q space')
+end
+
 %% FR left actual, right (actual, predicted and differences)
 data = Q;
-dt = 0.05;
 
 FR_acr_sess.left = [];
 FR_acr_sess.right = [];
 for i = 1:length(data)
     % Make data (Q) into Hz first
-    data{i}.left = data{i}.left / dt;
-    data{i}.right = data{i}.right / dt;
+    data{i}.left = data{i}.left;
+    data{i}.right = data{i}.right;
     
     FR_acr_sess.left = [FR_acr_sess.left; data{i}.left];
     FR_acr_sess.right = [FR_acr_sess.right; data{i}.right];
@@ -256,7 +304,7 @@ end
 % n_shuffles = size(sf_Q_mat, 3);
 % FR_acr_sess.sf_predicted = zeros([size(FR_acr_sess.predicted), n_shuffles]);
 % for s_i = 1:n_shuffles
-%     out_sf_Q_mat(:, :, s_i) = set_withsubj_nan([], sf_Q_mat(:, :, s_i));
+%     out_sf_Q_mat(:, :, s_i) = set_withsubj_nan([], sf_Q_mat(:, :, s_i));c
 %     FR_acr_sess.sf_predicted(:, :, s_i) = avg_acr_predictions(out_sf_Q_mat(:, :, s_i), w_len);
 % end
 % FR_acr_sess.sf_predicted = mean(FR_acr_sess.sf_predicted, 3);
@@ -265,9 +313,9 @@ end
 exp_cond = {'L (actual)', 'R (actual)', 'R (actual vs. predicted)', 'R (predicted)'};
 FR_data_plots = {FR_acr_sess.left, FR_acr_sess.right, FR_acr_sess.predicted - FR_acr_sess.right, ...
     FR_acr_sess.predicted};
-ylabs = {'FR', 'FR', 'Difference', 'FR'};
-dy = 1;
-ylims = {[1, 3], [1, 3], [-1, 1], [1, 5]};
+ylabs = {'firing rate', 'firing rate', 'difference', 'firing rate'};
+dy = 0.5;
+ylims = {[0, 2], [0, 2], [-1, 1], [0, 2]};
 
 set(gcf, 'Position', [560 80 1020 868]);
 
@@ -304,15 +352,110 @@ for d_i = 1:length(FR_data_plots)
 
     set(gca, 'XTick', [], 'YTick', yt, 'YTickLabel', ytl, ...
     'XLim', [x(1) x(end)], 'YLim', [ylim(1) ylim(2)], 'FontSize', 12, 'LineWidth', 1,...
-    'TickDir', 'out', 'FontSize', 24);
+    'TickDir', 'out', 'FontSize', 20);
     box off;
-    xlabel('Time'); ylabel(ylabs{d_i});
+    xlabel('time'); ylabel(ylabs{d_i});
     title(exp_cond{d_i});
 end
 
-%% Plot SPD/FR between left and right (and across subjects)
-data = SPD;
-dt = 1;
+
+%% Test: FR left actual, right (actual, predicted and differences) for each session
+data = Q;
+dt = 0.05;
+
+for i = 1:length(data)
+    % Make data (Q) into Hz first
+    data{i}.left = data{i}.left / dt;
+    data{i}.right = data{i}.right / dt;
+    
+    FR_acr_sess.left{i} = data{i}.left;
+    FR_acr_sess.right{i} = data{i}.right;
+end
+
+w_len = size(data{1}.left, 2);
+
+[~, ~, predicted_Q_mat] = predict_with_L_R([], data);
+out_predicted_Q_mat = set_withsubj_nan([], predicted_Q_mat);
+
+exp_cond = {'L (actual)', 'R (actual)'};
+FR_data_plots = {FR_acr_sess.left, FR_acr_sess.right};
+ylabs = {'FR', 'FR'};
+dy = 1;
+ylims = {[0, 4], [0, 4]};
+
+FR_acr_sess.predicted = [];
+FR_data = out_predicted_Q_mat;
+for d_i = 1:length(FR_data)
+    figure;
+    set(gcf, 'Position', [560 80 1020 868]);
+    for exp_i = 1:length(exp_cond)
+        mean_across_w = mean(FR_data_plots{exp_i}{d_i}, 1);
+        
+        subplot(2, 2, exp_i);
+        
+        x = 1:length(mean_across_w);
+        xpad = 1;
+        ylim = ylims{exp_i};
+        yt = ylim(1):dy:ylim(2);
+        ytl = {ylim(1), '', (ylim(1) + ylim(2)) / 2, '', ylim(2)};
+        
+        h1 = plot(x, mean_across_w, '-k', 'LineWidth', 1);
+        
+        set(gca, 'XTick', [], 'YTick', yt, 'YTickLabel', ytl, ...
+            'XLim', [x(1) x(end)], 'YLim', [ylim(1) ylim(2)], 'FontSize', 12, 'LineWidth', 1,...
+            'TickDir', 'out', 'FontSize', 24);
+        box off;
+        xlabel('Time'); ylabel(ylabs{exp_i});
+        title(exp_cond{exp_i});
+    end
+    
+    subplot(2, 2, 4);
+    target_FR = FR_data(:, d_i);
+    for t_i = 1:length(target_FR)
+        if ~isnan(target_FR{t_i})
+            FR_predicted = target_FR{t_i}(:, w_len+1:end);
+            h1 = plot(x, mean(FR_predicted, 1), 'LineStyle', '--', 'LineWidth', 1);
+            hold on;
+            h2 = plot(x, mean(FR_acr_sess.right{d_i}, 1), '-k', 'LineWidth', 1);
+            hold on;
+        end
+    end
+    set(gca, 'XTick', [], 'YTick', yt, 'YTickLabel', ytl, ...
+        'XLim', [x(1) x(end)], 'YLim', [ylim(1) ylim(2)], 'FontSize', 12, 'LineWidth', 1,...
+        'TickDir', 'out', 'FontSize', 24);
+    box off;
+    xlabel('Time'); ylabel('FR');
+    title('R (predicted)');
+    
+    subplot(2, 2, 3);
+    target_FR = FR_data(:, d_i);
+    for t_i = 1:length(target_FR)
+        if ~isnan(target_FR{t_i})
+            FR_predicted = target_FR{t_i}(:, w_len+1:end);
+            FR_diff = FR_predicted - FR_acr_sess.right{d_i};
+            h1 = plot(x, mean(FR_diff, 1), 'LineStyle', '--', 'LineWidth', 1);
+            hold on;
+            h2 = plot([x(1)-xpad x(end)+xpad], [0 0], '-k', 'LineWidth', 0.75, 'Color', [0.7 0.7 0.7]);
+            hold on;
+        end
+    end
+    ylim = [-2, 2];
+    yt = ylim(1):dy:ylim(2);
+    ytl = {ylim(1), '', (ylim(1) + ylim(2)) / 2, '', ylim(2)};
+    
+    set(gca, 'XTick', [], 'YTick', yt, 'YTickLabel', ytl, ...
+        'XLim', [x(1) x(end)], 'YLim', [ylim(1) ylim(2)], 'FontSize', 12, 'LineWidth', 1,...
+        'TickDir', 'out', 'FontSize', 24);
+    box off;
+    xlabel('Time'); ylabel('Difference');
+    title('R (actual vs. predicted)');
+    
+    saveas(gcf, sprintf('Q_%d.jpg', d_i));
+    close;
+end
+
+%% Plot SPD/FR between left and right for each subject
+data = Q;
 exp_cond = {'left', 'right'};
 
 sub_ids_start = sub_ids.start.carey;
@@ -320,7 +463,7 @@ sub_ids_end = sub_ids.end.carey;
 sub_colors = {colors.HT.hist, colors.pca.hist, colors.wh.hist, colors.ID.hist};
 
 figure;
-set(gcf, 'Position', [548 491 347 437]);
+set(gcf, 'Position', [548 366 430 562]);
 
 for sub_i = 1:length(sub_ids_start)
     for exp_i = 1:length(exp_cond)
@@ -328,9 +471,9 @@ for sub_i = 1:length(sub_ids_start)
         sub_sessions = sub_ids_start(sub_i):sub_ids_end(sub_i);
         for sess_i = sub_sessions
             if size(data{sess_i}.(exp_cond{exp_i}), 1) == 1
-                exp_data{sub_i}.(exp_cond{exp_i}) = [exp_data{sub_i}.(exp_cond{exp_i}), data{sess_i}.(exp_cond{exp_i}) / dt];
+                exp_data{sub_i}.(exp_cond{exp_i}) = [exp_data{sub_i}.(exp_cond{exp_i}), data{sess_i}.(exp_cond{exp_i})];
             else
-                exp_data{sub_i}.(exp_cond{exp_i}) = [exp_data{sub_i}.(exp_cond{exp_i}); data{sess_i}.(exp_cond{exp_i}) / dt];
+                exp_data{sub_i}.(exp_cond{exp_i}) = [exp_data{sub_i}.(exp_cond{exp_i}); data{sess_i}.(exp_cond{exp_i})];
             end
         end
         mean_exp_spd.(exp_cond{exp_i}) = nanmean(exp_data{sub_i}.(exp_cond{exp_i})(:));
@@ -339,19 +482,19 @@ for sub_i = 1:length(sub_ids_start)
     x = 1:length(exp_cond);
     y = [mean_exp_spd.left, mean_exp_spd.right];
     err = [std_exp_spd.left, std_exp_spd.right];
-    h = errorbar(x, y, err, 'LineWidth', 2);
-%     h = plot(x, y, '.-', 'MarkerSize', 20, 'LineWidth', 2);
+%     h = errorbar(x, y, err, 'LineWidth', 2);
+    h = plot(x, y, '.-', 'MarkerSize', 20, 'LineWidth', 2);
     set(h, 'Color', sub_colors{sub_i});
     hold on;
 end
 
 xpad = 0.25;
 
-% ypad = 0.5;
-% ylim = [1, 3];
+ypad = 0.5;
+ylim = [0, 2];
 
-ypad = 15;
-ylim = [10, 70];
+% ypad = 15;
+% ylim = [10, 70];
 
 yt = ylim(1):ypad:ylim(2);
 ytl = {ylim(1), '', (ylim(1) + ylim(2)) / 2, '', ylim(2)};
@@ -361,8 +504,8 @@ set(gca, 'XTick', x, 'YTick', yt, 'YTickLabel', ytl, ...
     'FontSize', 20,'LineWidth', 1, 'TickDir', 'out');
 box off;
 
-% ylabel('FR');
-ylabel('cm / s');
+ylabel('firing rate');
+% ylabel('cm / s');
 
 %% Two-way (subjects and left/right) anova on SPD/FR
 exp_data_vector = [];
@@ -386,15 +529,14 @@ p = anovan(exp_data_vector, {exp_vector subj_vector}, ...
 figure;
 set(gcf, 'Position', [204 377 1368 524]);
 
-data = SPD;
-dt = 1;
+data = Q;
 for type_i = 1:2
     for sess_i = 1:length(data)
         if type_i == 1
                 data_concat = [data{sess_i}.left, data{sess_i}.right];
-                mean_data{type_i}{sess_i} = mean(data_concat(:)) / dt;
+                mean_data{type_i}{sess_i} = mean(data_concat(:));
         else
-            mean_data{type_i}{sess_i} = (mean(data{sess_i}.right(:)) - mean(data{sess_i}.left(:))) / dt;
+            mean_data{type_i}{sess_i} = (mean(data{sess_i}.right(:)) - mean(data{sess_i}.left(:)));
         end
     end
     
@@ -414,8 +556,13 @@ for type_i = 1:2
     plot_matrix(cfg_plot, out_data_diff{type_i});
 end
 
+%% Compute hypertransform z-score
+data = Q;
+[actual_dists_mat, id_dists_mat, sf_dists_mat] = predict_with_shuffles([], data, @predict_with_L_R);
+[z_score_m] = calculate_common_metrics([], actual_dists_mat, id_dists_mat, sf_dists_mat);
+
 %% Compute correlation coefficent with hypertransform z-score matrix
-type_i = 1;
+type_i = 2;
 keep_idx = ~isnan(out_data_diff{type_i});
 [R, P] = corrcoef(out_data_diff{type_i}(keep_idx), z_score_m.out_zscore_mat(keep_idx))
 
