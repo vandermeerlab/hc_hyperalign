@@ -26,7 +26,7 @@ for d_i = 1:length(ex_datas)
     colorbar;
     caxis([0, 20]);
     set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 12);
-    ylabel('Cells');
+    ylabel('neuron');
     title(themes{d_i});
 end
 
@@ -43,6 +43,7 @@ end
 %% HT prediction in various simulations.
 x_limits = [-6.5, 6.5];
 x_tick = -6:6;
+xtick_label = {-6, 6};
 binsizes = 0.5;
 
 cfg_plot = [];
@@ -73,6 +74,7 @@ for d_i = 1:length(datas)
 
         cfg_plot.xlim = x_limits;
         cfg_plot.xtick = x_tick;
+        cfg_plot.xtick_label = xtick_label;
         cfg_plot.binsize = binsizes;
         cfg_plot.ax = this_ax;
         cfg_plot.insert_zero = 1; % plot zero xtick
@@ -93,13 +95,13 @@ for d_i = 1:length(datas)
         for iter_i = 1:iter_len
             data_acr_iters{sess_i}{iter_i} = data{iter_i}{sess_i};
         end
-%         PV_coefs_acr_iters = calculate_PV_coefs(data_acr_iters{sess_i});
-%         mean_PV_coefs_acr_iters{sess_i} = mean(cat(3, PV_coefs_acr_iters{:}), 3);
+        PV_coefs_acr_iters = calculate_PV_coefs(data_acr_iters{sess_i});
+        mean_PV_coefs_acr_iters{sess_i} = mean(cat(3, PV_coefs_acr_iters{:}), 3);
 
         cell_coefs_acr_iters = calculate_cell_coefs(data_acr_iters{sess_i});
         mean_cell_coefs_acr_iters{sess_i} = mean(cat(3, cell_coefs_acr_iters{:}), 3);
     end
-%     PV_coefs{d_i} = mean_PV_coefs_acr_iters;
+    PV_coefs{d_i} = mean_PV_coefs_acr_iters;
     cell_coefs{d_i} = cell2mat(mean_cell_coefs_acr_iters);
 end
 

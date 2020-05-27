@@ -83,8 +83,8 @@ for d_i = 1:length(datas)
     
 %     imagesc(max_fields); colorbar;
     set(gca,'YDir','normal');
-    xlabel('Left');
-    ylabel('Right');
+    xlabel('L');
+    ylabel('R');
 end
 
 %% Plotting source and target (ordered by L of source)

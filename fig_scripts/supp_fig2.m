@@ -23,17 +23,25 @@ datas = {Q, TC};
 
 x_limits = {[-6.5, 6.5], [-5.05e5, 5.05e5], [0, 1]}; % two rows, three columns in figure
 x_tick = {-6:6,-5e5:1.25e5:5e5, 0:0.2:1};
-xtick_labels = {{-6, 6}, {sprintf('-4\\times10^{%d}', 5), sprintf('5\\times10^{%d}', 5)}, {0, 1}};
+xtick_labels = {{-6, 6}, {sprintf('-5\\times10^{%d}', 5), sprintf('5\\times10^{%d}', 5)}, {0, 1}};
 binsizes = [1, 7.5e4, 0.1]; % for histograms
+
+% Hard to deal with value on the limit, ex: a lot of ones in proportion
+% Workaround: Make them into 0.9999, only for visualization purpose
+keep_idx = ~isnan(proportion.out_actual_sf_mat);
+proportion_mat_wh = min(proportion_wh.out_actual_sf_mat(keep_idx), 0.9999);
+proportion_mat = min(proportion.out_actual_sf_mat(keep_idx), 0.9999);
+proportion_mat_pca = min(proportion_pca.out_actual_sf_mat(keep_idx), 0.9999);
+
 
 all_hist_colors = {{colors.wh.hist}, {colors.HT.hist, colors.pca.hist}};
 all_fit_colors = {{colors.wh.fit}, {colors.HT.hist, colors.pca.hist}};
 all_matrix_objs = {{{z_score_wh.out_zscore_mat}, ...
         {mean_shuffles_wh.out_actual_mean_sf}, ...
-        {proportion_wh.out_actual_sf_mat}}, ...
+        {proportion_mat_wh}}, ...
         {{z_score.out_zscore_mat, z_score_pca.out_zscore_mat}, ...
         {mean_shuffles.out_actual_mean_sf, mean_shuffles_pca.out_actual_mean_sf}, ...
-        {proportion.out_actual_sf_mat, proportion_pca.out_actual_sf_mat}}};
+        {proportion_mat, proportion_mat_pca}}};
 
 
 for d_i = 1:length(datas) % one row each for Withholding (Carey Q), HT and PCA (Caret TC)

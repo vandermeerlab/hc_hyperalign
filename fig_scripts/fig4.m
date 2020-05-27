@@ -33,7 +33,7 @@ for d_i = 1:length(ex_datas)
     colorbar;
     caxis([0, 20]);
     set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 12);
-    ylabel('Cells');
+    ylabel('neuron');
     title(themes{d_i});
 end
 
@@ -51,6 +51,7 @@ end
 %% HT prediction in various simulations.
 x_limits = [-6.5, 6.5];
 x_tick = -6:6;
+xtick_label = {-6, 6};
 binsizes = 0.5;
 
 cfg_plot = [];
@@ -82,6 +83,7 @@ for d_i = 1:length(datas)
 
         cfg_plot.xlim = x_limits;
         cfg_plot.xtick = x_tick;
+        cfg_plot.xtick_label = xtick_label;
         cfg_plot.binsize = binsizes;
         cfg_plot.ax = this_ax;
         cfg_plot.insert_zero = 1; % plot zero xtick

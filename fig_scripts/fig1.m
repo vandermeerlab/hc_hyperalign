@@ -100,5 +100,3 @@ imagesc(pro_Q_right);
 ylabel('neuron');
 xlabel('time');
 set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 24);
-
-% Summary of main results
