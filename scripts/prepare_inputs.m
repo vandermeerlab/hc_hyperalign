@@ -6,10 +6,6 @@ cfg_data.removeInterneurons = 1;
 cfg_data.normalization = 'none';
 [Q, int_idx] = prepare_all_Q(cfg_data);
 
-% Remove cells that are significantly correlated between L and R.
-% cfg_data.removeCorrelations = 'pos';
-% Q = remove_corr_cells(Q, cfg_data.removeCorrelations);
-
 %% Get Carey normalized Q inputs. (supp_fig_3)
 cfg_data = [];
 cfg_data.use_adr_data = 0;
