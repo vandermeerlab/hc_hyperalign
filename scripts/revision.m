@@ -133,6 +133,38 @@ for p_i = 1:length(data)
     end
 end
 
+%% Visualize Principal components for example sessions
+figure;
+set(gcf, 'Position', [37 154 1644 794]);
+
+data = Q;
+NumComponents = 10;
+ex_sess_idx = [5, 14];
+for s_i = 1:length(ex_sess_idx)
+    sess_idx = ex_sess_idx(s_i);
+    example_data = data{sess_idx};
+    pca_input = [example_data.left, example_data.right];
+    pca_mean = mean(pca_input, 2);
+    pca_input = pca_input - pca_mean;
+    [eigvecs] = pca_egvecs(pca_input, NumComponents);
+    ex_pc_idx = [1, 5, 10];
+    titles = {'1st PC', '5th PC', '10th PC'};
+    for ev_i = 1:length(ex_pc_idx)
+        pc_idx = ex_pc_idx(ev_i);
+        proj_x = pca_project(pca_input, eigvecs(:, pc_idx));
+        recon_x = eigvecs(:, pc_idx) * proj_x + pca_mean;
+        % Plot reconstrcuted PCs
+        subplot(2, 3, (s_i-1)*3 + ev_i)
+        imagesc(recon_x)
+        colorbar;
+        set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 20);
+        ylabel('neuron');
+        if s_i == 1
+            title(titles{ev_i});
+        end
+    end
+end
+
 %% FR across time/locations (raw and normalized) for each session
 data = TC;
 
