@@ -32,7 +32,7 @@ function [z_score, mean_shuffles, proportion, M_ID] = calculate_common_metrics(c
     z_score.out_zscore_mat = out_zscore_mat;
     z_score.out_zscore_prop = sum(sum(out_zscore_mat < 0)) / sum(sum(~isnan(out_zscore_mat)));
     % Mean and SEM
-    z_score.out_median = nanmedian(out_zscore_mat(:));
+    z_score.out_mean = nanmean(out_zscore_mat(:));
     z_score.out_sem = nanstd(out_zscore_mat(:)) / sqrt(n_subjs * (n_subjs - 1));
 
     % Signed rank test vs. 0 (two tailed)
@@ -48,7 +48,7 @@ function [z_score, mean_shuffles, proportion, M_ID] = calculate_common_metrics(c
     mean_shuffles.sr_p = signrank(out_actual_mean_sf(:));
     
     % Mean and SEM
-    mean_shuffles.out_median = nanmedian(out_actual_mean_sf(:));
+    mean_shuffles.out_mean = nanmean(out_actual_mean_sf(:));
     mean_shuffles.out_sem = nanstd(out_actual_mean_sf(:)) / sqrt(n_subjs * (n_subjs - 1));
 
     % Normalize into 0 to 1

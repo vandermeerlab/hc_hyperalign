@@ -31,17 +31,16 @@ binsizes = [1, 7.5e4, 0.1]; % for histograms
 keep_idx = ~isnan(proportion.out_actual_sf_mat);
 proportion_mat_wh = min(proportion_wh.out_actual_sf_mat(keep_idx), 0.9999);
 proportion_mat = min(proportion.out_actual_sf_mat(keep_idx), 0.9999);
-proportion_mat_pca = min(proportion_pca.out_actual_sf_mat(keep_idx), 0.9999);
 
 
-all_hist_colors = {{colors.wh.hist}, {colors.HT.hist, colors.pca.hist}};
-all_fit_colors = {{colors.wh.fit}, {colors.HT.hist, colors.pca.hist}};
+all_hist_colors = {{colors.wh.hist}, {colors.HT.hist}};
+all_fit_colors = {{colors.wh.fit}, {colors.HT.hist}};
 all_matrix_objs = {{{z_score_wh.out_zscore_mat}, ...
         {mean_shuffles_wh.out_actual_mean_sf}, ...
         {proportion_mat_wh}}, ...
-        {{z_score.out_zscore_mat, z_score_pca.out_zscore_mat}, ...
-        {mean_shuffles.out_actual_mean_sf, mean_shuffles_pca.out_actual_mean_sf}, ...
-        {proportion_mat, proportion_mat_pca}}};
+        {{z_score.out_zscore_mat}, ...
+        {mean_shuffles.out_actual_mean_sf}, ...
+        {proportion_mat}}};
 
 
 for d_i = 1:length(datas) % one row each for Withholding (Carey Q), HT and PCA (Caret TC)
@@ -75,19 +74,53 @@ end
 
 set(gcf, 'Position', [306 209 1255 746]);
 
-%% Stats of HT vs. PCA-only
+%% HT vs. PCA-only in Carey TC
+datas = {TC};
 
-%% Z-score of HT vs PCA-only in Carey TC
-z_score_ht_less_pca = sum(sum(z_score.out_zscore_mat <= z_score_pca.out_zscore_mat))
-pair_count = sum(sum(~isnan(z_score.out_zscore_mat)))
-prop_ht_less_pca = z_score_ht_less_pca / pair_count
-calculate_bino_p(z_score_ht_less_pca, pair_count, 0.5)
+x_limits = {[0, 2*1e5]};
+x_tick = {0:20000:2*1e5};
+xtick_labels = {{0, sprintf('2\\times10^{%d}', 5)}};
+binsizes = [30000]; % for histograms
 
-%% Mean of HT vs PCA-only in Carey TC
-mean_ht_less_pca = sum(sum(mean_shuffles.out_actual_mean_sf <= mean_shuffles_pca.out_actual_mean_sf))
-pair_count = sum(sum(~isnan(mean_shuffles.out_actual_mean_sf)))
-prop_ht_less_pca = mean_ht_less_pca / pair_count
-calculate_bino_p(mean_ht_less_pca, pair_count, 0.5)
+cfg_plot = [];
+cfg_plot.hist_colors = {colors.HT.hist, colors.pca.hist};
+cfg_plot.fit_colors = {colors.HT.fit, colors.pca.fit};
+
+bino_ps = zeros(length(datas), 1);
+signrank_ps = zeros(length(datas), 1);
+prop_HT_PCA = zeros(length(datas), 1);
+mean_diff_HT_PCA = zeros(length(datas), 1);
+sem_diff_HT_PCA = zeros(length(datas), 1);
+
+for d_i = 1:length(datas)
+    cfg_metric = [];
+    cfg_metric.use_adr_data = 0;
+    
+    out_actual_dists = set_withsubj_nan(cfg_metric, actual_dists_mat);
+    out_actual_dists_pca = set_withsubj_nan(cfg_metric, actual_dists_mat_pca);
+    diff_HT_PCA = out_actual_dists - out_actual_dists_pca;
+    pair_count = sum(sum(~isnan(diff_HT_PCA)));
+    
+    matrix_obj = {out_actual_dists, out_actual_dists_pca};
+    bino_ps(d_i) = calculate_bino_p(sum(sum(out_actual_dists <= out_actual_dists_pca)), sum(sum(~isnan(out_actual_dists))), 0.5);;
+    signrank_ps(d_i) = signrank(matrix_obj{1}(:),  matrix_obj{2}(:));
+    prop_HT_PCA(d_i) = sum(sum(diff_HT_PCA < 0)) / pair_count;
+    mean_diff_HT_PCA(d_i) = nanmean(diff_HT_PCA(:));
+    sem_diff_HT_PCA(d_i) = nanstd(diff_HT_PCA(:)) / sqrt(4 * 3);
+    
+    this_ax = [];
+
+    cfg_plot.xlim = x_limits{d_i};
+    cfg_plot.xtick = x_tick{d_i};
+    cfg_plot.xtick_label = xtick_labels{d_i};
+    cfg_plot.binsize = binsizes(d_i);
+    cfg_plot.ax = this_ax;
+    cfg_plot.insert_zero = 0; % plot zero xtick
+    cfg_plot.fit = 'vline'; % 'gauss', 'kernel', 'vline' or 'none (no fit)
+    cfg_plot.plot_vert_zero = 0; % plot vertical dashed line at 0
+
+    plot_hist2(cfg_plot, matrix_obj); % ht, then pca
+end
 
 %% Calculate errors across locations/time
 cfg_pre = [];
