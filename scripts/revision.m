@@ -3,90 +3,6 @@ rng(mean('hyperalignment'));
 colors = get_hyper_colors();
 sub_ids = get_sub_ids_start_end();
 
-%% Plot some example data L and R with predicitons (ordered by L of source).
-data = Q;
-[~, ~, predicted_Q_mat] = predict_with_L_R([], data);
-out_predicted_Q_mat = set_withsubj_nan([], predicted_Q_mat);
-w_len = size(data{1}.left, 2);
-
-figure;
-set(gcf, 'Position', [540 71 1139 884]);
-
-ex_sess_idx = [2, 5];
-for s_i = 1:length(ex_sess_idx)
-    sess_idx = ex_sess_idx(s_i);
-    example_data = data{sess_idx};
-    example_data.predict = [out_predicted_Q_mat{6, sess_idx}(:, w_len+1:end), ...
-        out_predicted_Q_mat{9, sess_idx}(:, w_len+1:end), ...
-        out_predicted_Q_mat{15, sess_idx}(:, w_len+1:end)];
-    
-    [~, max_idx] = max(example_data.left, [], 2);
-    [~, sorted_idx] = sort(max_idx);
-    
-    subplot(2, 1, s_i)
-    imagesc([example_data.left(sorted_idx, :), example_data.right(sorted_idx, :), example_data.predict(sorted_idx, :)]);
-    colorbar;
-    caxis([0, 50]);
-    set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 20);
-    ylabel('neuron');
-end
-
-%% Plot left vs. right fields for both actual and predicted data
-data = Q;
-[~, ~, predicted_Q_mat] = predict_with_L_R([], data);
-out_predicted_Q_mat = set_withsubj_nan([], predicted_Q_mat);
-w_len = size(data{1}.left, 2);
-
-figure;
-set(gcf, 'Position', [537 71 533 884]);
-datas = {Q, out_predicted_Q_mat};
-exp_cond = {'actual', 'predicted'};
-for d_i = 1:length(datas)
-    data = datas{d_i};
-    max_fields = zeros(w_len, w_len);
-    neu_w_fields_idx = cell(size(data));
-    left_only_count = 0;
-    right_only_count = 0;
-    for sess_i = 1:length(data(:))
-        if d_i == 1
-            Q_sess = [data{sess_i}.left, data{sess_i}.right];
-        else
-            Q_sess = out_predicted_Q_mat{sess_i};
-        end
-        if ~isnan(Q_sess)
-            for neu_i = 1:size(Q_sess, 1)
-                FR_thres = 5;
-                [L_max_v, max_L_idx] = max(Q_sess(neu_i, 1:w_len));
-                [R_max_v, max_R_idx] = max(Q_sess(neu_i, w_len+1:end));
-
-                FR_left_same = abs(Q_sess(neu_i, 1:w_len) - L_max_v) < 1;
-                FR_right_same = abs(Q_sess(neu_i, w_len+1:end) - R_max_v) < 1;
-
-                if L_max_v > FR_thres && R_max_v > FR_thres && ~all(FR_left_same) && ~all(FR_right_same)
-                    max_fields(max_L_idx, max_R_idx) = max_fields(max_L_idx, max_R_idx) + 1;
-                    neu_w_fields_idx{sess_i} = [neu_w_fields_idx{sess_i}, neu_i];
-                elseif L_max_v > FR_thres && ~all(FR_left_same)
-                    left_only_count = left_only_count + 1;
-                elseif R_max_v > FR_thres && ~all(FR_right_same)
-                    right_only_count = right_only_count + 1;
-                end
-            end
-        end
-    end
-    
-    max_fields = max_fields / sum(sum(max_fields));
-    cfg_plot = [];
-    cfg_plot.ax = subplot(2, 1, d_i);
-    cfg_plot.fs = 20;
-    plot_matrix(cfg_plot, max_fields);
-    title(exp_cond{d_i});
-    
-%     imagesc(max_fields); colorbar;
-    set(gca,'YDir','normal');
-    xlabel('L');
-    ylabel('R');
-end
-
 %% Plotting source and target (ordered by L of source)
 data = Q;
 [~, ~, predicted_Q_mat] = predict_with_L_R([], data);
@@ -282,114 +198,6 @@ for i = 1:2
     xticklabels(scaling_factors);
     xlabel('Scale'); ylabel('Error in Q space')
 end
-
-%% FR left actual, right (actual, predicted and differences)
-data = Q;
-
-FR_acr_sess.left = [];
-FR_acr_sess.right = [];
-for i = 1:length(data)
-    % Make data (Q) into Hz first
-    data{i}.left = data{i}.left;
-    data{i}.right = data{i}.right;
-    
-    FR_acr_sess.left = [FR_acr_sess.left; data{i}.left];
-    FR_acr_sess.right = [FR_acr_sess.right; data{i}.right];
-end
-
-w_len = size(data{1}.left, 2);
-
-[~, ~, predicted_Q_mat] = predict_with_L_R([], data);
-out_predicted_Q_mat = set_withsubj_nan([], predicted_Q_mat);
-
-FR_acr_sess.predicted = [];
-FR_data = out_predicted_Q_mat;
-for d_i = 1:length(FR_data)
-    target_FR = FR_data(:, d_i);
-    target_FR_predicted = [];
-    for t_i = 1:length(target_FR)
-        if ~isnan(target_FR{t_i})
-            FR_predicted = target_FR{t_i}(:, w_len+1:end);
-%             % Note that sometimes predicted data can have negative FR.
-%             % Workaround here is rescale the prediction as in actual data.
-%             FR_pre_scale = zeros(size(FR_predicted));
-%             min_predict = min(FR_predicted, [], 2);
-%             max_predict = max(FR_predicted, [], 2);
-%             min_actual = min(data{d_i}.right, [], 2);
-%             max_actual = max(data{d_i}.right, [], 2);
-%             for n_i = 1:size(FR_predicted, 1)
-%                 if min_actual(n_i) == 0 && max_actual(n_i) == 0
-%                     FR_pre_scale(n_i, :) = zeros(size(FR_pre_scale(n_i, :)));
-%                 else
-%                     FR_pre_scale(n_i, :) = rescale(FR_predicted(n_i, :), min_actual(n_i), max_actual(n_i));
-%                 end
-%             end
-            target_FR_predicted = cat(3, target_FR_predicted, FR_predicted);
-        end
-    end
-    FR_acr_sess.predicted = [FR_acr_sess.predicted; mean(target_FR_predicted, 3)];
-end
-    
-% FR_acr_sess.predicted = avg_acr_predictions(out_predicted_Q_mat, w_len);
-% 
-% [~, ~, ~, sf_Q_mat] = predict_with_shuffles([], data, @predict_with_L_R);
-% n_shuffles = size(sf_Q_mat, 3);
-% FR_acr_sess.sf_predicted = zeros([size(FR_acr_sess.predicted), n_shuffles]);
-% for s_i = 1:n_shuffles
-%     out_sf_Q_mat(:, :, s_i) = set_withsubj_nan([], sf_Q_mat(:, :, s_i));c
-%     FR_acr_sess.sf_predicted(:, :, s_i) = avg_acr_predictions(out_sf_Q_mat(:, :, s_i), w_len);
-% end
-% FR_acr_sess.sf_predicted = mean(FR_acr_sess.sf_predicted, 3);
-
-%% Plot FR (diff) across time/locations
-exp_cond = {'L (actual)', 'R (actual)', 'R (actual vs. predicted)', 'R (predicted)'};
-FR_data_plots = {FR_acr_sess.left, FR_acr_sess.right, FR_acr_sess.predicted - FR_acr_sess.right, ...
-    FR_acr_sess.predicted};
-ylabs = {'firing rate', 'firing rate', 'difference', 'firing rate'};
-dy = 0.5;
-ylims = {[0, 2], [0, 2], [-1, 1], [0, 2]};
-
-set(gcf, 'Position', [560 80 1020 868]);
-
-for d_i = 1:length(FR_data_plots)
-    mean_across_w = mean(FR_data_plots{d_i}, 1);
-%     std_across_w = std(FR_data_plots{d_i}, 1);
-
-    subplot(2, 2, d_i);
-
-    x = 1:length(mean_across_w);
-    xpad = 1;
-    ylim = ylims{d_i};
-
-    if d_i == 3
-        h1 = plot(x, mean_across_w, 'k--', 'LineWidth', 1);
-    elseif d_i == 4
-        h1 = plot(x, mean_across_w, 'Color', [198/255 113/255 113/255], ...
-            'LineStyle', '--', 'LineWidth', 1);
-    else
-        h1 = plot(x, mean_across_w, '-k', 'LineWidth', 1);
-    end
-    if d_i == 3
-        hold on;
-        plot([x(1)-xpad x(end)+xpad], [0 0], '-k', 'LineWidth', 0.75, 'Color', [0.7 0.7 0.7]);
-    elseif d_i == 4
-        hold on;
-        h2 = plot(x, mean(FR_data_plots{2}, 1), '-k', 'LineWidth', 1);
-        lgd = legend('R predicted','R actual');
-        lgd.FontSize = 16;
-    end
-    hold on;
-    yt = ylim(1):dy:ylim(2);
-    ytl = {ylim(1), '', (ylim(1) + ylim(2)) / 2, '', ylim(2)};
-
-    set(gca, 'XTick', [], 'YTick', yt, 'YTickLabel', ytl, ...
-    'XLim', [x(1) x(end)], 'YLim', [ylim(1) ylim(2)], 'FontSize', 12, 'LineWidth', 1,...
-    'TickDir', 'out', 'FontSize', 20);
-    box off;
-    xlabel('time'); ylabel(ylabs{d_i});
-    title(exp_cond{d_i});
-end
-
 
 %% Test: FR left actual, right (actual, predicted and differences) for each session
 data = Q;
@@ -615,3 +423,165 @@ cfg_cell_plot.ylim = [50, 150];
 cfg_cell_plot.dy = 25;
 
 [mean_spds, sem_spds] = plot_cell_by_cell(cfg_cell_plot, exp_spd, exp_cond);
+
+%% Compare putative independent case (from Carey) with Carey
+win_len = 48;
+sub_ids_start = sub_ids.start.carey;
+sub_ids_end = sub_ids.end.carey;
+n_subjs = length(sub_ids_start);
+
+%% Create putatively independent Q
+Q_puta_int = cell(1, length(Q));
+n_units = cellfun(@(x) size(x.left, 1), Q);
+
+all_neurons_concat = cell(1, n_subjs);
+for s_i = 1:n_subjs
+    out_subj_Q = Q;
+    out_subj_Q(sub_ids_start(s_i):sub_ids_end(s_i)) = [];
+    all_neurons = cellfun(@(x) [x.left; x.right], out_subj_Q, 'UniformOutput', false);
+    all_neurons_concat{s_i} = vertcat(all_neurons{:});
+end
+
+% Shuffle Q indices so that session 1 doesn't always pick neuorns first, etc.
+shuffle_Q_idx = randperm(length(Q));
+for i = 1:length(Q)
+    Q_idx = shuffle_Q_idx(i);
+    for s_i = 1:n_subjs
+        if Q_idx >= sub_ids_start(s_i) && Q_idx <= sub_ids_end(s_i)
+            rand_sample_idx = randsample(length(all_neurons_concat{s_i}), n_units(Q_idx));
+            Q_puta_int{Q_idx}.left = all_neurons_concat{s_i}(rand_sample_idx, :);
+            Q_puta_int{Q_idx}.right = Q{Q_idx}.right;
+            % sampling without replacement, if neurons were picked then
+            % moved out, avoid repetiion.
+            all_neurons_concat{s_i}(rand_sample_idx, :) = [];
+        end
+    end
+end
+
+% Shift shuffles
+% for r_i = 1:length(Q_puta_int{i}.right)
+%     [shuffle_indices] = shift_shuffle(win_len);
+%     R_row = Q_puta_int{i}.right(r_i, :);
+%     Q_puta_int{i}.right(r_i, :) = R_row(shuffle_indices);
+% end
+
+imagesc([Q_puta_int{1}.left, Q_puta_int{1}.right])
+
+%%
+datas = {Q, Q_puta_int};
+themes = {'Carey', 'Putative Int.'};
+
+%% Hyperalignment procedure
+for d_i = 1:length(datas)
+    data = datas{d_i};
+    [actual_dists_mat{d_i}, id_dists_mat{d_i}, sf_dists_mat{d_i}] = predict_with_shuffles([], data, @predict_with_L_R);
+end
+
+%% HT prediction in Carey and Putative Int.
+x_limits = [0, 1e5];
+x_tick = 0:10000:1e5;
+xtick_labels = {0, sprintf('1\\times10^{%d}', 5)};
+binsizes = 10000;
+
+cfg_plot = [];
+cfg_plot.hist_colors = {colors.HT.hist, colors.ID.hist};
+cfg_plot.fit_colors = {colors.HT.fit, colors.ID.fit};
+
+
+cfg_metric = [];
+cfg_metric.use_adr_data = 0;
+out_actual_dists = set_withsubj_nan(cfg_metric, actual_dists_mat{1});
+out_actual_dists_ind = set_withsubj_nan(cfg_metric, actual_dists_mat{2});
+
+matrix_obj = {out_actual_dists, out_actual_dists_ind};
+bino_ps = calculate_bino_p(sum(sum(out_actual_dists <= out_actual_dists_ind)), sum(sum(~isnan(out_actual_dists))), 0.5);;
+signrank_ps = signrank(matrix_obj{1}(:),  matrix_obj{2}(:));
+this_ax = subplot(2, 3, 1);
+
+cfg_plot.xlim = x_limits;
+cfg_plot.xtick = x_tick;
+cfg_plot.xtick_label = xtick_labels;
+cfg_plot.binsize = binsizes;
+cfg_plot.ax = this_ax;
+cfg_plot.insert_zero = 0; % plot zero xtick
+cfg_plot.fit = 'vline'; % 'gauss', 'kernel', 'vline' or 'none (no fit)
+cfg_plot.plot_vert_zero = 0; % plot vertical dashed line at 0
+
+plot_hist2(cfg_plot, matrix_obj); % ht, then pca
+
+
+set(gcf, 'Position', [316 253 1160 653]);
+
+%% Hypertransform in Putative Int.
+x_limits = [-6.5, 6.5];
+x_tick = -6:6;
+xtick_labels = {-6, 6};
+binsizes = 1;
+
+cfg_plot = [];
+cfg_plot.hist_colors = {colors.HT.hist};
+cfg_plot.fit_colors = {colors.HT.fit};
+
+cfg_metric = [];
+cfg_metric.use_adr_data = 0;
+[z_score, mean_shuffles, proportion] = calculate_common_metrics(cfg_metric, ...
+    actual_dists_mat{2}, id_dists_mat{2}, sf_dists_mat{2});
+
+this_ax = subplot(2, 3, 2);
+matrix_obj = {z_score.out_zscore_mat};
+
+cfg_plot.xlim = x_limits;
+cfg_plot.xtick = x_tick;
+cfg_plot.xtick_label = xtick_labels;
+cfg_plot.binsize = binsizes;
+cfg_plot.ax = this_ax;
+cfg_plot.insert_zero = 1; % plot zero xtick
+cfg_plot.plot_vert_zero = 1;
+cfg_plot.fit = 'vline'; % 'gauss', 'kernel', 'vline' or 'none (no fit)
+
+plot_hist2(cfg_plot, matrix_obj); % ht, then pca
+
+%% Cell-by-cell correlation across subjects
+for d_i = 1:length(datas)
+    cell_coefs{d_i} = cell2mat(calculate_cell_coefs(datas{d_i}));
+end
+
+cfg_cell_plot = [];
+cfg_cell_plot.ax = subplot(2, 3, 3);
+cfg_cell_plot.num_subjs = [length(sub_ids.start.carey), length(sub_ids.start.adr)];
+cfg_cell_plot.ylim = [-0.2, 0.6];
+
+[mean_coefs, sem_coefs_types] = plot_cell_by_cell(cfg_cell_plot, cell_coefs, themes);
+
+% Wilcoxon rank sum test for Carey and Putative Int.
+ranksum(cell_coefs{1}, cell_coefs{2})
+
+% Wilcoxon signed rank test for Carey vs 0
+signrank(cell_coefs{1})
+%% Population Vector analysis
+for d_i = 1:length(datas)
+    data = datas{d_i};
+    PV_coefs{d_i} = calculate_PV_coefs(data);
+end
+
+%% Plot Population Vector correlation coefficents matrix
+cfg_pv_plot = [];
+cfg_pv_plot.clim = [-0.2 1];
+for d_i = 1:length(datas)
+    cfg_pv_plot.ax = subplot(2, 3, 3 + d_i);
+    plot_PV(cfg_pv_plot, PV_coefs{d_i});
+end
+
+%% Plot off-diagonal of Population Vector correlation
+cfg_off_pv_plot = [];
+cfg_off_pv_plot.ax = subplot(2, 3, 6);
+cfg_off_pv_plot.num_subjs = [length(sub_ids.start.carey), length(sub_ids.start.adr)];
+cfg_off_pv_plot.ylim = [-0.3, 0.5];
+
+for d_i = 1:length(datas)
+    off_diag_PV_coefs{d_i} = get_off_dig_PV(PV_coefs{d_i});
+end
+[mean_coefs, sem_coefs_types] = plot_off_diag_PV(cfg_off_pv_plot, off_diag_PV_coefs, themes);
+
+% Wilcoxon signed rank test for Carey and Putative Int. off-diagonal
+ranksum(off_diag_PV_coefs{1}(:), off_diag_PV_coefs{2}(:))
