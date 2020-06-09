@@ -30,8 +30,6 @@ for d_i = 1:length(ex_datas)
     title(themes{d_i});
 end
 
-set(gcf, 'Position', [199 42 1257 954]);
-
 %% Hyperalignment procedure
 for d_i = 1:length(datas)
     data = datas{d_i};
@@ -84,6 +82,8 @@ for d_i = 1:length(datas)
 
     end
 end
+
+set(gcf, 'Position', [199 42 1257 954]);
 
 %% Population Vector correlation and Cell-by-cell correlation analysis
 for d_i = 1:length(datas)

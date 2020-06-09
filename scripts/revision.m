@@ -63,8 +63,9 @@ for s_i = 1:length(ex_sess_idx)
     pca_mean = mean(pca_input, 2);
     pca_input = pca_input - pca_mean;
     [eigvecs] = pca_egvecs(pca_input, NumComponents);
-    ex_pc_idx = [1, 5, 10];
-    titles = {'1st PC', '5th PC', '10th PC'};
+    ex_pc_idx = [1, 2, 3];
+    titles = {'1st PC', '2nd PC', '3rd PC'};
+%     titles = {'4th PC', '5th PC', '6th PC'};
     for ev_i = 1:length(ex_pc_idx)
         pc_idx = ex_pc_idx(ev_i);
         proj_x = pca_project(pca_input, eigvecs(:, pc_idx));
@@ -425,7 +426,10 @@ cfg_cell_plot.dy = 25;
 [mean_spds, sem_spds] = plot_cell_by_cell(cfg_cell_plot, exp_spd, exp_cond);
 
 %% Compare putative independent case (from Carey) with Carey
-win_len = 48;
+rng(mean('putative-independent'));
+colors = get_hyper_colors();
+
+sub_ids = get_sub_ids_start_end();
 sub_ids_start = sub_ids.start.carey;
 sub_ids_end = sub_ids.end.carey;
 n_subjs = length(sub_ids_start);
@@ -433,6 +437,7 @@ n_subjs = length(sub_ids_start);
 %% Create putatively independent Q
 Q_puta_int = cell(1, length(Q));
 n_units = cellfun(@(x) size(x.left, 1), Q);
+win_len = 48;
 
 all_neurons_concat = cell(1, n_subjs);
 for s_i = 1:n_subjs
@@ -450,6 +455,15 @@ for i = 1:length(Q)
         if Q_idx >= sub_ids_start(s_i) && Q_idx <= sub_ids_end(s_i)
             rand_sample_idx = randsample(length(all_neurons_concat{s_i}), n_units(Q_idx));
             Q_puta_int{Q_idx}.left = all_neurons_concat{s_i}(rand_sample_idx, :);
+            % Shift shuffles
+            for l_i = 1:length(Q_puta_int{Q_idx}.left)
+                if rand() <= 0.5
+                    [shuffle_indices] = shift_shuffle(win_len);
+                    L_row = Q_puta_int{Q_idx}.left(l_i, :);
+                    Q_puta_int{Q_idx}.left(l_i, :) = L_row(shuffle_indices);
+                end
+            end
+            
             Q_puta_int{Q_idx}.right = Q{Q_idx}.right;
             % sampling without replacement, if neurons were picked then
             % moved out, avoid repetiion.
@@ -457,13 +471,6 @@ for i = 1:length(Q)
         end
     end
 end
-
-% Shift shuffles
-% for r_i = 1:length(Q_puta_int{i}.right)
-%     [shuffle_indices] = shift_shuffle(win_len);
-%     R_row = Q_puta_int{i}.right(r_i, :);
-%     Q_puta_int{i}.right(r_i, :) = R_row(shuffle_indices);
-% end
 
 imagesc([Q_puta_int{1}.left, Q_puta_int{1}.right])
 
@@ -477,41 +484,6 @@ for d_i = 1:length(datas)
     [actual_dists_mat{d_i}, id_dists_mat{d_i}, sf_dists_mat{d_i}] = predict_with_shuffles([], data, @predict_with_L_R);
 end
 
-%% HT prediction in Carey and Putative Int.
-x_limits = [0, 1e5];
-x_tick = 0:10000:1e5;
-xtick_labels = {0, sprintf('1\\times10^{%d}', 5)};
-binsizes = 10000;
-
-cfg_plot = [];
-cfg_plot.hist_colors = {colors.HT.hist, colors.ID.hist};
-cfg_plot.fit_colors = {colors.HT.fit, colors.ID.fit};
-
-
-cfg_metric = [];
-cfg_metric.use_adr_data = 0;
-out_actual_dists = set_withsubj_nan(cfg_metric, actual_dists_mat{1});
-out_actual_dists_ind = set_withsubj_nan(cfg_metric, actual_dists_mat{2});
-
-matrix_obj = {out_actual_dists, out_actual_dists_ind};
-bino_ps = calculate_bino_p(sum(sum(out_actual_dists <= out_actual_dists_ind)), sum(sum(~isnan(out_actual_dists))), 0.5);;
-signrank_ps = signrank(matrix_obj{1}(:),  matrix_obj{2}(:));
-this_ax = subplot(2, 3, 1);
-
-cfg_plot.xlim = x_limits;
-cfg_plot.xtick = x_tick;
-cfg_plot.xtick_label = xtick_labels;
-cfg_plot.binsize = binsizes;
-cfg_plot.ax = this_ax;
-cfg_plot.insert_zero = 0; % plot zero xtick
-cfg_plot.fit = 'vline'; % 'gauss', 'kernel', 'vline' or 'none (no fit)
-cfg_plot.plot_vert_zero = 0; % plot vertical dashed line at 0
-
-plot_hist2(cfg_plot, matrix_obj); % ht, then pca
-
-
-set(gcf, 'Position', [316 253 1160 653]);
-
 %% Hypertransform in Putative Int.
 x_limits = [-6.5, 6.5];
 x_tick = -6:6;
@@ -519,15 +491,15 @@ xtick_labels = {-6, 6};
 binsizes = 1;
 
 cfg_plot = [];
-cfg_plot.hist_colors = {colors.HT.hist};
-cfg_plot.fit_colors = {colors.HT.fit};
+cfg_plot.hist_colors = {[198/255 113/255 113/255]};
+cfg_plot.fit_colors = {[198/255 113/255 113/255]};
 
 cfg_metric = [];
 cfg_metric.use_adr_data = 0;
 [z_score, mean_shuffles, proportion] = calculate_common_metrics(cfg_metric, ...
     actual_dists_mat{2}, id_dists_mat{2}, sf_dists_mat{2});
 
-this_ax = subplot(2, 3, 2);
+this_ax = subplot(2, 3, 1);
 matrix_obj = {z_score.out_zscore_mat};
 
 cfg_plot.xlim = x_limits;
@@ -540,6 +512,42 @@ cfg_plot.plot_vert_zero = 1;
 cfg_plot.fit = 'vline'; % 'gauss', 'kernel', 'vline' or 'none (no fit)
 
 plot_hist2(cfg_plot, matrix_obj); % ht, then pca
+ylabel('count');
+
+set(gcf, 'Position', [316 253 1160 653]);
+
+%% HT prediction in Carey vs. Putative Int. in Carey.
+x_limits = [-5e4, 5e4];
+x_tick = -5e4:5000:5e4;
+xtick_labels = {sprintf('-5\\times10^{%d}', 4), sprintf('-5\\times10^{%d}', 4)};
+binsizes = 7500;
+
+cfg_plot = [];
+cfg_plot.hist_colors = {colors.HT.hist};
+cfg_plot.fit_colors = {colors.HT.hist};
+
+
+cfg_metric = [];
+cfg_metric.use_adr_data = 0;
+out_actual_dists = set_withsubj_nan(cfg_metric, actual_dists_mat{1});
+out_actual_dists_ind = set_withsubj_nan(cfg_metric, actual_dists_mat{2});
+
+matrix_obj = {out_actual_dists - out_actual_dists_ind};
+bino_ps = calculate_bino_p(sum(sum(out_actual_dists <= out_actual_dists_ind)), sum(sum(~isnan(out_actual_dists))), 0.5);;
+signrank_ps = signrank(out_actual_dists(:),  out_actual_dists_ind(:));
+this_ax = subplot(2, 3, 2);
+
+cfg_plot.xlim = x_limits;
+cfg_plot.xtick = x_tick;
+cfg_plot.xtick_label = xtick_labels;
+cfg_plot.binsize = binsizes;
+cfg_plot.ax = this_ax;
+cfg_plot.insert_zero = 1; % plot zero xtick
+cfg_plot.plot_vert_zero = 1;
+cfg_plot.fit = 'vline'; % 'gauss', 'kernel', 'vline' or 'none (no fit)
+
+plot_hist2(cfg_plot, matrix_obj); % ht, then pca
+ylabel('count');
 
 %% Cell-by-cell correlation across subjects
 for d_i = 1:length(datas)

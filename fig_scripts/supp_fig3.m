@@ -19,8 +19,6 @@ for d_i = 1:length(datas)
     ylabel('neuron');
 end
 
-set(gcf, 'Position', [67 73 1784 898]);
-
 %% Hyperalignment procedure
 for d_i = 1:length(datas)
     data = datas{d_i};
@@ -30,6 +28,7 @@ end
 %% HT prediction in various normalization.
 x_limits = [-6.5, 6.5];
 x_tick = -6:6;
+xtick_labels = {-6, 6};
 binsizes = [1];
 
 cfg_plot = [];
@@ -47,6 +46,7 @@ for d_i = 1:length(datas)
 
         cfg_plot.xlim = x_limits;
         cfg_plot.xtick = x_tick;
+        cfg_plot.xtick_label = xtick_labels;
         cfg_plot.binsize = binsizes;
         cfg_plot.ax = this_ax;
         cfg_plot.insert_zero = 1; % plot zero xtick
@@ -57,6 +57,8 @@ for d_i = 1:length(datas)
 
     end
 end
+
+set(gcf, 'Position', [67 73 1784 898]);
 
 %% PCA-only procedure
 for d_i = 1:length(datas)
