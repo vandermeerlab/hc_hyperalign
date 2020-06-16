@@ -37,7 +37,6 @@ x_limits = {[-6.5, 6.5], [-2.05e5, 2.05e5], [0, 1]}; % two rows, three columns i
 x_tick = {-6:6, -2e5:5e4:2e5, 0:0.2:1};
 xtick_labels = {{-6, 6}, {sprintf('-2\\times10^{%d}', 5), sprintf('2\\times10^{%d}', 5)}, {0, 1}};
 binsizes = [1, 3e4, 0.1]; % for histograms
->>>>>>> Major updates on figures
 
 cfg_plot = [];
 cfg_plot.hist_colors = {colors.HT.hist};

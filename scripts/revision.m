@@ -476,7 +476,7 @@ imagesc([Q_puta_int{1}.left, Q_puta_int{1}.right])
 
 %%
 datas = {Q, Q_puta_int};
-themes = {'Carey', 'Putative Int.'};
+themes = {'raw', 'resampled ind.'};
 
 %% Hyperalignment procedure
 for d_i = 1:length(datas)
