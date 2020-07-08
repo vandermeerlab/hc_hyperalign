@@ -7,8 +7,6 @@ function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R_wi
     cfg_def.hyperalign_all = false;
     % If shuffled is specified, source session would be identity shuffled.
     cfg_def.shuffled = 0;
-    % Using z-score to decorrelate the absolute firing rate with the later PCA laten variables if not none.
-    cfg_def.normalization = 'none';
     % Use 'all' to calculate a squared error (scalar) between predicted and actual.
     % Use 1 to sum across PCs (or units) and obtain a vector of squared errors.
     cfg_def.dist_dim = 'all';
@@ -17,12 +15,7 @@ function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R_wi
 
     % Project [L, R] to PCA space.
     for p_i = 1:length(Q)
-        if strcmp(cfg.normalization, 'none')
-            pca_input = Q{p_i};
-        else
-            Q_norm{p_i} = normalize_Q(cfg.normalization, Q{p_i});
-            pca_input = Q_norm{p_i};
-        end
+        pca_input = Q{p_i};
         [proj_Q{p_i}, eigvecs{p_i}, pca_mean{p_i}] = perform_pca(pca_input, cfg.NumComponents);
     end
 
@@ -32,12 +25,7 @@ function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R_wi
         for s_i = 1:length(Q)
             shuffle_indices = randperm(size(Q{s_i}.right, 1));
             s_Q{s_i}.right = Q{s_i}.right(shuffle_indices, :);
-            if strcmp(cfg.normalization, 'none')
-                s_pca_input = s_Q{s_i};
-            else
-                s_Q_norm = normalize_Q(cfg.normalization, s_Q{s_i});
-                s_pca_input = s_Q_norm;
-            end
+            s_pca_input = s_Q{s_i};
             [s_proj_Q{s_i}] = perform_pca(s_pca_input, cfg.NumComponents);
         end
     end
@@ -102,11 +90,7 @@ function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R_wi
 
                 p_target = project_back_Q_right;
                 id_p_target = project_back_Q_id_right;
-                if strcmp(cfg.normalization, 'none')
-                    ground_truth = Q{tar_i}.right;
-                else
-                    ground_truth = Q_norm{tar_i}.right;
-                end
+                ground_truth = Q{tar_i}.right;
 
                 % Compare prediction using M with ground truth
                 actual_dist = calculate_dist(cfg.dist_dim, p_target, ground_truth);

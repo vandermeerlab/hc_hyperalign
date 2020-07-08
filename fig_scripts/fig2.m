@@ -6,9 +6,9 @@ colors = get_hyper_colors();
 datas = {Q, adr_Q};
 for d_i = 1:length(datas)
     data = datas{d_i};
-    [actual_dists_mat{d_i}, id_dists_mat{d_i}, sf_dists_mat{d_i}] = predict_with_shuffles([], data, @predict_with_L_R);
+    cfg_shuffle.shuffle_method = 'shift';
+    [actual_dists_mat{d_i}, id_dists_mat{d_i}, sf_dists_mat{d_i}] = predict_with_shuffles(cfg_shuffle, data, @predict_with_L_R);
     [actual_dists_mat_pca{d_i}, id_dists_mat_pca{d_i}] = predict_with_L_R_pca([], data);
-%     [actual_dists_mat_pca{d_i}, id_dists_mat_pca{d_i}, sf_dists_mat_pca{d_i}] = predict_with_shuffles([], data, @predict_with_L_R_pca);
 end
 
 %% Source-target figures in Carey
@@ -33,10 +33,16 @@ end
 set(gcf, 'Position', [316 185 898 721]);
 
 %% Hypertransform in Carey and ADR
-x_limits = {[-6.5, 6.5], [-2.05e5, 2.05e5], [0, 1]}; % two rows, three columns in figure
+x_limits = {[-6.5, 6.5], [-2.05e5, 2.05e5], [0, 1]};
 x_tick = {-6:6, -2e5:5e4:2e5, 0:0.2:1};
 xtick_labels = {{-6, 6}, {sprintf('-2\\times10^{%d}', 5), sprintf('2\\times10^{%d}', 5)}, {0, 1}};
-binsizes = [1, 3e4, 0.1]; % for histograms
+binsizes = [1, 3e4, 0.1];
+if strcmp(cfg_shuffle.shuffle_method, 'shift')
+    x_limits{2} = [-2.05e4, 2.05e4];
+    x_tick{2} = -2e4:5e3:2e4;
+    xtick_labels{2} = {sprintf('-2\\times10^{%d}', 4), sprintf('2\\times10^{%d}', 4)};
+    binsizes(2) = 3e3;
+end
 
 cfg_plot = [];
 cfg_plot.hist_colors = {colors.HT.hist};

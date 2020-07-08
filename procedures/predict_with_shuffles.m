@@ -5,6 +5,7 @@ function [actual_dists_mat, id_dists_mat, sf_dists_mat] = predict_with_shuffles(
     cfg_def.normalization = 'none';
     cfg_def.dist_dim = 'all';
     cfg_def.n_shuffles = 1000;
+    cfg_def.shuffle_method = 'row';
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);
 

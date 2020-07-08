@@ -6,6 +6,9 @@ function [Q_norm] = normalize_Q(normalization, Q)
     elseif strcmp(normalization, 'ind_l2')
         Q_norm.left = row_wise_norm(Q.left);
         Q_norm.right = row_wise_norm(Q.right);
+    elseif strcmp(normalization, 'ind_sub_mean')
+        Q_norm.left = Q.left - mean(Q.left, 2);
+        Q_norm.right = Q.right - mean(Q.right, 2);
     elseif strcmp(normalization, 'concat_Z')
         w_len = size(Q.left, 2);
         Q_norm_concat = zscore([Q.left, Q.right], 0, 2);
