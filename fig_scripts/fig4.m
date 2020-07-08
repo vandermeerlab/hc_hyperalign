@@ -31,7 +31,11 @@ for d_i = 1:length(ex_datas)
     subplot(4, 3, (3*(d_i-1) + 1))
     imagesc([ex_datas{d_i}{1}{1}.left, ex_datas{d_i}{1}{1}.right]);
     colorbar;
-    caxis([0, 20]);
+    if d_i == 4
+        caxis([-10, 20]);
+    else
+        caxis([0, 20]);
+    end
     set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 12);
     ylabel('neuron');
     title(themes{d_i});
