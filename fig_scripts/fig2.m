@@ -148,7 +148,7 @@ xtick_labels = {{-6, 6}, {sprintf('-1\\times10^{%d}', 5), sprintf('1\\times10^{%
 binsizes = [1, 1.5e4, 0.1]; % for histograms
 
 cfg_plot = [];
-cfg_plot.hist_colors = { colors.pca.hist};
+cfg_plot.hist_colors = {colors.pca.hist};
 cfg_plot.fit_colors = {colors.pca.fit};
 
 for d_i = 1:length(datas) % one row each for Carey, ADR
