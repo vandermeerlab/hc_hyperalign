@@ -593,3 +593,25 @@ end
 
 % Wilcoxon signed rank test for Carey and Putative Int. off-diagonal
 ranksum(off_diag_PV_coefs{1}(:), off_diag_PV_coefs{2}(:))
+
+%% Compare shift shuffles and raw shuffles
+data = Q;
+
+shuffle_methods = {'shift', 'row'};
+for d_i = 1:length(shuffle_methods)
+    cfg_shuffle.shuffle_method = shuffle_methods{d_i};
+    [actual_dists_mat{d_i}, id_dists_mat{d_i}, sf_dists_mat{d_i}] = predict_with_shuffles(cfg_shuffle, data, @predict_with_L_R);
+end
+
+%% Stats
+mean_sf = mean(sf_dists_mat{1}, 3) - mean(sf_dists_mat{2}, 3);
+out_mean_sf = set_withsubj_nan([], mean_sf);
+
+% Mean and SEM
+n_subjs = length(sub_ids.start.carey);
+out_mean_sf_mean = nanmean(out_mean_sf(:));
+out_mean_sf_sem = nanstd(out_mean_sf(:)) / sqrt(n_subjs * (n_subjs - 1));
+
+% Signed rank test vs. 0 (two tailed)
+out_mean_sf_sign_rank_p = signrank(out_mean_sf(:));
+out_mean_sf_bino_p = calculate_bino_p(sum(sum(out_mean_sf <= 0)), sum(sum(~isnan(out_mean_sf))), 0.5);
