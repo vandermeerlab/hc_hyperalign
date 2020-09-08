@@ -2,7 +2,7 @@
 cfg_data = [];
 cfg_data.use_adr_data = 0;
 % Fig 2 and supp. fig 2 use removeInterneurons = 0, otherwise 1.
-cfg_data.removeInterneurons = 1;
+cfg_data.removeInterneurons = 0; % WILL'S NOTE: changed this from 1 to 0
 cfg_data.normalization = 'none';
 [Q, int_idx] = prepare_all_Q(cfg_data);
 
@@ -33,7 +33,7 @@ cfg_data.removeInterneurons = 1;
 cfg_data = [];
 cfg_data.only_use_cp = 1;
 % Supp. fig 2 use removeInterneurons = 0, otherwise 1.
-cfg_data.removeInterneurons = 1;
+cfg_data.removeInterneurons = 0; % WILL'S NOTE: changed this from 1 to 0
 cfg_data.normalization = 'none';
 [TC] = prepare_all_TC(cfg_data);
 
