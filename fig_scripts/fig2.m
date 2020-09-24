@@ -6,7 +6,8 @@ colors = get_hyper_colors();
 datas = {Q, adr_Q};
 for d_i = 1:length(datas)
     data = datas{d_i};
-    cfg_shuffle.shuffle_method = 'shift';
+    % Figure S8 uses 'shift', otherwise 'row' shuffle is default.
+    cfg_shuffle.shuffle_method = 'row';
     [actual_dists_mat{d_i}, id_dists_mat{d_i}, sf_dists_mat{d_i}] = predict_with_shuffles(cfg_shuffle, data, @predict_with_L_R);
     [actual_dists_mat_pca{d_i}, id_dists_mat_pca{d_i}] = predict_with_L_R_pca([], data);
 end
