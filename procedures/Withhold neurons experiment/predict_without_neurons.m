@@ -2,10 +2,10 @@ function [new_dist] = predict_without_neurons(cfg_in, Q, source, neurons, target
     % many pieces of this code are copied from predict_with_L_R.m
 
     % "source" and "target" are indices into Q, which currently has 19 different sessions.
-    % "neuron" is an array of indixes into Q{source}, which has 50-150 neurons.
-
-    % 
-    
+    % "neuron" is an index into Q{source}, which may have ~50 neurons.
+    % "actual_dists" gives us the current prediction error for every
+    % source-target pair. We will then withhold the neuron corresponding to
+    % Q{source}(neuron) and see how those prediction errors change.
     
     % do some config file stuff
     cfg_def.dist_dim = 'all';

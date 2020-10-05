@@ -1,25 +1,21 @@
-function [new_dist] = predict_without_neurons(cfg_in, Q, source, neurons, target)
+function [new_dist] = predict_without_neuron(cfg_in, Q, source, neuron, target)
     % many pieces of this code are copied from predict_with_L_R.m
 
     % "source" and "target" are indices into Q, which currently has 19 different sessions.
-    % "neuron" is an array of indixes into Q{source}, which has 50-150 neurons.
-
-    % 
-    
-    
+    % "neuron" is an index into Q{source}, which may have ~50 neurons.
+    % "actual_dists" gives us the current prediction error for every
+    % source-target pair. We will then withhold the neuron corresponding to
+    % Q{source}(neuron) and see how those prediction errors change.
+     
     % do some config file stuff
     cfg_def.dist_dim = 'all';
     cfg_def.NumComponents = 10;
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def, cfg_in, mfun);
     
-    % iterate through the specified neurons, withholding each one
-    neurons = sort(neurons, 'descend');  % sort the neurons in descending order so that when we remove one, it doesn't change the numbering of the next
-    for i = 1:length(neurons)
-        neuron = neurons(i);
-        Q{source}.left(neuron,:)=[]; % TODO see if this can all be done on one line
-        Q{source}.right(neuron,:)=[];
-    end
+    % withhold the specified neuron
+    Q{source}.left(neuron,:)=[];
+    Q{source}.right(neuron,:)=[];
     
     % Project [L, R] to PCA space for all sources
     for p_i = 1:length(Q)

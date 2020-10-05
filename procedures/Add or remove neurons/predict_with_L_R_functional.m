@@ -1,25 +1,13 @@
-function [new_dist] = predict_without_neurons(cfg_in, Q, source, neurons, target)
+function [dist] = predict_with_L_R_functional(cfg_in, Q, source, target)
     % many pieces of this code are copied from predict_with_L_R.m
 
     % "source" and "target" are indices into Q, which currently has 19 different sessions.
-    % "neuron" is an array of indixes into Q{source}, which has 50-150 neurons.
-
-    % 
-    
-    
+     
     % do some config file stuff
     cfg_def.dist_dim = 'all';
     cfg_def.NumComponents = 10;
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def, cfg_in, mfun);
-    
-    % iterate through the specified neurons, withholding each one
-    neurons = sort(neurons, 'descend');  % sort the neurons in descending order so that when we remove one, it doesn't change the numbering of the next
-    for i = 1:length(neurons)
-        neuron = neurons(i);
-        Q{source}.left(neuron,:)=[]; % TODO see if this can all be done on one line
-        Q{source}.right(neuron,:)=[];
-    end
     
     % Project [L, R] to PCA space for all sources
     for p_i = 1:length(Q)
@@ -53,4 +41,4 @@ function [new_dist] = predict_without_neurons(cfg_in, Q, source, neurons, target
     ground_truth = Q{target}.right;
 
     % Compare prediction using M with ground truth
-    new_dist = calculate_dist(cfg.dist_dim, p_target, ground_truth);
+    dist = calculate_dist(cfg.dist_dim, p_target, ground_truth);
