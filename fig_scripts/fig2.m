@@ -6,6 +6,7 @@ colors = get_hyper_colors();
 datas = {Q, adr_Q};
 for d_i = 1:length(datas)
     data = datas{d_i};
+    % Circular shift shuffles for supp_fig 8.
     cfg_shuffle.shuffle_method = 'shift';
     [actual_dists_mat{d_i}, id_dists_mat{d_i}, sf_dists_mat{d_i}] = predict_with_shuffles(cfg_shuffle, data, @predict_with_L_R);
     [actual_dists_mat_pca{d_i}, id_dists_mat_pca{d_i}] = predict_with_L_R_pca([], data);
@@ -30,7 +31,6 @@ for m_i = 1:length(matrix_obj)
 
     plot_matrix(cfg_plot, matrix_obj{m_i});
 end
-set(gcf, 'Position', [316 185 898 721]);
 
 %% Hypertransform in Carey and ADR
 x_limits = {[-6.5, 6.5], [-2.05e5, 2.05e5], [0, 1]};
@@ -90,6 +90,7 @@ for d_i = 1:length(datas) % one row each for Carey, ADR
     end
 end
 
+set(gcf, 'Position', [316 185 898 721]);
 %% HT vs. PCA-only in Carey and ADR
 x_limits = {[0, 2*1e5], [0, 1e5]};
 x_tick = {0:20000:2*1e5, 0:10000:1e5};

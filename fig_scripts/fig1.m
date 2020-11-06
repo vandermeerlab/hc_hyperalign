@@ -1,6 +1,7 @@
 %% Plot example sessions for procedure
 rng(mean('hyperalignment'));
 
+% Pair of 2 and 9 is the highest z-score asymmetry pair.
 sr_i = 2;
 tar_i = 6;
 idx = {sr_i, tar_i};
