@@ -1,9 +1,11 @@
-function [actual_dists_mat, id_dists_mat] = predict_with_L_R_pca(cfg_in, Q)
+function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R_withhold_pca(cfg_in, Q)
     % Perform PCA, and obtain procrustes transformation in PCA space
     % and predict target (trajectory of Q matrix).
-    % The way that this function obtains procrustes is concatenating left(L) and right(R) into [L, R].
-    % If shuffled is specified, source session would be identity shuffled.
+    % Note that target matrix would be excluded from the analysis and only used as ground truth.
+    % The way that this function performs hyperalignment is concatenating left(L) and right(R) into [L, R].
     cfg_def.NumComponents = 10;
+    cfg_def.hyperalign_all = false;
+    % If shuffled is specified, source session would be identity shuffled.
     cfg_def.shuffled = 0;
     % Use 'all' to calculate a squared error (scalar) between predicted and actual.
     % Use 1 to sum across PCs (or units) and obtain a vector of squared errors.
@@ -30,19 +32,29 @@ function [actual_dists_mat, id_dists_mat] = predict_with_L_R_pca(cfg_in, Q)
 
     actual_dists_mat  = zeros(length(Q));
     id_dists_mat  = zeros(length(Q));
+    predicted_Q_mat = cell(length(Q));
     for sr_i = 1:length(Q)
         for tar_i = 1:length(Q)
             if sr_i ~= tar_i
+                % Exclude target to be predicted
+                ex_Q = Q;
+                ex_Q{tar_i}.right = zeros(size(Q{tar_i}.right));
+                % PCA
+                ex_proj_Q = proj_Q;
+                ex_eigvecs = eigvecs;
+                ex_pca_mean = pca_mean;
+                [ex_proj_Q{tar_i}, ex_eigvecs{tar_i}, ex_pca_mean{tar_i}] = perform_pca(ex_Q{tar_i}, cfg.NumComponents);
+
                 if cfg.shuffled
                     left_sr = s_proj_Q{sr_i}.left;
                     right_sr = s_proj_Q{sr_i}.right;
-                    left_tar = proj_Q{tar_i}.left;
-                    right_tar = proj_Q{tar_i}.right;
+                    left_tar = ex_proj_Q{tar_i}.left;
+                    right_tar = ex_proj_Q{tar_i}.right;
                 else
                     left_sr = proj_Q{sr_i}.left;
                     right_sr = proj_Q{sr_i}.right;
-                    left_tar = proj_Q{tar_i}.left;
-                    right_tar = proj_Q{tar_i}.right;
+                    left_tar = ex_proj_Q{tar_i}.left;
+                    right_tar = ex_proj_Q{tar_i}.right;
                 end
                 % Estimate M from L to R using source session.
                 [~, ~, M] = procrustes(right_sr', left_sr', 'scaling', false);
@@ -52,8 +64,8 @@ function [actual_dists_mat, id_dists_mat] = predict_with_L_R_pca(cfg_in, Q)
                 id_predicted_pca = left_tar;
 
                 % Project back to Q space.
-                project_back_Q_right = eigvecs{tar_i} * predicted_pca + pca_mean{tar_i};
-                project_back_Q_id_right = eigvecs{tar_i} * id_predicted_pca + pca_mean{tar_i};
+                project_back_Q_right = ex_eigvecs{tar_i} * predicted_pca + ex_pca_mean{tar_i};
+                project_back_Q_id_right = ex_eigvecs{tar_i} * id_predicted_pca + ex_pca_mean{tar_i};
 
                 p_target = project_back_Q_right;
                 id_p_target = project_back_Q_id_right;

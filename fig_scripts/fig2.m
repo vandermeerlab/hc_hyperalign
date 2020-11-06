@@ -6,8 +6,8 @@ colors = get_hyper_colors();
 datas = {Q, adr_Q};
 for d_i = 1:length(datas)
     data = datas{d_i};
-    % Circular shift shuffles for supp_fig 8.
-    cfg_shuffle.shuffle_method = 'shift';
+    % Figure S8 uses 'shift', otherwise 'row' shuffle is default.
+    cfg_shuffle.shuffle_method = 'row';
     [actual_dists_mat{d_i}, id_dists_mat{d_i}, sf_dists_mat{d_i}] = predict_with_shuffles(cfg_shuffle, data, @predict_with_L_R);
     [actual_dists_mat_pca{d_i}, id_dists_mat_pca{d_i}] = predict_with_L_R_pca([], data);
 end
@@ -149,7 +149,7 @@ xtick_labels = {{-6, 6}, {sprintf('-1\\times10^{%d}', 5), sprintf('1\\times10^{%
 binsizes = [1, 1.5e4, 0.1]; % for histograms
 
 cfg_plot = [];
-cfg_plot.hist_colors = { colors.pca.hist};
+cfg_plot.hist_colors = {colors.pca.hist};
 cfg_plot.fit_colors = {colors.pca.fit};
 
 for d_i = 1:length(datas) % one row each for Carey, ADR
