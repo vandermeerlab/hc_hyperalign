@@ -1,9 +1,10 @@
 %% Plot example sessions for procedure
 rng(mean('hyperalignment'));
 
+%%
 % Pair of 2 and 9 is the highest z-score asymmetry pair.
-sr_i = 2;
-tar_i = 6;
+sr_i = 1;
+tar_i = 10;
 idx = {sr_i, tar_i};
 data = Q;
 
@@ -97,7 +98,73 @@ project_back_Q = eigvecs{tar_i} * project_back_pca + pca_mean{tar_i};
 pro_Q_right = project_back_Q(:, w_len+1:end);
 
 subplot(1, 2, 2);
-imagesc(pro_Q_right);
+imagesc(pro_Q_right); caxis([0, max(data{tar_i}.right(:))])
 ylabel('neuron');
 xlabel('time');
 set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 24);
+
+%% Fig. 1B
+% Source 6 and target 5 for fig. 1B
+sr_i = 6;
+tar_i = 5;
+data = Q;
+[~, ~, predicted_Q_mat] = predict_with_L_R([], data);
+out_predicted_Q_mat = set_withsubj_nan([], predicted_Q_mat);
+w_len = size(data{1}.left, 2);
+
+%%
+figure;
+set(gcf, 'Position', [540 71 1139 884]);
+
+example_data = {Q{tar_i}.left, Q{tar_i}.right, out_predicted_Q_mat{sr_i, tar_i}(:, w_len+1:end)};
+[~, max_idx] = max(Q{tar_i}.left, [], 2);
+[~, sorted_idx] = sort(max_idx);
+
+for i = 1:3
+
+    sorted_data = example_data{i}(sorted_idx, :);
+    
+    marker_row = nan(1, w_len);
+    marker_row(31) = 50; marker_row(33) = 50;
+    marker_row(44) = 50; marker_row(46) = 50;
+    
+    sorted_data(end+1, :) = marker_row;
+    
+    subplot(1, 3, i);
+    imagesc(sorted_data, 'AlphaData', ~isnan(sorted_data));
+    caxis([0, 50]);
+    set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 20);
+
+end
+
+%% Project [L, R] to PCA space.
+NumComponents = 10;
+for p_i = 1:length(data)
+    [proj_Q{p_i}, eigvecs{p_i}, pca_mean{p_i}] = perform_pca(data{p_i}, NumComponents);
+end
+
+figure;
+subplot(1, 2, 1);
+plot_L = plot_3d_trajectory(proj_Q{tar_i}.left);
+plot_L.Color = 'r';
+hold on;
+plot_R = plot_3d_trajectory(proj_Q{tar_i}.right);
+plot_R.Color = 'b';
+
+%% Obtain hypertransform and Project back to PCA space
+hyper_input = {proj_Q{sr_i}, proj_Q{tar_i}};
+[aligned_left, aligned_right, transforms] = get_aligned_left_right(hyper_input);
+[~, ~, M] = procrustes(aligned_right{1}', aligned_left{1}', 'scaling', false);
+predicted_aligned = p_transform(M, aligned_left{2});
+
+project_back_pca = inv_p_transform(transforms{2}, [aligned_left{2}, predicted_aligned]);
+w_len = size(aligned_left{2}, 2);
+pro_pca_left = project_back_pca(:, 1:w_len);
+pro_pca_right = project_back_pca(:, w_len+1:end);
+
+subplot(1, 2, 2);
+plot_L = plot_3d_trajectory(proj_Q{tar_i}.left);
+plot_L.Color = 'r';
+hold on;
+p_plot_R = plot_3d_trajectory(pro_pca_right);
+p_plot_R.Color = 'g';
