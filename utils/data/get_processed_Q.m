@@ -5,6 +5,7 @@ function [Q, int_idx] = get_processed_Q(cfg_in, session_path)
     cfg_def.removeInterneurons = 0;
     cfg_def.int_thres = 10;
     cfg_def.normalization = 'none';
+    cfg_def.data_split = 0;
     % time bin
     cfg_def.dt = 0.05;
     % cfg_def.minSpikes = 25;
@@ -49,12 +50,6 @@ function [Q, int_idx] = get_processed_Q(cfg_in, session_path)
     tend = [L_tend; R_tend];
     tstart = tend - cfg.last_n_sec;
 
-    % % Remove cells with insufficient spikes
-    % S_matched = restrict(S, tstart, tend);
-    % spk_count = getSpikeCount([], S_matched);
-    % cell_keep_idx = spk_count >= cfg.minSpikes;
-    % S = SelectTS([], S, cell_keep_idx);
-
     % Common binning and windowing configurations.
     cfg_Q = [];
     cfg_Q.dt = cfg.dt;
@@ -67,23 +62,29 @@ function [Q, int_idx] = get_processed_Q(cfg_in, session_path)
     % Restrict Q with only matched trials
     [Q_L, Q_R] = get_last_n_sec_LR(Q_whole, L_tend, R_tend, cfg.last_n_sec, cfg_Q.dt);
 
-    % dt = 0.05;
-    % for l_i = 1:length(L_tend)
-    %     cfg_Q.tvec_edges = (L_tend(l_i) - cfg.last_n_sec)-dt:dt:L_tend(l_i)+dt;
-    %     Q_L{l_i} = MakeQfromS(cfg_Q, S);
-    %     Q_L{l_i} = Q_L{l_i}.data(:, 2:end-1);
-    % end
-    % for r_i = 1:length(R_tend)
-    %     cfg_Q.tvec_edges = (R_tend(r_i) - cfg.last_n_sec)-dt:dt:R_tend(r_i)+dt;
-    %     Q_R{r_i} = MakeQfromS(cfg_Q, S);
-    %     Q_R{r_i} = Q_R{r_i}.data(:, 2:end-1);
-    % end
-
     if strcmp(cfg.normalization, 'none')
-        Q = aver_Q_acr_trials(Q_L, Q_R);
-        % Make unit into firing rate
-        Q.left = Q.left / cfg.dt;
-        Q.right = Q.right / cfg.dt;
+        if cfg.data_split
+            Q_L_hyper = Q_L(1:2:end);
+            Q_R_hyper = Q_R(1:2:end);
+
+            Q_L_control = Q_L(2:2:end);
+            Q_R_control = Q_R(2:2:end);
+
+            Q_hyper = aver_Q_acr_trials(Q_L_hyper, Q_R_hyper);
+            % Make unit into firing rate
+            Q.left = Q_hyper.left / cfg.dt;
+            Q.right = Q_hyper.right / cfg.dt;
+
+            Q_control = aver_Q_acr_trials(Q_L_control, Q_R_control);
+            % Make unit into firing rate
+            Q.left_c = Q_control.left / cfg.dt;
+            Q.right_c = Q_control.right / cfg.dt;
+        else
+            Q = aver_Q_acr_trials(Q_L, Q_R);
+            % Make unit into firing rate
+            Q.left = Q.left / cfg.dt;
+            Q.right = Q.right / cfg.dt;
+        end
     elseif strcmp(cfg.normalization, 'average_norm_Z')
         Q = normalize_Q('ind_Z', aver_Q_acr_trials(Q_L, Q_R));
     elseif strcmp(cfg.normalization, 'average_norm_l2')
@@ -95,7 +96,7 @@ function [Q, int_idx] = get_processed_Q(cfg_in, session_path)
 
         Q_R_matched = restrict(Q_whole, R_tstart, R_tend);
         % Q_R_matched.data = zscore(Q_R_matched.data, 0, 2);
-        Q_L_matched.data = row_wise_norm(Q_L_matched.data);
+        Q_R_matched.data = row_wise_norm(Q_R_matched.data);
 
         dt = 0.05;
         for l_i = 1:length(L_tend)

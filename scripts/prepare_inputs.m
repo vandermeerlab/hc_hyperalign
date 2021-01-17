@@ -6,6 +6,9 @@ cfg_data.removeInterneurons = 1;
 cfg_data.normalization = 'none';
 [Q, int_idx] = prepare_all_Q(cfg_data);
 
+cfg_data.data_split = 1;
+[Q_split] = prepare_all_Q(cfg_data);
+
 %% Get Carey normalized Q inputs. (supp_fig_3)
 cfg_data = [];
 cfg_data.use_adr_data = 0;
@@ -24,6 +27,9 @@ cfg_data.use_adr_data = 1;
 % Fig 2 use removeInterneurons = 0, otherwise 1.
 cfg_data.removeInterneurons = 1;
 [adr_Q] = prepare_all_Q(cfg_data);
+
+cfg_data.data_split = 1;
+[adr_Q_split] = prepare_all_Q(cfg_data);
 
 %% Get Carey TC inputs.
 cfg_data = [];

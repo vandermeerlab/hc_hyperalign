@@ -503,3 +503,63 @@ out_mean_sf_sem = nanstd(out_mean_sf(:)) / sqrt(n_subjs * (n_subjs - 1));
 % Signed rank test vs. 0 (two tailed)
 out_mean_sf_sign_rank_p = signrank(out_mean_sf(:));
 out_mean_sf_bino_p = calculate_bino_p(sum(sum(out_mean_sf <= 0)), sum(sum(~isnan(out_mean_sf))), 0.5);
+
+%% Split data into half and use one half to do hypertransfrom and other half as comparison
+datas = {Q, adr_Q};
+datas_split = {Q_split, adr_Q_split};
+%% Hyperalignment procedure
+for d_i = 1:length(datas)
+    data = datas{d_i};
+    [actual_dists_mat{d_i}, id_dists_mat{d_i}, sf_dists_mat{d_i}] = predict_with_shuffles([], data, @predict_with_L_R_withhold);
+end
+
+%% Use the preserved half as control and compare to ground truth
+for d_i = 1:length(datas)
+    data = datas{d_i};
+    data_split = datas_split{d_i};
+    for sr_i = 1:length(data)
+        for tar_i = 1:length(data)
+            ground_truth = data{tar_i}.right;
+            if sr_i ~= tar_i
+                actual_dist = calculate_dist('all', data_split{tar_i}.right_c, ground_truth);
+                actual_dists_mat_c{d_i}(tar_i) = actual_dist;
+            else
+                actual_dists_mat_c{d_i}(sr_i, tar_i) = NaN;
+            end
+        end
+    end
+end
+
+%% Plot
+x_limits = {[0, 2.05e5]}; % two rows, three columns in figure
+x_tick = {0:20000:2*1e5};
+xtick_labels = {{0, sprintf('2\\times10^{%d}', 5)}};
+binsizes = [10000]; % for histograms
+
+cfg_plot = [];
+cfg_plot.hist_colors = {colors.HT.hist};
+cfg_plot.fit_colors = {colors.HT.fit};
+
+for d_i = 1:length(datas)
+    cfg_metric = [];
+    cfg_metric.use_adr_data = 0;
+    if d_i == 2
+        cfg_metric.use_adr_data = 1;
+    end
+    out_dists_mat{d_i} = set_withsubj_nan(cfg_metric, actual_dists_mat{d_i});
+    out_dists_mat_c{d_i} = set_withsubj_nan(cfg_metric, actual_dists_mat_c{d_i});
+
+    matrix_obj = {out_dists_mat{d_i}};
+%     this_ax = subplot(1, 2, d_i);
+
+    cfg_plot.xlim = x_limits{1};
+    cfg_plot.xtick = x_tick{1};
+    cfg_plot.xtick_label = xtick_labels{1};
+    cfg_plot.binsize = binsizes(1);
+%     cfg_plot.ax = this_ax;
+%     cfg_plot.insert_zero = 1; % plot zero xtick
+%     cfg_plot.plot_vert_zero = 1;
+    cfg_plot.fit = 'vline'; % 'gauss', 'kernel', 'vline' or 'none (no fit)
+
+    plot_hist2(cfg_plot, matrix_obj);
+end
