@@ -3,7 +3,7 @@ colors = get_hyper_colors();
 
 %% Hyperalignment procedure
 data = Q;
-[actual_dists_mat_wh, id_dists_mat_wh, sf_dists_mat_wh] = predict_with_shuffles([], data, @predict_with_L_R_withhold);
+[actual_dists_mat_wh, id_dists_mat_wh, sf_dists_mat_wh] = predict_with_shuffles([], data, @predict_with_L_R_withhold_only_left);
 [actual_dists_mat_wh_pca, id_dists_mat_wh_pca] = predict_with_L_R_withhold_pca([], data);
 
 data = TC;

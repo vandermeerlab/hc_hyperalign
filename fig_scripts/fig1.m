@@ -7,12 +7,21 @@ sr_i = 1;
 tar_i = 10;
 idx = {sr_i, tar_i};
 data = Q;
-
+                
 % Project [L, R] to PCA space.
 NumComponents = 10;
 for p_i = 1:length(data)
     [proj_Q{p_i}, eigvecs{p_i}, pca_mean{p_i}] = perform_pca(data{p_i}, NumComponents);
 end
+
+%% Exclude target to be predicted
+ex_Q = Q;
+ex_Q{tar_i}.right = zeros(size(Q{tar_i}.right));
+% PCA
+ex_proj_Q = proj_Q;
+ex_eigvecs = eigvecs;
+ex_pca_mean = pca_mean;
+[ex_proj_Q{tar_i}, ex_eigvecs{tar_i}, ex_pca_mean{tar_i}] = perform_pca(ex_Q{tar_i}, NumComponents);
 
 %% Row shuffles on R activity
 s_Q = Q;
@@ -60,6 +69,18 @@ hyper_input = {proj_Q{sr_i}, proj_Q{tar_i}};
 [~, ~, M] = procrustes(aligned_right{1}', aligned_left{1}', 'scaling', false);
 predicted_aligned = p_transform(M, aligned_left{2});
 
+% hyper_input = {proj_Q{sr_i}, ex_proj_Q{tar_i}};
+% [aligned_left, aligned_right, transforms] = get_aligned_left_right(hyper_input);
+% [~, ~, M] = procrustes(aligned_right{1}', aligned_left{1}', 'scaling', false);
+% predicted_aligned = p_transform(M, aligned_left{2});
+
+% hyper_input = {proj_Q{sr_i}.left, ex_proj_Q{tar_i}.left};
+% [aligned_left, transforms] = hyperalign(hyper_input{:});
+% aligned_right{1} = p_transform(transforms{1}, proj_Q{sr_i}.right);
+% aligned_right{2} = p_transform(transforms{2}, ex_proj_Q{sr_i}.right);
+% [~, ~, M] = procrustes(aligned_right{1}', aligned_left{1}', 'scaling', false);
+% predicted_aligned = p_transform(M, aligned_left{2});
+
 s_plot_L = plot_3d_trajectory(aligned_left{1});
 s_plot_L.Color = 'r';
 s_plot_L.Color(4) = 0.5;
@@ -80,9 +101,14 @@ p_plot_R.Color = 'g';
 %% Project back to PCA space and input space
 figure;
 project_back_pca = inv_p_transform(transforms{2}, [aligned_left{2}, predicted_aligned]);
+% project_back_pca = inv_p_transform(transforms{2}, predicted_aligned);
+
 w_len = size(aligned_left{2}, 2);
 pro_pca_left = project_back_pca(:, 1:w_len);
 pro_pca_right = project_back_pca(:, w_len+1:end);
+
+% pro_pca_right = project_back_pca;
+
 subplot(1, 2, 1);
 plot_L = plot_3d_trajectory(pro_pca_left);
 plot_L.Color = 'r';
@@ -96,6 +122,9 @@ hold on;
 
 project_back_Q = eigvecs{tar_i} * project_back_pca + pca_mean{tar_i};
 pro_Q_right = project_back_Q(:, w_len+1:end);
+
+% project_back_Q = ex_eigvecs{tar_i} * project_back_pca + ex_pca_mean{tar_i};
+% pro_Q_right = project_back_Q;
 
 subplot(1, 2, 2);
 imagesc(pro_Q_right); caxis([0, max(data{tar_i}.right(:))])

@@ -1,19 +1,20 @@
-function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R_withhold(cfg_in, Q)
+function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R_withhold_only_left(cfg_in, Q)
     % Perform PCA, hyperalignment (with either two or all sessions)
     % and predict target matirx (only Q or TC matrix).
     % Note that target matrix would be excluded from the analysis and only used as ground truth.
     % The way that this function performs hyperalignment is concatenating left(L) and right(R) into [L, R].
     cfg_def.NumComponents = 10;
-    cfg_def.hyperalign_all = false;
     % If shuffled is specified, source session would be identity shuffled.
     cfg_def.shuffled = 0;
+    % Shuffling can be either row shuffles, 'row' or circular shift shuffles, 'shift'.
+    cfg_def.shuffle_method = 'row';
     % Use 'all' to calculate a squared error (scalar) between predicted and actual.
     % Use 1 to sum across PCs (or units) and obtain a vector of squared errors.
     cfg_def.dist_dim = 'all';
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);
     w_len = size(Q{1}.left, 2);
-    
+
     % Project [L, R] to PCA space.
     for p_i = 1:length(Q)
         pca_input = Q{p_i};
@@ -53,33 +54,25 @@ function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R_wi
                 ex_eigvecs = eigvecs;
                 ex_pca_mean = pca_mean;
                 [ex_proj_Q{tar_i}, ex_eigvecs{tar_i}, ex_pca_mean{tar_i}] = perform_pca(ex_Q{tar_i}, cfg.NumComponents);
-                if cfg.hyperalign_all
-                    % Hyperalign using all sessions then source will be chosen to predict target.
-                    % Perform hyperalignment on concatenated [L, R] in PCA.
-                    hyper_input = ex_proj_Q;
-                    if cfg.shuffled
-                        hyper_input{sr_i} = s_proj_Q{sr_i};
-                    end
-                    [aligned_left, aligned_right, transforms] = get_aligned_left_right(hyper_input);
-                    aligned_left_sr = aligned_left{sr_i};
-                    aligned_right_sr = aligned_right{sr_i};
-                    aligned_left_tar = aligned_left{tar_i};
-                    aligned_right_tar = aligned_right{tar_i};
-                    transforms_tar = transforms{tar_i};
+
+                % Perform hyperalignment on concatenated [L, R] in PCA for every source-target pair.
+                if cfg.shuffled
+                    hyper_input = {s_proj_Q{sr_i}.left, ex_proj_Q{tar_i}.left};
                 else
-                    % Perform hyperalignment on concatenated [L, R] in PCA for every source-target pair.
-                    if cfg.shuffled
-                        hyper_input = {s_proj_Q{sr_i}, ex_proj_Q{tar_i}};
-                    else
-                        hyper_input = {proj_Q{sr_i}, ex_proj_Q{tar_i}};
-                    end
-                    [aligned_left, aligned_right, transforms] = get_aligned_left_right(hyper_input);
-                    aligned_left_sr = aligned_left{1};
-                    aligned_right_sr = aligned_right{1};
-                    aligned_left_tar = aligned_left{2};
-                    aligned_right_tar = aligned_right{2};
-                    transforms_tar = transforms{2};
+                    hyper_input = {proj_Q{sr_i}.left, ex_proj_Q{tar_i}.left};
                 end
+                
+                [aligned, transforms] = hyperalign(hyper_input{:});
+                aligned_left_sr = aligned{1};
+                
+                if cfg.shuffled
+                    aligned_right_sr = p_transform(transforms{1}, s_proj_Q{sr_i}.right);
+                else
+                    aligned_right_sr = p_transform(transforms{1}, proj_Q{sr_i}.right);
+                end
+                aligned_left_tar = aligned{2};
+                transforms_tar = transforms{2};
+
                 % Estimate M from L to R using source session.
                 [~, ~, M] = procrustes(aligned_right_sr', aligned_left_sr', 'scaling', false);
                 % Apply M to L of target session to predict.
@@ -88,14 +81,15 @@ function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R_wi
                 id_predicted_aligned = aligned_left_tar;
 
                 % Project back to PCA space
-                project_back_pca = inv_p_transform(transforms_tar, [aligned_left_tar, predicted_aligned]);
-                project_back_pca_id = inv_p_transform(transforms_tar, [aligned_left_tar, id_predicted_aligned]);
+                project_back_pca = inv_p_transform(transforms_tar, predicted_aligned);
+                project_back_pca_id = inv_p_transform(transforms_tar, id_predicted_aligned);
+               
                 % Project back to Q space.
-                w_len = size(aligned_left_sr, 2);
                 project_back_Q = ex_eigvecs{tar_i} * project_back_pca + ex_pca_mean{tar_i};
-                project_back_Q_right = project_back_Q(:, w_len+1:end);
+                project_back_Q_right = project_back_Q;
+                
                 project_back_Q_id = ex_eigvecs{tar_i} * project_back_pca_id + ex_pca_mean{tar_i};
-                project_back_Q_id_right = project_back_Q_id(:, w_len+1:end);
+                project_back_Q_id_right = project_back_Q_id;
 
                 p_target = project_back_Q_right;
                 id_p_target = project_back_Q_id_right;
