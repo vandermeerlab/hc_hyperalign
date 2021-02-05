@@ -510,7 +510,7 @@ datas_split = {Q_split, adr_Q_split};
 %% Hyperalignment procedure
 for d_i = 1:length(datas)
     data = datas{d_i};
-    [actual_dists_mat{d_i}, id_dists_mat{d_i}, sf_dists_mat{d_i}] = predict_with_shuffles([], data, @predict_with_L_R_withhold);
+    [actual_dists_mat{d_i}, id_dists_mat{d_i}] = predict_with_L_R([], data);
 end
 
 %% Use the preserved half as control and compare to ground truth
