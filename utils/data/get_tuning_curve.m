@@ -2,6 +2,7 @@ function [TC] = get_tuning_curve(cfg_in, session_path)
     % Adapted from https://github.com/vandermeerlab/vandermeerlab/blob/master/code-matlab/example_workflows/WORKFLOW_PlotOrderedRaster.m
 
     cfg_def.use_matched_trials = 1;
+    cfg_def.data_split = 0;
     cfg_def.removeInterneurons = 0;
     cfg_def.int_thres = 10;
     cfg_def.minSpikes = 25;
@@ -38,6 +39,14 @@ function [TC] = get_tuning_curve(cfg_in, session_path)
 
     if cfg.use_matched_trials
         [matched_left, matched_right] = GetMatchedTrials({}, metadata, ExpKeys);
+        if cfg.data_split
+            t_len = length(matched_left.tstart);
+            control_idx = randsample(t_len, ceil(t_len / 2));
+            matched_left.tstart = matched_left.tstart(control_idx);
+            matched_left.tend = matched_left.tend(control_idx);
+            matched_right.tstart = matched_right.tstart(control_idx);
+            matched_right.tend = matched_right.tend(control_idx);
+        end
         expCond(1).t = matched_left;
         expCond(2).t = matched_right;
         tstart = [matched_left.tstart; matched_right.tstart];

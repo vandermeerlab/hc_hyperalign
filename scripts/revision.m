@@ -522,7 +522,7 @@ for d_i = 1:length(datas)
             ground_truth = data{tar_i}.right;
             if sr_i ~= tar_i
                 actual_dist = calculate_dist('all', data_split{tar_i}.right_c, ground_truth);
-                actual_dists_mat_c{d_i}(tar_i) = actual_dist;
+                actual_dists_mat_c{d_i}(sr_i, tar_i) = actual_dist;
             else
                 actual_dists_mat_c{d_i}(sr_i, tar_i) = NaN;
             end
@@ -549,7 +549,7 @@ for d_i = 1:length(datas)
     out_dists_mat{d_i} = set_withsubj_nan(cfg_metric, actual_dists_mat{d_i});
     out_dists_mat_c{d_i} = set_withsubj_nan(cfg_metric, actual_dists_mat_c{d_i});
 
-    matrix_obj = {out_dists_mat{d_i}};
+    matrix_obj = {out_dists_mat_c{d_i}};
 %     this_ax = subplot(1, 2, d_i);
 
     cfg_plot.xlim = x_limits{1};

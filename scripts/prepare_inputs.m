@@ -39,6 +39,9 @@ cfg_data.removeInterneurons = 1;
 cfg_data.normalization = 'none';
 [TC] = prepare_all_TC(cfg_data);
 
+cfg_data.data_split = 1;
+[TC_split] = prepare_all_TC(cfg_data);
+
 %% Get Carey normalized TC inputs. (supp_fig_3)
 cfg_data.removeInterneurons = 1;
 

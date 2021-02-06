@@ -17,7 +17,7 @@ data = TC;
 [z_score, mean_shuffles, proportion] = calculate_common_metrics([], actual_dists_mat, ...
     id_dists_mat, sf_dists_mat);
 
-%% Withholding (Q) and Hypertransform and PCA-only (TC) in Carey
+%% Withholding (Q) and Hypertransform (TC) in Carey
 datas = {Q, TC};
 
 x_limits = {[-6.5, 6.5], [-5.05e5, 5.05e5], [0, 1]}; % two rows, three columns in figure
@@ -69,6 +69,29 @@ end
 
 set(gcf, 'Position', [306 209 1255 746]);
 
+%% Use the preserved half as control and compare to ground truth
+datas = {Q, TC};
+datas_split = {Q_split, TC_split};
+for d_i = 1:length(datas)
+    data = datas{d_i};
+    data_split = datas_split{d_i};
+    for sr_i = 1:length(data)
+        for tar_i = 1:length(data)
+            ground_truth = data{tar_i}.right;
+            if sr_i ~= tar_i
+                if d_i == 1
+                    actual_dist = calculate_dist('all', data_split{tar_i}.right_c, ground_truth);
+                else
+                    actual_dist = calculate_dist('all', data_split{tar_i}.right, ground_truth);
+                end
+                actual_dists_mat_c{d_i}(sr_i, tar_i) = actual_dist;
+            else
+                actual_dists_mat_c{d_i}(sr_i, tar_i) = NaN;
+            end
+        end
+    end
+end
+
 %% HT vs. PCA-only in Carey TC
 datas = {Q, TC};
 
@@ -98,6 +121,7 @@ for d_i = 1:length(datas)
         out_actual_dists = set_withsubj_nan(cfg_metric, actual_dists_mat);
         out_actual_dists_pca = set_withsubj_nan(cfg_metric, actual_dists_mat_pca);
     end
+    out_actual_dists_c = set_withsubj_nan(cfg_metric, actual_dists_mat_c{d_i});
     diff_HT_PCA = out_actual_dists - out_actual_dists_pca;
     pair_count = sum(sum(~isnan(diff_HT_PCA)));
     
@@ -120,6 +144,9 @@ for d_i = 1:length(datas)
     cfg_plot.plot_vert_zero = 0; % plot vertical dashed line at 0
 
     plot_hist2(cfg_plot, matrix_obj); % ht, then pca
+    hold on;
+    lower_bound_mean = nanmean(out_actual_dists_c(:));
+    vh = vline(lower_bound_mean, '-'); set(vh, 'Color', 'r');
 end
 
 set(gcf, 'Position', [316 297 353 609]);

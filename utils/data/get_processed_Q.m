@@ -64,11 +64,15 @@ function [Q, int_idx] = get_processed_Q(cfg_in, session_path)
 
     if strcmp(cfg.normalization, 'none')
         if cfg.data_split
-            Q_L_hyper = Q_L(1:2:end);
-            Q_R_hyper = Q_R(1:2:end);
-
-            Q_L_control = Q_L(2:2:end);
-            Q_R_control = Q_R(2:2:end);
+            hyper_idx = 1:length(Q_L);
+            control_idx = randsample(length(Q_L), ceil(length(Q_L) / 2));
+            hyper_idx(control_idx) = [];
+            
+            Q_L_hyper = Q_L(hyper_idx);
+            Q_R_hyper = Q_R(hyper_idx);
+            
+            Q_L_control = Q_L(control_idx);
+            Q_R_control = Q_R(control_idx);
 
             Q_hyper = aver_Q_acr_trials(Q_L_hyper, Q_R_hyper);
             % Make unit into firing rate
