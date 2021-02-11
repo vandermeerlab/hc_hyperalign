@@ -19,20 +19,20 @@ end
 
 %% Input
 figure;
-set(gcf, 'Position', [288 173 1355 784]);
+set(gcf, 'Position', [466 61 1082 935]);
 for i = 1:length(Q)
     subplot(2, 3, 3*i-2);
     imagesc(data{i}.left); colorbar;
     ylabel('neuron');
     xlabel('location');
-    set(gca, 'xticklabel', {'A', 'B', 'C'}, 'yticklabel', {'1', '2', '3', '4'}, 'FontSize', 18);
+    set(gca, 'xticklabel', {'A', 'B', 'C'}, 'yticklabel', {'1', '2', '3', '4', '5', '6'}, 'FontSize', 18);
     title(['Subject ', num2str(i), ' L']);
 
     subplot(2, 3, 3*i-1);
     imagesc(data{i}.right); colorbar;
     ylabel('neuron');
     xlabel('location');
-    set(gca, 'xticklabel', {'D', 'E', 'F'}, 'yticklabel', {'1', '2', '3', '4'}, 'FontSize', 18);
+    set(gca, 'xticklabel', {'D', 'E', 'F'}, 'yticklabel', {'1', '2', '3', '4', '5', '6'}, 'FontSize', 18);
     title(['Subject ', num2str(i), ' R']);
 end
 
@@ -59,7 +59,7 @@ imagesc(pro_Q_right); colorbar;
 caxis([0, 2]);
 ylabel('neuron');
 xlabel('location');
-set(gca, 'xticklabel', {'D', 'E', 'F'}, 'yticklabel', {'1', '2', '3', '4'}, 'FontSize', 18);
+set(gca, 'xticklabel', {'D', 'E', 'F'}, 'yticklabel', {'1', '2', '3', '4', '5', '6'}, 'FontSize', 18);
 title('Predicted R');
 
 %% cell-by-cell and PV correlations
