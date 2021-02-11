@@ -1,6 +1,6 @@
 rng(mean('hyperalignment'));
-A = [2 0 0; 0 2 0; 1 0 0; 0 1 0];
-B = [0 0 2; 2 0 0; 0 1 0; 0 0 1];
+A = [2 0 0; 0 2 0; 1 0 0; 0 1 0; 0 0 1; 1 0 0];
+B = [0 0 2; 2 0 0; 0 1 0; 0 0 1; 0 0 1; 1 0 0];
 
 shuffle_idx = randperm(size(A, 1));
 C = A(shuffle_idx, :);
@@ -61,3 +61,9 @@ ylabel('neuron');
 xlabel('location');
 set(gca, 'xticklabel', {'D', 'E', 'F'}, 'yticklabel', {'1', '2', '3', '4'}, 'FontSize', 18);
 title('Predicted R');
+
+%% cell-by-cell and PV correlations
+cell_coefs = calculate_cell_coefs(Q);
+PV_coefs = calculate_PV_coefs(Q);
+plot_PV([], PV_coefs);
+off_diag_PV_coef = get_off_dig_PV(PV_coefs);
