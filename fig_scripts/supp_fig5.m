@@ -1,113 +1,116 @@
+%%
 rng(mean('hyperalignment'));
+colors = get_hyper_colors();
+sub_ids = get_sub_ids_start_end();
 
-%% Plot SPD/FR between left and right for each subject
-data = Q;
-exp_cond = {'left', 'right'};
-
-sub_ids_start = sub_ids.start.carey;
-sub_ids_end = sub_ids.end.carey;
-sub_colors = {colors.HT.hist, colors.pca.hist, colors.wh.hist, colors.ID.hist};
-
-figure;
-set(gcf, 'Position', [548 366 430 562]);
-
-for sub_i = 1:length(sub_ids_start)
-    for exp_i = 1:length(exp_cond)
-        exp_data{sub_i}.(exp_cond{exp_i}) = [];
-        sub_sessions = sub_ids_start(sub_i):sub_ids_end(sub_i);
-        for sess_i = sub_sessions
-            if size(data{sess_i}.(exp_cond{exp_i}), 1) == 1
-                exp_data{sub_i}.(exp_cond{exp_i}) = [exp_data{sub_i}.(exp_cond{exp_i}), data{sess_i}.(exp_cond{exp_i})];
-            else
-                exp_data{sub_i}.(exp_cond{exp_i}) = [exp_data{sub_i}.(exp_cond{exp_i}); data{sess_i}.(exp_cond{exp_i})];
-            end
-        end
-        mean_exp_spd.(exp_cond{exp_i}) = nanmean(exp_data{sub_i}.(exp_cond{exp_i})(:));
-        std_exp_spd.(exp_cond{exp_i}) = nanstd(exp_data{sub_i}.(exp_cond{exp_i})(:)) / sqrt(length(sub_sessions));
-    end
-    x = 1:length(exp_cond);
-    y = [mean_exp_spd.left, mean_exp_spd.right];
-    err = [std_exp_spd.left, std_exp_spd.right];
-%     h = errorbar(x, y, err, 'LineWidth', 2);
-    h = plot(x, y, '.-', 'MarkerSize', 20, 'LineWidth', 2);
-    set(h, 'Color', sub_colors{sub_i});
-    hold on;
+datas = {Q, TC, Q_norm_l2, TC_norm_l2, Q_norm_Z, TC_norm_Z};
+%% Example inputs
+n_units = 30;
+% Use indices in Q in case index chosen from Q does not exist in
+% Q_int_rm.
+% ex_idx = datasample(1:length(Q{1}.left), n_units, 'Replace', false);
+colorbar_limits = {[0, 50], [0, 50], [0, 1], [0, 1], [-2, 6], [-2, 6]};
+for d_i = 1:length(datas)
+    subplot(3, 4, (2*(d_i-1) + 1))
+    imagesc([datas{d_i}{1}.left(1:n_units, :), datas{d_i}{1}.right(1:n_units, :)]);
+    colorbar;
+    caxis(colorbar_limits{d_i});
+    set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 12);
+    ylabel('neuron');
 end
 
-xpad = 0.25;
+%% Hyperalignment procedure
+for d_i = 1:length(datas)
+    data = datas{d_i};
+    [actual_dists_mat{d_i}, id_dists_mat{d_i}, sf_dists_mat{d_i}] = predict_with_shuffles([], data, @predict_with_L_R);
+end
 
-ypad = 0.5;
-ylim = [0, 2];
+%% HT prediction in various normalization.
+x_limits = [-6.5, 6.5];
+x_tick = -6:6;
+xtick_labels = {-6, 6};
+binsizes = [1];
 
-% ypad = 15;
-% ylim = [10, 70];
+cfg_plot = [];
+cfg_plot.hist_colors = {colors.HT.hist};
+cfg_plot.fit_colors = {colors.HT.fit};
 
-yt = ylim(1):ypad:ylim(2);
-ytl = {ylim(1), '', (ylim(1) + ylim(2)) / 2, '', ylim(2)};
+for d_i = 1:length(datas)
+    [z_score{d_i}] = calculate_common_metrics([], actual_dists_mat{d_i}, ...
+        id_dists_mat{d_i}, sf_dists_mat{d_i});
 
-set(gca, 'XTick', x, 'YTick', yt, 'YTickLabel', ytl, ...
-    'XTickLabel', exp_cond, 'XLim', [x(1)-xpad x(end)+xpad], 'YLim', ylim, ...
-    'FontSize', 20,'LineWidth', 1, 'TickDir', 'out');
-box off;
+    matrix_objs = {{z_score{d_i}.out_zscore_mat}};
+    for m_i = 1:length(matrix_objs)
+        this_ax = subplot(3, 4, (2*(d_i-1) + 2));
+        matrix_obj = matrix_objs{m_i};
 
-ylabel('firing rate');
-% ylabel('cm / s');
+        cfg_plot.xlim = x_limits;
+        cfg_plot.xtick = x_tick;
+        cfg_plot.xtick_label = xtick_labels;
+        cfg_plot.binsize = binsizes;
+        cfg_plot.ax = this_ax;
+        cfg_plot.insert_zero = 1; % plot zero xtick
+        cfg_plot.fit = 'vline'; % 'gauss', 'kernel', 'vline' or 'none (no fit)
 
-%% Two-way (subjects and left/right) anova on SPD/FR
-exp_data_vector = [];
-exp_vector = [];
-subj_vector = [];
+        plot_hist2(cfg_plot, matrix_obj);
+        ylabel('count')
 
-for sub_i = 1:length(sub_ids_start)
-    for exp_i = 1:length(exp_cond)
-        exp_data_flat = exp_data{sub_i}.(exp_cond{exp_i})(:)';
-        exp_data_vector = [exp_data_vector, exp_data_flat];
-        exp_vector = [exp_vector, repmat(exp_i, size(exp_data_flat))];
-        subj_vector = [subj_vector, repmat(sub_i, size(exp_data_flat))];
     end
 end
 
-p = anovan(exp_data_vector, {exp_vector subj_vector}, ...
-    'model', 'interaction', 'varnames', {'left/right','subjects'});
+set(gcf, 'Position', [67 73 1784 898]);
 
-%% Plot SPD/FR differences between left and right (across different sessions) or between sessions
+%% PCA-only procedure
+for d_i = 1:length(datas)
+    data = datas{d_i};
+    [actual_dists_mat_pca{d_i}] = predict_with_L_R_pca([], data);
+end
 
-figure;
-set(gcf, 'Position', [204 377 1368 524]);
+%% HT vs. PCA-only in various normalization.
+x_limits = {[0, 2*1e5], [0, 2*1e5], [0, 100], [0, 100], [0, 5000], [0, 5000]};
+x_tick = {0:20000:2*1e5, 0:20000:2*1e5, 0:10:100, 0:10:100, 0:500:5000, 0:500:5000};
+xtick_labels = {{0, sprintf('2\\times10^{%d}', 5)}, {0, sprintf('1\\times10^{%d}', 5)}, ...
+    {0, 100}, {0, 100}, {0, 5000}, {0, 5000}};
+binsizes = [30000, 30000, 15, 15, 750, 750]; % for histograms
 
-data = Q;
-for type_i = 1:2
-    for sess_i = 1:length(data)
-        if type_i == 1
-                data_concat = [data{sess_i}.left, data{sess_i}.right];
-                mean_data{type_i}{sess_i} = mean(data_concat(:));
-        else
-            mean_data{type_i}{sess_i} = (mean(data{sess_i}.right(:)) - mean(data{sess_i}.left(:)));
-        end
-    end
+cfg_plot = [];
+cfg_plot.hist_colors = {colors.HT.hist, colors.pca.hist};
+cfg_plot.fit_colors = {colors.HT.fit, colors.pca.fit};
+
+bino_ps = zeros(length(datas), 1);
+signrank_ps = zeros(length(datas), 1);
+prop_HT_PCA = zeros(length(datas), 1);
+mean_diff_HT_PCA = zeros(length(datas), 1);
+sem_diff_HT_PCA = zeros(length(datas), 1);
+
+for d_i = 1:length(datas)
+    cfg_metric = [];
+    cfg_metric.use_adr_data = 0;
     
-    data_diff{type_i} = zeros(length(data));
-    for sr_i = 1:length(data)
-        for tar_i = 1:length(data)
-            if sr_i ~= tar_i
-                data_diff{type_i}(sr_i, tar_i) = abs(mean_data{type_i}{sr_i} - mean_data{type_i}{tar_i});
-            end
-        end
-    end
-    out_data_diff{type_i} = set_withsubj_nan([], data_diff{type_i});
+    out_actual_dists = set_withsubj_nan(cfg_metric, actual_dists_mat{d_i});
+    out_actual_dists_pca = set_withsubj_nan(cfg_metric, actual_dists_mat_pca{d_i});
+    diff_HT_PCA = out_actual_dists - out_actual_dists_pca;
+    pair_count = sum(sum(~isnan(diff_HT_PCA)));
     
-    cfg_plot = [];
-    cfg_plot.ax = subplot(1, 2, type_i);
-    cfg_plot.fs = 20;
-    plot_matrix(cfg_plot, out_data_diff{type_i});
+    matrix_obj = {out_actual_dists, out_actual_dists_pca};
+    bino_ps(d_i) = calculate_bino_p(sum(sum(out_actual_dists <= out_actual_dists_pca)), sum(sum(~isnan(out_actual_dists))), 0.5);;
+    signrank_ps(d_i) = signrank(matrix_obj{1}(:),  matrix_obj{2}(:));
+    prop_HT_PCA(d_i) = sum(sum(diff_HT_PCA < 0)) / pair_count;
+    mean_diff_HT_PCA(d_i) = nanmean(diff_HT_PCA(:));
+    sem_diff_HT_PCA(d_i) = nanstd(diff_HT_PCA(:)) / sqrt(4 * 3);
+    
+    this_ax = subplot(3, 2, d_i);
+
+    cfg_plot.xlim = x_limits{d_i};
+    cfg_plot.xtick = x_tick{d_i};
+    cfg_plot.xtick_label = xtick_labels{d_i};
+    cfg_plot.binsize = binsizes(d_i);
+    cfg_plot.ax = this_ax;
+    cfg_plot.insert_zero = 0; % plot zero xtick
+    cfg_plot.fit = 'vline'; % 'gauss', 'kernel', 'vline' or 'none (no fit)
+    cfg_plot.plot_vert_zero = 0; % plot vertical dashed line at 0
+
+    plot_hist2(cfg_plot, matrix_obj); % ht, then pca
 end
 
-%% Compute hypertransform z-score
-data = Q;
-[actual_dists_mat, id_dists_mat, sf_dists_mat] = predict_with_shuffles([], data, @predict_with_L_R);
-[z_score_m] = calculate_common_metrics([], actual_dists_mat, id_dists_mat, sf_dists_mat);
-
-%% Compute correlation coefficent with hypertransform z-score matrix
-type_i = 2;
-keep_idx = ~isnan(out_data_diff{type_i});
-[R, P] = corrcoef(out_data_diff{type_i}(keep_idx), z_score_m.out_zscore_mat(keep_idx))
+set(gcf, 'Position', [680 195 722 783]);
