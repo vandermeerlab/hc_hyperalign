@@ -12,7 +12,7 @@ datas = {Q, out_predicted_Q_mat};
 exp_cond = {'actual', 'predicted'};
 for d_i = 1:length(datas)
     data = datas{d_i};
-    max_fields = zeros(w_len, w_len);
+    max_fields{d_i} = zeros(w_len, w_len);
     neu_w_fields_idx = cell(size(data));
     left_only_count = 0;
     right_only_count = 0;
@@ -32,7 +32,7 @@ for d_i = 1:length(datas)
                 FR_right_same = abs(Q_sess(neu_i, w_len+1:end) - R_max_v) < 1;
 
                 if L_max_v > FR_thres && R_max_v > FR_thres && ~all(FR_left_same) && ~all(FR_right_same)
-                    max_fields(max_L_idx, max_R_idx) = max_fields(max_L_idx, max_R_idx) + 1;
+                    max_fields{d_i}(max_L_idx, max_R_idx) = max_fields{d_i}(max_L_idx, max_R_idx) + 1;
                     neu_w_fields_idx{sess_i} = [neu_w_fields_idx{sess_i}, neu_i];
                 elseif L_max_v > FR_thres && ~all(FR_left_same)
                     left_only_count = left_only_count + 1;
@@ -43,11 +43,11 @@ for d_i = 1:length(datas)
         end
     end
 
-    max_fields = max_fields / sum(sum(max_fields));
+    max_fields{d_i} = max_fields{d_i} / sum(sum(max_fields{d_i}));
     cfg_plot = [];
     cfg_plot.ax = subplot(1, 2, d_i);
     cfg_plot.fs = 20;
-    plot_matrix(cfg_plot, max_fields);
+    plot_matrix(cfg_plot, max_fields{d_i});
     title(exp_cond{d_i});
 
 %     imagesc(max_fields); colorbar;
