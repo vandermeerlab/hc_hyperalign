@@ -39,7 +39,7 @@ function plot_hist2(cfg_in, data)
 
         this_data = data{iData}(:);
         area = length(this_data) * cfg.binsize;
-        xm = nanmean(this_data); xs = nanstd(this_data);
+        xm = nanmedian(this_data); xs = nanstd(this_data);
 
         switch cfg.fit
             case 'gauss'

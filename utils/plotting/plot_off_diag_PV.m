@@ -1,4 +1,4 @@
-function [mean_coefs_types, sem_coefs_types] = plot_off_diag_PV(cfg_in, off_diag_coefs, types)
+function [m_coefs_types, sem_coefs_types] = plot_off_diag_PV(cfg_in, off_diag_coefs, types)
     % Plot Population Vector analysis
     cfg_def = [];
     cfg_def.fs = 12;
@@ -12,21 +12,21 @@ function [mean_coefs_types, sem_coefs_types] = plot_off_diag_PV(cfg_in, off_diag
         cfg.ax = gca;
     end
 
-    mean_coefs_types = zeros(length(off_diag_coefs), 1);
+    m_coefs_types = zeros(length(off_diag_coefs), 1);
     sem_coefs_types = zeros(length(off_diag_coefs), 1);
 
     for d_i = 1:length(off_diag_coefs)
-        mean_coefs_types(d_i) = nanmean(off_diag_coefs{d_i}(:));
+        m_coefs_types(d_i) = nanmedian(off_diag_coefs{d_i}(:));
         sem_coefs_types(d_i) = nanstd(off_diag_coefs{d_i}(:)) / sqrt(cfg.num_subjs(d_i));
     end
 
     dx = 0.1;
     x = dx * (1:length(off_diag_coefs));
     xpad = 0.05;
-    h = errorbar(x, mean_coefs_types, sem_coefs_types, 'LineStyle', 'none', 'LineWidth', 2);
+    h = errorbar(x, m_coefs_types, sem_coefs_types, 'LineStyle', 'none', 'LineWidth', 2);
     set(h, 'Color', 'k');
     hold on;
-    plot(x, mean_coefs_types, '.k', 'MarkerSize', 20);
+    plot(x, m_coefs_types, '.k', 'MarkerSize', 20);
     set(gca, 'XTick', x, 'YTick', [cfg.ylim(1):dx:cfg.ylim(2)], 'XTickLabel', types, ...
         'XLim', [x(1)-xpad x(end)+xpad], 'YLim', [cfg.ylim(1) cfg.ylim(2)], 'FontSize', cfg.fs, ...
         'LineWidth', 1, 'TickDir', 'out');

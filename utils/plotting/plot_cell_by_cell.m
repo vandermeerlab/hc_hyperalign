@@ -1,4 +1,4 @@
-function [mean_coefs_types, sem_coefs_types] = plot_cell_by_cell(cfg_in, cell_coefs, types)
+function [m_coefs_types, sem_coefs_types] = plot_cell_by_cell(cfg_in, cell_coefs, types)
     % Plot cell-by-cell correlation across subjects
     cfg_def = [];
     cfg_def.fs = 12;
@@ -14,20 +14,20 @@ function [mean_coefs_types, sem_coefs_types] = plot_cell_by_cell(cfg_in, cell_co
         cfg.ax = gca;
     end
 
-    mean_coefs_types = zeros(length(cell_coefs), 1);
+    m_coefs_types = zeros(length(cell_coefs), 1);
     sem_coefs_types = zeros(length(cell_coefs), 1);
 
     for d_i = 1:length(cell_coefs)
-        mean_coefs_types(d_i) = nanmean(cell_coefs{d_i});
+        m_coefs_types(d_i) = nanmedian(cell_coefs{d_i});
         sem_coefs_types(d_i) = nanstd(cell_coefs{d_i}) / sqrt(cfg.num_subjs(d_i));
     end
 
     x = cfg.dx * (1:length(cell_coefs));
     xpad = 0.05;
-    h = errorbar(x, mean_coefs_types, sem_coefs_types, 'LineStyle', 'none', 'LineWidth', 2);
+    h = errorbar(x, m_coefs_types, sem_coefs_types, 'LineStyle', 'none', 'LineWidth', 2);
     set(h, 'Color', 'k');
     hold on;
-    plot(x, mean_coefs_types, '.k', 'MarkerSize', 20);
+    plot(x, m_coefs_types, '.k', 'MarkerSize', 20);
     set(gca, 'XTick', x, 'YTick', [cfg.ylim(1):cfg.dy:cfg.ylim(2)], 'XTickLabel', types, ...
         'XLim', [x(1)-xpad x(end)+xpad], 'YLim', [cfg.ylim(1) cfg.ylim(2)], 'FontSize', cfg.fs, ...
         'LineWidth', 1, 'TickDir', 'out');
