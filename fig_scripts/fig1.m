@@ -7,6 +7,14 @@ sr_i = 1;
 tar_i = 10;
 idx = {sr_i, tar_i};
 data = Q;
+
+[~, max_sr_idx] = max(data{sr_i}.left, [], 2);
+[~, sorted_sr_idx] = sort(max_sr_idx);
+
+[~, max_tar_idx] = max(data{tar_i}.left, [], 2);
+[~, sorted_tar_idx] = sort(max_tar_idx);
+
+sorted_idx = {sorted_sr_idx, sorted_tar_idx};
                 
 % Project [L, R] to PCA space.
 NumComponents = 10;
@@ -39,7 +47,7 @@ proj_Q{sr_i} = s_proj_Q{sr_i};
 figure;
 for i = 1:length(idx)
     subplot(2, 2, 2*i-1);
-    imagesc([data{idx{i}}.left, data{idx{i}}.right]);
+    imagesc([data{idx{i}}.left(sorted_idx{i}, :), data{idx{i}}.right(sorted_idx{i}, :)]);
     ylabel('neuron');
     xlabel('time');
     set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 24);
@@ -127,7 +135,7 @@ pro_Q_right = project_back_Q(:, w_len+1:end);
 % pro_Q_right = project_back_Q;
 
 subplot(1, 2, 2);
-imagesc(pro_Q_right); caxis([0, max(data{tar_i}.right(:))])
+imagesc(pro_Q_right(sorted_idx{2}, :)); caxis([0, max(data{tar_i}.right(:))])
 ylabel('neuron');
 xlabel('time');
 set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 24);
