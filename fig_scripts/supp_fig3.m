@@ -3,7 +3,7 @@ colors = get_hyper_colors();
 
 %% Plot some example data L and R with predicitons (ordered by L of source).
 data = Q;
-[~, ~, predicted_Q_mat] = predict_with_L_R_withhold_only_left([], data);
+[~, ~, predicted_Q_mat] = predict_with_L_R([], data);
 out_predicted_Q_mat = set_withsubj_nan([], predicted_Q_mat);
 w_len = size(data{1}.left, 2);
 
