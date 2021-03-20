@@ -3,6 +3,7 @@ function [m_coefs_types, sem_coefs_types] = plot_off_diag_PV(cfg_in, off_diag_co
     cfg_def = [];
     cfg_def.fs = 12;
     cfg_def.ax = []; % handle to axes to plot in, e.g. ax = subplot(221)
+    cfg_def.dy = 0.1;
 
     cfg = ProcessConfig(cfg_def, cfg_in);
 
@@ -27,7 +28,7 @@ function [m_coefs_types, sem_coefs_types] = plot_off_diag_PV(cfg_in, off_diag_co
     set(h, 'Color', 'k');
     hold on;
     plot(x, m_coefs_types, '.k', 'MarkerSize', 20);
-    set(gca, 'XTick', x, 'YTick', [cfg.ylim(1):dx:cfg.ylim(2)], 'XTickLabel', types, ...
+    set(gca, 'XTick', x, 'YTick', [cfg.ylim(1):cfg.dy:cfg.ylim(2)], 'XTickLabel', types, ...
         'XLim', [x(1)-xpad x(end)+xpad], 'YLim', [cfg.ylim(1) cfg.ylim(2)], 'FontSize', cfg.fs, ...
         'LineWidth', 1, 'TickDir', 'out');
     box off;

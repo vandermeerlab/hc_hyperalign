@@ -87,7 +87,8 @@ end
 cfg_off_pv_plot = [];
 cfg_off_pv_plot.ax = subplot(2, 3, 6);
 cfg_off_pv_plot.num_subjs = [length(sub_ids.start.carey), length(sub_ids.start.adr)];
-cfg_off_pv_plot.ylim = [0, 1];
+cfg_off_pv_plot.ylim = [-0.125, 1.2];
+cfg_off_pv_plot.dy = 0.125;
 
 for d_i = 1:length(datas)
     off_diag_PV_coefs{d_i} = get_off_dig_PV(PV_coefs{d_i});
