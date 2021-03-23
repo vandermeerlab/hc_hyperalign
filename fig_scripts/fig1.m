@@ -25,6 +25,7 @@ end
 %% Exclude target to be predicted
 ex_Q = Q;
 ex_Q{tar_i}.right = zeros(size(Q{tar_i}.right));
+% ex_Q{tar_i}.right = Q_one{tar_i}.right_c;
 % PCA
 ex_proj_Q = proj_Q;
 ex_eigvecs = eigvecs;
@@ -77,6 +78,7 @@ hyper_input = {proj_Q{sr_i}, proj_Q{tar_i}};
 [~, ~, M] = procrustes(aligned_right{1}', aligned_left{1}', 'scaling', false);
 predicted_aligned = p_transform(M, aligned_left{2});
 
+% For withholding visulizatiion
 % hyper_input = {proj_Q{sr_i}, ex_proj_Q{tar_i}};
 % [aligned_left, aligned_right, transforms] = get_aligned_left_right(hyper_input);
 % [~, ~, M] = procrustes(aligned_right{1}', aligned_left{1}', 'scaling', false);

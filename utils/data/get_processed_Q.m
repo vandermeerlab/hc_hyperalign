@@ -5,7 +5,7 @@ function [Q, int_idx] = get_processed_Q(cfg_in, session_path)
     cfg_def.removeInterneurons = 0;
     cfg_def.int_thres = 10;
     cfg_def.normalization = 'none';
-    cfg_def.data_split = 0;
+    cfg_def.data_split = 'none';
     % time bin
     cfg_def.dt = 0.05;
     % cfg_def.minSpikes = 25;
@@ -63,9 +63,18 @@ function [Q, int_idx] = get_processed_Q(cfg_in, session_path)
     [Q_L, Q_R] = get_last_n_sec_LR(Q_whole, L_tend, R_tend, cfg.last_n_sec, cfg_Q.dt);
 
     if strcmp(cfg.normalization, 'none')
-        if cfg.data_split
+        if strcmp(cfg.data_split, 'none')
+            Q = aver_Q_acr_trials(Q_L, Q_R);
+            % Make unit into firing rate
+            Q.left = Q.left / cfg.dt;
+            Q.right = Q.right / cfg.dt;
+        else
             hyper_idx = 1:length(Q_L);
-            control_idx = randsample(length(Q_L), ceil(length(Q_L) / 2));
+            if strcmp(cfg.data_split, 'half')
+                control_idx = randsample(length(Q_L), ceil(length(Q_L) / 2));
+            elseif strcmp(cfg.data_split, 'one')
+                control_idx = randsample(length(Q_L), 1);
+            end
             hyper_idx(control_idx) = [];
             
             Q_L_hyper = Q_L(hyper_idx);
@@ -83,11 +92,6 @@ function [Q, int_idx] = get_processed_Q(cfg_in, session_path)
             % Make unit into firing rate
             Q.left_c = Q_control.left / cfg.dt;
             Q.right_c = Q_control.right / cfg.dt;
-        else
-            Q = aver_Q_acr_trials(Q_L, Q_R);
-            % Make unit into firing rate
-            Q.left = Q.left / cfg.dt;
-            Q.right = Q.right / cfg.dt;
         end
     elseif strcmp(cfg.normalization, 'average_norm_Z')
         Q = normalize_Q('ind_Z', aver_Q_acr_trials(Q_L, Q_R));
