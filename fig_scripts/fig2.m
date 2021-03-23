@@ -111,10 +111,10 @@ for d_i = 1:length(datas)
 end
 
 %% HT vs. PCA-only in Carey and ADR
-x_limits = {[0, 2*1e5], [0, 1e5]};
-x_tick = {0:20000:2*1e5, 0:10000:1e5};
-xtick_labels = {{0, sprintf('2\\times10^{%d}', 5)}, {0, sprintf('1\\times10^{%d}', 5)}};
-binsizes = [30000, 15000]; % for histograms
+x_limits = {[0, 3*1e3], [0, 1e3]};
+x_tick = {0:300:3*1e3, 0:100:1e3};
+xtick_labels = {{0, sprintf('3\\times10^{%d}', 3)}, {0, sprintf('1\\times10^{%d}', 3)}};
+binsizes = [450, 150]; % for histograms
 
 cfg_plot = [];
 cfg_plot.hist_colors = {colors.HT.hist, colors.pca.hist};
@@ -127,15 +127,17 @@ mean_diff_HT_PCA = zeros(length(datas), 1);
 sem_diff_HT_PCA = zeros(length(datas), 1);
 
 for d_i = 1:length(datas)
+    data = datas{d_i};
+    
     cfg_metric = [];
     cfg_metric.use_adr_data = 0;
     if d_i == 2
         cfg_metric.use_adr_data = 1;
     end
     
-    out_actual_dists = set_withsubj_nan(cfg_metric, actual_dists_mat{d_i});
-    out_actual_dists_pca = set_withsubj_nan(cfg_metric, actual_dists_mat_pca{d_i});
-    out_actual_dists_c = set_withsubj_nan(cfg_metric, actual_dists_mat_c{d_i});
+    out_actual_dists = set_withsubj_nan(cfg_metric, normalize_errors_per_cell(data, actual_dists_mat{d_i}));
+    out_actual_dists_pca = set_withsubj_nan(cfg_metric, normalize_errors_per_cell(data, actual_dists_mat_pca{d_i}));
+    out_actual_dists_c = set_withsubj_nan(cfg_metric, normalize_errors_per_cell(data, actual_dists_mat_c{d_i}));
     diff_HT_PCA = out_actual_dists - out_actual_dists_pca;
     pair_count = sum(sum(~isnan(diff_HT_PCA)));
     
