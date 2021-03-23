@@ -1,4 +1,3 @@
-
 function [z_score, mean_shuffles, proportion, M_ID] = calculate_common_metrics(cfg_in, actual_dists_mat, ...
     id_dists_mat, sf_dists_mat)
     % Calculate common metrics
@@ -33,6 +32,7 @@ function [z_score, mean_shuffles, proportion, M_ID] = calculate_common_metrics(c
     z_score.out_zscore_prop = sum(sum(out_zscore_mat < 0)) / sum(sum(~isnan(out_zscore_mat)));
     % Mean and SEM
     z_score.out_mean = nanmean(out_zscore_mat(:));
+    z_score.out_median = nanmedian(out_zscore_mat(:));
     z_score.out_sem = nanstd(out_zscore_mat(:)) / sqrt(n_subjs * (n_subjs - 1));
 
     % Signed rank test vs. 0 (two tailed)
@@ -46,9 +46,10 @@ function [z_score, mean_shuffles, proportion, M_ID] = calculate_common_metrics(c
     mean_shuffles.out_actual_mean_sf_prop = sum(sum(out_actual_mean_sf < 0)) / sum(sum(~isnan(out_actual_mean_sf)));
     % Signed rank test vs. 0 (two tailed)
     mean_shuffles.sr_p = signrank(out_actual_mean_sf(:));
-    
+
     % Mean and SEM
     mean_shuffles.out_mean = nanmean(out_actual_mean_sf(:));
+    mean_shuffles.out_median = nanmedian(out_actual_mean_sf(:));
     mean_shuffles.out_sem = nanstd(out_actual_mean_sf(:)) / sqrt(n_subjs * (n_subjs - 1));
 
     % Normalize into 0 to 1
@@ -71,6 +72,11 @@ function [z_score, mean_shuffles, proportion, M_ID] = calculate_common_metrics(c
     M_ID.out_actual_dists = out_actual_dists;
     M_ID.out_id_dists = out_id_dists;
     M_ID.out_id_prop = sum(sum(out_actual_dists <= out_id_dists)) / sum(sum(~isnan(out_actual_dists)));
+
+    % Mean and SEM of ID
+    M_ID.out_mean = nanmean(out_id_dists(:));
+    M_ID.out_median = nanmedian(out_id_dists(:));
+    M_ID.out_sem = nanstd(out_id_dists(:)) / sqrt(n_subjs * (n_subjs - 1));
 
     % Binomial stats
     M_ID.bino_p_id = calculate_bino_p(sum(sum(out_actual_dists <= out_id_dists)), sum(sum(~isnan(out_actual_dists))), 0.5);
