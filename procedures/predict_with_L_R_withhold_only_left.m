@@ -2,7 +2,8 @@ function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R_wi
     % Perform PCA, hyperalignment (with either two or all sessions)
     % and predict target matirx (only Q or TC matrix).
     % Note that target matrix would be excluded from the analysis and only used as ground truth.
-    % The way that this function performs hyperalignment is concatenating left(L) and right(R) into [L, R].
+    % This version only source and target L and whose transformation is
+    % then used to project source R to obtain HT
     cfg_def.NumComponents = 10;
     % If shuffled is specified, source session would be identity shuffled.
     cfg_def.shuffled = 0;
