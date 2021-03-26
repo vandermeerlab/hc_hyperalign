@@ -107,15 +107,14 @@ end
 datas_split = {Q_split, adr_Q_split};
 for d_i = 1:length(datas)
     data = datas{d_i};
-    data_split = datas_split{d_i};
     for sr_i = 1:length(data)
         for tar_i = 1:length(data)
             ground_truth = data{tar_i}.right;
             if sr_i ~= tar_i
-                actual_dist = calculate_dist('all', data_split{tar_i}.right_c, ground_truth) / size(ground_truth, 1);
-                actual_dists_mat_c{d_i}(sr_i, tar_i) = actual_dist;
+                actual_dist = calculate_dist('all', data{tar_i}.right_half, ground_truth) / size(ground_truth, 1);
+                actual_dists_mat_sp{d_i}(sr_i, tar_i) = actual_dist;
             else
-                actual_dists_mat_c{d_i}(sr_i, tar_i) = NaN;
+                actual_dists_mat_sp{d_i}(sr_i, tar_i) = NaN;
             end
         end
     end
@@ -131,8 +130,6 @@ cfg_plot = [];
 cfg_plot.hist_colors = {colors.HT.hist, colors.pca.hist};
 cfg_plot.fit_colors = {colors.HT.fit, colors.pca.fit};
 
-HT_PCA = {};
-
 for d_i = 1:length(datas)
     data = datas{d_i};
     
@@ -142,29 +139,10 @@ for d_i = 1:length(datas)
         cfg_metric.use_adr_data = 1;
     end
     
-    out_actual_dists = set_withsubj_nan(cfg_metric, actual_dists_mat{d_i});
-    out_actual_dists_pca = set_withsubj_nan(cfg_metric, actual_dists_mat_pca{d_i});
-    out_actual_dists_c = set_withsubj_nan(cfg_metric, actual_dists_mat_c{d_i});
-    diff_HT_PCA = out_actual_dists - out_actual_dists_pca;
-    pair_count = sum(sum(~isnan(diff_HT_PCA)));
+    [HT_PCA{d_i}] = calculate_HT_PCA_metrics(cfg_metric, actual_dists_mat{d_i}, ...
+        actual_dists_mat_pca{d_i}, actual_dists_mat_sp{d_i});
     
-    matrix_obj = {out_actual_dists, out_actual_dists_pca};
-    HT_PCA{d_i}.bino_ps = calculate_bino_p(sum(sum(out_actual_dists <= out_actual_dists_pca)), sum(sum(~isnan(out_actual_dists))), 0.5);;
-    HT_PCA{d_i}.signrank_ps = signrank(matrix_obj{1}(:),  matrix_obj{2}(:));
-    HT_PCA{d_i}.prop_HT_PCA = sum(sum(diff_HT_PCA < 0)) / pair_count;
-    
-    HT_PCA{d_i}.mean_HT = nanmean(out_actual_dists(:));
-    HT_PCA{d_i}.median_HT = nanmedian(out_actual_dists(:));
-    HT_PCA{d_i}.sem_HT = nanstd(out_actual_dists(:)) / sqrt(4 * 3);
-    
-    HT_PCA{d_i}.mean_PCA = nanmean(out_actual_dists_pca(:));
-    HT_PCA{d_i}.median_PCA = nanmedian(out_actual_dists_pca(:));
-    HT_PCA{d_i}.sem_PCA = nanstd(out_actual_dists_pca(:)) / sqrt(4 * 3);
-    
-    HT_PCA{d_i}.mean_c = nanmean(out_actual_dists_c(:));
-    HT_PCA{d_i}.median_c = nanmedian(out_actual_dists_c(:));
-    HT_PCA{d_i}.sem_c = nanstd(out_actual_dists_c(:)) / sqrt(4 * 3);
-    
+    matrix_obj = {HT_PCA{d_i}.out_actual_dists, HT_PCA{d_i}.out_actual_dists_pca};
     
     this_ax = subplot(2, 1, d_i);
 
@@ -179,7 +157,7 @@ for d_i = 1:length(datas)
 
     plot_hist2(cfg_plot, matrix_obj); % ht, then pca
     hold on;
-    lower_bound_m = nanmedian(out_actual_dists_c(:));
+    lower_bound_m = nanmedian(HT_PCA{d_i}.out_actual_dists_sp(:));
     vh = vline(lower_bound_m, '-'); set(vh, 'Color', 'r');
 end
 set(gcf, 'Position', [316 297 353 609]);

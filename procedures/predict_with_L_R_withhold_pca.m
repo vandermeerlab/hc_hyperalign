@@ -10,6 +10,9 @@ function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R_wi
     % Use 'all' to calculate a squared error (scalar) between predicted and actual.
     % Use 1 to sum across PCs (or units) and obtain a vector of squared errors.
     cfg_def.dist_dim = 'all';
+    cfg_def.error_norm = 'per_cell';
+    % Using left-out one ('one') to align or padding with zeros ('padding').
+    cfg_def.target_align = 'one';
     mfun = mfilename;
     cfg = ProcessConfig(cfg_def,cfg_in,mfun);
 
@@ -38,7 +41,11 @@ function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R_wi
             if sr_i ~= tar_i
                 % Exclude target to be predicted
                 ex_Q = Q;
-                ex_Q{tar_i}.right = zeros(size(Q{tar_i}.right));
+                if strcmp(cfg.target_align, 'one')
+                    ex_Q{tar_i}.right = Q{tar_i}.right_one;
+                elseif strcmp(cfg.target_align, 'padding')
+                    ex_Q{tar_i}.right = zeros(size(Q{tar_i}.right));
+                end
                 % PCA
                 ex_proj_Q = proj_Q;
                 ex_eigvecs = eigvecs;
@@ -72,8 +79,14 @@ function [actual_dists_mat, id_dists_mat, predicted_Q_mat] = predict_with_L_R_wi
                 ground_truth = Q{tar_i}.right;
 
                 % Compare prediction using M with ground truth
-                actual_dist = calculate_dist(cfg.dist_dim, p_target, ground_truth);
-                id_dist = calculate_dist(cfg.dist_dim, id_p_target, ground_truth);
+                if strcmp(cfg.error_norm, 'per_cell')
+                    actual_dist = calculate_dist(cfg.dist_dim, p_target, ground_truth) / size(ground_truth, 1);
+                    id_dist = calculate_dist(cfg.dist_dim, id_p_target, ground_truth) / size(ground_truth, 1);
+                else
+                    actual_dist = calculate_dist(cfg.dist_dim, p_target, ground_truth);
+                    id_dist = calculate_dist(cfg.dist_dim, id_p_target, ground_truth);
+                end
+                
                 actual_dists_mat(sr_i, tar_i) = actual_dist;
                 id_dists_mat(sr_i, tar_i) = id_dist;
             end

@@ -67,19 +67,16 @@ function [Q, int_idx] = get_processed_Q(cfg_in, session_path)
     if cfg.left_one_out
         one_idx = randsample(length(Q_R), 1);
         pre_idx(one_idx) = [];
+        Q_R_one = Q_R(one_idx);
     end
     if cfg.half_split
         half_idx = datasample(pre_idx, ceil(length(pre_idx) / 2), 'Replace', false);
+        Q_R_split = Q_R(half_idx);
     end
     
     Q_R_pre = Q_R(pre_idx);
-    Q_R_one = Q_R(one_idx);
-    Q_R_split = Q_R(half_idx);
 
     Q = aver_Q_acr_trials(Q_L, Q_R_pre);
-    % Make unit into firing rate
-    Q.left = Q.left / cfg.dt;
-    Q.right = Q.right / cfg.dt;
     
     if cfg.left_one_out
         Q.right_one = Q_R_one{1};
@@ -87,6 +84,9 @@ function [Q, int_idx] = get_processed_Q(cfg_in, session_path)
     if cfg.half_split
         Q.right_half = mean(cat(3, Q_R_split{:}), 3);
     end
+    
+    % Make unit into firing rate
+    Q = structfun(@(x) x / cfg.dt, Q, 'UniformOutput', false);
     
     if ~strcmp(cfg.normalization, 'none')
         Q = normalize_Q(cfg.normalization, Q);

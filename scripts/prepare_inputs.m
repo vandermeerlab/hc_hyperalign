@@ -5,7 +5,7 @@ rng(mean('hyperalignment'));
 cfg_data = [];
 cfg_data.use_adr_data = 0;
 % Fig 1b, 2, S3 and S4 use removeInterneurons = 0, otherwise 1.
-cfg_data.removeInterneurons = 1;
+cfg_data.removeInterneurons = 0;
 cfg_data.normalization = 'none';
 
 %%
