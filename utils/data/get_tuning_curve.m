@@ -2,7 +2,8 @@ function [TC] = get_tuning_curve(cfg_in, session_path)
     % Adapted from https://github.com/vandermeerlab/vandermeerlab/blob/master/code-matlab/example_workflows/WORKFLOW_PlotOrderedRaster.m
 
     cfg_def.use_matched_trials = 1;
-    cfg_def.data_split = 0;
+    cfg_def.half_split = 0;
+    cfg_def.left_one_out = 0;
     cfg_def.removeInterneurons = 0;
     cfg_def.int_thres = 10;
     cfg_def.minSpikes = 25;
@@ -39,17 +40,9 @@ function [TC] = get_tuning_curve(cfg_in, session_path)
 
     if cfg.use_matched_trials
         [matched_left, matched_right] = GetMatchedTrials({}, metadata, ExpKeys);
-        if cfg.data_split
-            t_len = length(matched_left.tstart);
-            control_idx = randsample(t_len, ceil(t_len / 2));
-            matched_left.tstart = matched_left.tstart(control_idx);
-            matched_left.tend = matched_left.tend(control_idx);
-            matched_right.tstart = matched_right.tstart(control_idx);
-            matched_right.tend = matched_right.tend(control_idx);
-        end
         expCond(1).t = matched_left;
         expCond(2).t = matched_right;
-        tstart = [matched_left.tstart; matched_right.tstart];
+        tsxtart = [matched_left.tstart; matched_right.tstart];
         tend = [matched_left.tend; matched_right.tend];
     else
         expCond(1).t = metadata.taskvars.trial_iv_L; % previously stored trial start and end times for left trials
@@ -71,6 +64,33 @@ function [TC] = get_tuning_curve(cfg_in, session_path)
 
     expCond(1).S = S;
     expCond(2).S = S;
+    
+    right_iv = expCond(2).t;
+    pre_idx = 1:length(right_iv.tstart);
+    next_idx = 3;
+    if cfg.left_one_out
+        one_idx = randsample(length(right_iv.tstart), 1);
+        pre_idx(one_idx) = [];
+        
+        expCond(next_idx) = expCond(2);
+        expCond(next_idx).label = 'right_one';
+        
+        expCond(2).t.tstart = right_iv.tstart(pre_idx);
+        expCond(2).t.tend = right_iv.tend(pre_idx);
+        expCond(next_idx).t.tstart = right_iv.tstart(one_idx);
+        expCond(next_idx).t.tend = right_iv.tend(one_idx);
+        
+        next_idx = next_idx + 1;
+    end
+    if cfg.half_split
+        half_idx = datasample(pre_idx, ceil(length(pre_idx) / 2), 'Replace', false);
+        
+        expCond(next_idx) = expCond(2);
+        expCond(next_idx).label = 'right_half';
+
+        expCond(next_idx).t.tstart = right_iv.tstart(half_idx);
+        expCond(next_idx).t.tend = right_iv.tend(half_idx);
+    end
 
     %% linearize paths (snap x,y position samples to nearest point on experimenter-drawn idealized track)
     nCond = length(expCond);
@@ -105,13 +125,14 @@ function [TC] = get_tuning_curve(cfg_in, session_path)
     for iCond = 1:nCond
         cfg_tc = []; cfg_tc.smoothingKernel = gausskernel(11, 1); cfg_tc.minOcc = 0.25;
         expCond(iCond).tc = TuningCurves(cfg_tc,expCond(iCond).S,expCond(iCond).linpos);
+        % Temporal fix
+        expCond(iCond).tc.tc(isnan(expCond(iCond).tc.tc)) = 0;
         [~,expCond(iCond).cp_bin] = histc(expCond(iCond).cp.data, expCond(iCond).tc.usr.binEdges);
 
     end
-
-    TC.left.tc = expCond(1).tc.tc;
-    TC.right.tc = expCond(2).tc.tc;
-
-    TC.left.cp_bin = expCond(1).cp_bin;
-    TC.right.cp_bin = expCond(2).cp_bin;
+    
+    for iCond = 1:nCond
+        TC.(expCond(iCond).label).tc = expCond(iCond).tc.tc;
+        TC.(expCond(iCond).label).cp_bin = expCond(iCond).cp_bin;
+    end
 end

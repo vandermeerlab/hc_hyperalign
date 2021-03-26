@@ -13,10 +13,10 @@ for d_i = 1:length(datas)
 end
 
 %% ID prediction in Carey and ADR
-x_limits = {[0, 2*1e5], [0, 1e5]}; % two rows, three columns in figure
-x_tick = {0:20000:2*1e5, 0:10000:1e5};
-xtick_labels = {{0, sprintf('2\\times10^{%d}', 5)}, {0, sprintf('1\\times10^{%d}', 5)}};
-binsizes = [20000, 10000]; % for histograms
+x_limits = {[0, 2*1e3], [0, 1e3]}; % two rows, three columns in figure
+x_tick = {0:200:2*1e3, 0:100:1e3};
+xtick_labels = {{0, sprintf('2\\times10^{%d}', 3)}, {0, sprintf('1\\times10^{%d}', 3)}};
+binsizes = [200, 100]; % for histograms
 
 cfg_plot = [];
 cfg_plot.hist_colors = {colors.HT.hist, colors.ID.hist};
@@ -30,7 +30,7 @@ for d_i = 1:length(datas)
     if d_i == 2
         cfg_metric.use_adr_data = 1;
     end
-    [~, ~, ~, M_ID{d_i}] = calculate_common_metrics(cfg_metric, actual_dists_mat{d_i}, ...
+    [z_score{d_i}, ~, ~, M_ID{d_i}] = calculate_common_metrics(cfg_metric, actual_dists_mat{d_i}, ...
         id_dists_mat{d_i}, sf_dists_mat{d_i});
 
     matrix_obj = {M_ID{d_i}.out_actual_dists, M_ID{d_i}.out_id_dists};

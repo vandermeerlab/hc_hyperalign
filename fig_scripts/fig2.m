@@ -13,13 +13,18 @@ for d_i = 1:length(datas)
 end
 
 %% Source-target figures in Carey
+set(gcf, 'Position', [316 185 898 721]);
+
 [z_score_m, mean_shuffles_m, proportion_m] = calculate_common_metrics([], actual_dists_mat{1}, ...
     id_dists_mat{1}, sf_dists_mat{1});
 
 titles = {'HT z-score vs. shuffle', 'HT distance - shuffled dist.', 'p(HT dist. > shuffled dist.)'};
 
 cfg_plot = [];
-clims = {[-6 6], [-1e4 1e4], [0 1]};
+clims = {[-6 6], [-1e2 1e2], [0 1]};
+if strcmp(cfg_shuffle.shuffle_method, 'shift')
+    clims{2} = [-1e2 1e2];
+end
 
 matrix_obj = {z_score_m.out_zscore_mat, mean_shuffles_m.out_actual_mean_sf, proportion_m.out_actual_sf_mat};
 for m_i = 1:length(matrix_obj)
@@ -33,16 +38,10 @@ for m_i = 1:length(matrix_obj)
 end
 
 %% Hypertransform in Carey and ADR
-x_limits = {[-6.5, 6.5], [-2.05e5, 2.05e5], [0, 1]};
-x_tick = {-6:6, -2e5:5e4:2e5, 0:0.2:1};
-xtick_labels = {{-6, 6}, {sprintf('-2\\times10^{%d}', 5), sprintf('2\\times10^{%d}', 5)}, {0, 1}};
-binsizes = [1, 3e4, 0.1];
-if strcmp(cfg_shuffle.shuffle_method, 'shift')
-    x_limits{2} = [-2.05e4, 2.05e4];
-    x_tick{2} = -2e4:5e3:2e4;
-    xtick_labels{2} = {sprintf('-2\\times10^{%d}', 4), sprintf('2\\times10^{%d}', 4)};
-    binsizes(2) = 3e3;
-end
+x_limits = {[-6.5, 6.5], [-2.05e3, 2.05e3], [0, 1]};
+x_tick = {-6:6, -2e3:5e2:2e3, 0:0.2:1};
+xtick_labels = {{-6, 6}, {sprintf('-2\\times10^{%d}', 3), sprintf('2\\times10^{%d}', 3)}, {0, 1}};
+binsizes = [1, 3e2, 0.1];
 
 cfg_plot = [];
 cfg_plot.hist_colors = {colors.HT.hist};
@@ -65,6 +64,20 @@ for d_i = 1:length(datas) % one row each for Carey, ADR
     matrix_objs = {{z_score{d_i}.out_zscore_mat}, ...
         {mean_shuffles{d_i}.out_actual_mean_sf}, ...
         {proportion_mat}};
+    
+    if strcmp(cfg_shuffle.shuffle_method, 'shift')
+        if d_i == 1
+            x_limits{2} = [-2.05e2, 2.05e2];
+            x_tick{2} = -2e2:50:2e2;
+            xtick_labels{2} = {sprintf('-2\\times10^{%d}', 2), sprintf('2\\times10^{%d}', 2)};
+            binsizes(2) = 30;
+        else
+            x_limits{2} = [-5.05e2, 5.05e2];
+            x_tick{2} = -5e2:125:5e2;
+            xtick_labels{2} = {sprintf('-5\\times10^{%d}', 2), sprintf('5\\times10^{%d}', 2)};
+            binsizes(2) = 75;
+        end
+    end
 
     for m_i = 1:length(matrix_objs) % loop over columns
         this_ax = subplot(3, 3, (3 * d_i) + m_i);
@@ -90,8 +103,6 @@ for d_i = 1:length(datas) % one row each for Carey, ADR
     end
 end
 
-set(gcf, 'Position', [316 185 898 721]);
-
 %% Use the preserved half as control and compare to ground truth
 datas_split = {Q_split, adr_Q_split};
 for d_i = 1:length(datas)
@@ -101,7 +112,7 @@ for d_i = 1:length(datas)
         for tar_i = 1:length(data)
             ground_truth = data{tar_i}.right;
             if sr_i ~= tar_i
-                actual_dist = calculate_dist('all', data_split{tar_i}.right_c, ground_truth);
+                actual_dist = calculate_dist('all', data_split{tar_i}.right_c, ground_truth) / size(ground_truth, 1);
                 actual_dists_mat_c{d_i}(sr_i, tar_i) = actual_dist;
             else
                 actual_dists_mat_c{d_i}(sr_i, tar_i) = NaN;
@@ -120,11 +131,7 @@ cfg_plot = [];
 cfg_plot.hist_colors = {colors.HT.hist, colors.pca.hist};
 cfg_plot.fit_colors = {colors.HT.fit, colors.pca.fit};
 
-bino_ps = zeros(length(datas), 1);
-signrank_ps = zeros(length(datas), 1);
-prop_HT_PCA = zeros(length(datas), 1);
-mean_diff_HT_PCA = zeros(length(datas), 1);
-sem_diff_HT_PCA = zeros(length(datas), 1);
+HT_PCA = {};
 
 for d_i = 1:length(datas)
     data = datas{d_i};
@@ -135,18 +142,29 @@ for d_i = 1:length(datas)
         cfg_metric.use_adr_data = 1;
     end
     
-    out_actual_dists = set_withsubj_nan(cfg_metric, normalize_errors_per_cell(data, actual_dists_mat{d_i}));
-    out_actual_dists_pca = set_withsubj_nan(cfg_metric, normalize_errors_per_cell(data, actual_dists_mat_pca{d_i}));
-    out_actual_dists_c = set_withsubj_nan(cfg_metric, normalize_errors_per_cell(data, actual_dists_mat_c{d_i}));
+    out_actual_dists = set_withsubj_nan(cfg_metric, actual_dists_mat{d_i});
+    out_actual_dists_pca = set_withsubj_nan(cfg_metric, actual_dists_mat_pca{d_i});
+    out_actual_dists_c = set_withsubj_nan(cfg_metric, actual_dists_mat_c{d_i});
     diff_HT_PCA = out_actual_dists - out_actual_dists_pca;
     pair_count = sum(sum(~isnan(diff_HT_PCA)));
     
     matrix_obj = {out_actual_dists, out_actual_dists_pca};
-    bino_ps(d_i) = calculate_bino_p(sum(sum(out_actual_dists <= out_actual_dists_pca)), sum(sum(~isnan(out_actual_dists))), 0.5);;
-    signrank_ps(d_i) = signrank(matrix_obj{1}(:),  matrix_obj{2}(:));
-    prop_HT_PCA(d_i) = sum(sum(diff_HT_PCA < 0)) / pair_count;
-    mean_diff_HT_PCA(d_i) = nanmean(diff_HT_PCA(:));
-    sem_diff_HT_PCA(d_i) = nanstd(diff_HT_PCA(:)) / sqrt(4 * 3);
+    HT_PCA{d_i}.bino_ps = calculate_bino_p(sum(sum(out_actual_dists <= out_actual_dists_pca)), sum(sum(~isnan(out_actual_dists))), 0.5);;
+    HT_PCA{d_i}.signrank_ps = signrank(matrix_obj{1}(:),  matrix_obj{2}(:));
+    HT_PCA{d_i}.prop_HT_PCA = sum(sum(diff_HT_PCA < 0)) / pair_count;
+    
+    HT_PCA{d_i}.mean_HT = nanmean(out_actual_dists(:));
+    HT_PCA{d_i}.median_HT = nanmedian(out_actual_dists(:));
+    HT_PCA{d_i}.sem_HT = nanstd(out_actual_dists(:)) / sqrt(4 * 3);
+    
+    HT_PCA{d_i}.mean_PCA = nanmean(out_actual_dists_pca(:));
+    HT_PCA{d_i}.median_PCA = nanmedian(out_actual_dists_pca(:));
+    HT_PCA{d_i}.sem_PCA = nanstd(out_actual_dists_pca(:)) / sqrt(4 * 3);
+    
+    HT_PCA{d_i}.mean_c = nanmean(out_actual_dists_c(:));
+    HT_PCA{d_i}.median_c = nanmedian(out_actual_dists_c(:));
+    HT_PCA{d_i}.sem_c = nanstd(out_actual_dists_c(:)) / sqrt(4 * 3);
+    
     
     this_ax = subplot(2, 1, d_i);
 
@@ -161,8 +179,8 @@ for d_i = 1:length(datas)
 
     plot_hist2(cfg_plot, matrix_obj); % ht, then pca
     hold on;
-    lower_bound_mean = nanmean(out_actual_dists_c(:));
-    vh = vline(lower_bound_mean, '-'); set(vh, 'Color', 'r');
+    lower_bound_m = nanmedian(out_actual_dists_c(:));
+    vh = vline(lower_bound_m, '-'); set(vh, 'Color', 'r');
 end
 set(gcf, 'Position', [316 297 353 609]);
 

@@ -25,14 +25,13 @@ function [TC, restrictionLabels] = prepare_all_TC(cfg_in)
     end
 
     for i = 1:length(TC)
-        TC{i}.left = TC{i}.left.tc(:, keep_idx);
-        TC{i}.right = TC{i}.right.tc(:, keep_idx);
+        TC{i} = structfun(@(x) x.tc(:, keep_idx), TC{i}, 'UniformOutput', false);
+        
         if ~strcmp(cfg.normalization, 'none')
             TC{i} = normalize_Q(cfg.normalization, TC{i});
         end
         if cfg.only_use_cp
-            TC{i}.left = TC{i}.left(:, 2:end);
-            TC{i}.right = TC{i}.right(:, 2:end);
+            TC{i} = structfun(@(x) x(:, 2:end), TC{i}, 'UniformOutput', false);
         end
     end
 end
