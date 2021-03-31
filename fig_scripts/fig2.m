@@ -7,14 +7,12 @@ datas = {Q, adr_Q};
 for d_i = 1:length(datas)
     data = datas{d_i};
     % Figure S10 uses 'shift', otherwise 'row' shuffle is default.
-    cfg_shuffle.shuffle_method = 'row';
+    cfg_shuffle.shuffle_method = 'shift';
     [actual_dists_mat{d_i}, id_dists_mat{d_i}, sf_dists_mat{d_i}] = predict_with_shuffles(cfg_shuffle, data, @predict_with_L_R);
     [actual_dists_mat_pca{d_i}, id_dists_mat_pca{d_i}] = predict_with_L_R_pca([], data);
 end
 
 %% Source-target figures in Carey
-set(gcf, 'Position', [316 185 898 721]);
-
 [z_score_m, mean_shuffles_m, proportion_m] = calculate_common_metrics([], actual_dists_mat{1}, ...
     id_dists_mat{1}, sf_dists_mat{1});
 
@@ -40,7 +38,7 @@ end
 %% Hypertransform in Carey and ADR
 x_limits = {[-6.5, 6.5], [-2.05e3, 2.05e3], [0, 1]};
 x_tick = {-6:6, -2e3:5e2:2e3, 0:0.2:1};
-xtick_labels = {{-6, 6}, {sprintf('-2\\times10^{%d}', 3), sprintf('2\\times10^{%d}', 3)}, {0, 1}};
+xtick_labels = {{-6, 6}, {-2000, 2000}, {0, 1}};
 binsizes = [1, 3e2, 0.1];
 
 cfg_plot = [];
@@ -69,12 +67,12 @@ for d_i = 1:length(datas) % one row each for Carey, ADR
         if d_i == 1
             x_limits{2} = [-2.05e2, 2.05e2];
             x_tick{2} = -2e2:50:2e2;
-            xtick_labels{2} = {sprintf('-2\\times10^{%d}', 2), sprintf('2\\times10^{%d}', 2)};
+            xtick_labels{2} = {-200, 200};
             binsizes(2) = 30;
         else
             x_limits{2} = [-5.05e2, 5.05e2];
             x_tick{2} = -5e2:125:5e2;
-            xtick_labels{2} = {sprintf('-5\\times10^{%d}', 2), sprintf('5\\times10^{%d}', 2)};
+            xtick_labels{2} = {-500, 500};
             binsizes(2) = 75;
         end
     end
@@ -103,8 +101,10 @@ for d_i = 1:length(datas) % one row each for Carey, ADR
     end
 end
 
+set(gcf, 'Position', [316 185 898 721]);
+
 %% Use the preserved half as control and compare to ground truth
-datas_split = {Q_split, adr_Q_split};
+datas = {Q_split, adr_Q_split};
 for d_i = 1:length(datas)
     data = datas{d_i};
     for sr_i = 1:length(data)
@@ -123,7 +123,7 @@ end
 %% HT vs. PCA-only in Carey and ADR
 x_limits = {[0, 3*1e3], [0, 1e3]};
 x_tick = {0:300:3*1e3, 0:100:1e3};
-xtick_labels = {{0, sprintf('3\\times10^{%d}', 3)}, {0, sprintf('1\\times10^{%d}', 3)}};
+xtick_labels = {{0, 3000}, {0, 1000}};
 binsizes = [450, 150]; % for histograms
 
 cfg_plot = [];

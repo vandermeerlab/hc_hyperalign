@@ -11,9 +11,9 @@ for d_i = 1:length(datas)
     if d_i == 1
         cfg_predict.target_align = 'one';
     elseif d_i == 2
-        cfg_predict.target_align = 'paddiing';
+        cfg_predict.target_align = 'padding';
     end
-    [actual_dists_mat{d_i}, id_dists_mat{d_i}, sf_dists_mat{d_i}] = predict_with_shuffles(cfg_predict, data, predict_funcs{d_i});
+%     [actual_dists_mat{d_i}, id_dists_mat{d_i}, sf_dists_mat{d_i}] = predict_with_shuffles(cfg_predict, data, predict_funcs{d_i});
     [actual_dists_mat_pca{d_i}, id_dists_mat_pca{d_i}] = predict_pca_funcs{d_i}(cfg_predict, data);
 end
 
@@ -28,7 +28,7 @@ end
 %% Withholding (Q) and Hypertransform (TC) in Carey
 x_limits = {[-6.5, 6.5], [-5.05e3, 5.05e3], [0, 1]}; % two rows, three columns in figure
 x_tick = {-6:6,-5e3:1.25e3:5e3, 0:0.2:1};
-xtick_labels = {{-6, 6}, {sprintf('-5\\times10^{%d}', 3), sprintf('5\\times10^{%d}', 3)}, {0, 1}};
+xtick_labels = {{-6, 6}, {-5000, 5000}, {0, 1}};
 binsizes = [1, 7.5e2, 0.1]; % for histograms
 
 cfg_plot = [];
@@ -93,7 +93,7 @@ datas = {Q_one, Q_split, TC_split};
 
 x_limits = {[0, 5000], [0, 5000], [0, 2000]};
 x_tick = {0:500:5000, 0:500:5000, 0:200:2000};
-xtick_labels = {{0, sprintf('5\\times10^{%d}', 3)}, {0, sprintf('5\\times10^{%d}', 3)}, {0, sprintf('2\\times10^{%d}', 3)}};
+xtick_labels = {{0, 5000}, {0, 5000}, {0, 2000}};
 binsizes = [500, 500, 200]; % for histograms
 
 cfg_plot = [];
