@@ -2,7 +2,7 @@ rng(mean('hyperalignment'));
 colors = get_hyper_colors();
 
 %% Hyperalignment procedure
-datas = {Q_one, Q_split, TC_split};
+datas = {Q_split, Q_one, TC_split};
 predict_funcs = {@predict_with_L_R_withhold, @predict_with_L_R_withhold_only_left, @predict_with_L_R};
 predict_pca_funcs = {@predict_with_L_R_withhold_pca, @predict_with_L_R_withhold_pca, @predict_with_L_R_pca};
 
@@ -13,7 +13,7 @@ for d_i = 1:length(datas)
     elseif d_i == 2
         cfg_predict.target_align = 'padding';
     end
-%     [actual_dists_mat{d_i}, id_dists_mat{d_i}, sf_dists_mat{d_i}] = predict_with_shuffles(cfg_predict, data, predict_funcs{d_i});
+    [actual_dists_mat{d_i}, id_dists_mat{d_i}, sf_dists_mat{d_i}] = predict_with_shuffles(cfg_predict, data, predict_funcs{d_i});
     [actual_dists_mat_pca{d_i}, id_dists_mat_pca{d_i}] = predict_pca_funcs{d_i}(cfg_predict, data);
 end
 
@@ -72,7 +72,7 @@ end
 set(gcf, 'Position', [316 185 898 721]);
 
 %% Use the preserved half as control and compare to ground truth
-datas = {Q_one, Q_split, TC_split};
+datas = {Q_split, Q_one, TC_split};
 for d_i = 1:length(datas)
     data = datas{d_i};
     for sr_i = 1:length(data)
@@ -89,12 +89,12 @@ for d_i = 1:length(datas)
 end
 
 %% HT vs. PCA-only in Carey Withholding and TC
-datas = {Q_one, Q_split, TC_split};
+datas = {Q_split, Q_one, TC_split};
 
-x_limits = {[0, 5000], [0, 5000], [0, 2000]};
-x_tick = {0:500:5000, 0:500:5000, 0:200:2000};
-xtick_labels = {{0, 5000}, {0, 5000}, {0, 2000}};
-binsizes = [500, 500, 200]; % for histograms
+x_limits = {[0, 6000], [0, 5000], [0, 2000]};
+x_tick = {0:600:6000, 0:500:5000, 0:200:2000};
+xtick_labels = {{0, 6000}, {0, 5000}, {0, 2000}};
+binsizes = [600, 500, 200]; % for histograms
 
 cfg_plot = [];
 cfg_plot.hist_colors = {colors.HT.hist, colors.pca.hist};
@@ -106,6 +106,7 @@ for d_i = 1:length(datas)
     
     [HT_PCA{d_i}] = calculate_HT_PCA_metrics(cfg_metric, actual_dists_mat{d_i}, ...
         actual_dists_mat_pca{d_i}, actual_dists_mat_sp{d_i});
+    s_raw_errors{d_i} = set_withsubj_nan(cfg_metric, mean(sf_dists_mat{d_i}, 3));
     
     matrix_obj = {HT_PCA{d_i}.out_actual_dists, HT_PCA{d_i}.out_actual_dists_pca};
     
@@ -122,8 +123,11 @@ for d_i = 1:length(datas)
 
     plot_hist2(cfg_plot, matrix_obj); % ht, then pca
     hold on;
-    lower_bound_mean = nanmean(HT_PCA{d_i}.out_actual_dists_sp(:));
-    vh = vline(lower_bound_mean, '-'); set(vh, 'Color', 'r');
+    lower_bound_m = nanmedian(HT_PCA{d_i}.out_actual_dists_sp(:));
+    vh_lower = vline(lower_bound_m, '-'); set(vh_lower, 'Color', 'r');
+    hold on;
+    upper_bound_m = nanmedian(s_raw_errors{d_i}(:));
+    vh_upper = vline(upper_bound_m, '-'); set(vh_upper, 'Color', 'k');
 end
 
 set(gcf, 'Position', [316 124 377 782]);

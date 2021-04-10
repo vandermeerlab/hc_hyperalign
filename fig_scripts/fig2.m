@@ -141,6 +141,7 @@ for d_i = 1:length(datas)
     
     [HT_PCA{d_i}] = calculate_HT_PCA_metrics(cfg_metric, actual_dists_mat{d_i}, ...
         actual_dists_mat_pca{d_i}, actual_dists_mat_sp{d_i});
+    s_raw_errors{d_i} = set_withsubj_nan(cfg_metric, mean(sf_dists_mat{d_i}, 3));
     
     matrix_obj = {HT_PCA{d_i}.out_actual_dists, HT_PCA{d_i}.out_actual_dists_pca};
     
@@ -158,7 +159,10 @@ for d_i = 1:length(datas)
     plot_hist2(cfg_plot, matrix_obj); % ht, then pca
     hold on;
     lower_bound_m = nanmedian(HT_PCA{d_i}.out_actual_dists_sp(:));
-    vh = vline(lower_bound_m, '-'); set(vh, 'Color', 'r');
+    vh_lower = vline(lower_bound_m, '-'); set(vh_lower, 'Color', 'r');
+    hold on;
+    upper_bound_m = nanmedian(s_raw_errors{d_i}(:));
+    vh_upper = vline(upper_bound_m, '-'); set(vh_upper, 'Color', 'k');
 end
 set(gcf, 'Position', [316 297 353 609]);
 
