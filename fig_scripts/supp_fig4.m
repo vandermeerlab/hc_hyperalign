@@ -3,15 +3,15 @@ colors = get_hyper_colors();
 
 %% Hyperalignment procedure
 datas = {Q_split, Q_one, TC_split};
-predict_funcs = {@predict_with_L_R_withhold, @predict_with_L_R_withhold_only_left, @predict_with_L_R};
+predict_funcs = {@predict_with_L_R_withhold_only_left, @predict_with_L_R_withhold, @predict_with_L_R};
 predict_pca_funcs = {@predict_with_L_R_withhold_pca, @predict_with_L_R_withhold_pca, @predict_with_L_R_pca};
 
 for d_i = 1:length(datas)
     data = datas{d_i};
     if d_i == 1
-        cfg_predict.target_align = 'one';
-    elseif d_i == 2
         cfg_predict.target_align = 'padding';
+    elseif d_i == 2
+        cfg_predict.target_align = 'one';
     end
     [actual_dists_mat{d_i}, id_dists_mat{d_i}, sf_dists_mat{d_i}] = predict_with_shuffles(cfg_predict, data, predict_funcs{d_i});
     [actual_dists_mat_pca{d_i}, id_dists_mat_pca{d_i}] = predict_pca_funcs{d_i}(cfg_predict, data);
