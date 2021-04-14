@@ -13,12 +13,12 @@ cfg_data.left_one_out = 0;
 cfg_data.half_split = 0;
 [Q] = prepare_all_Q(cfg_data);
 
-%% For Fig 2 and S4 inset; half-split error
+%% For Fig 2, S4 and S10; half-split error
 cfg_data.left_one_out = 0;
 cfg_data.half_split = 1;
 [Q_split] = prepare_all_Q(cfg_data);
 
-%% For withheld data (one trial) prediction
+%% For withheld data (one trial) prediction (Fig S4)
 cfg_data.left_one_out = 1;
 cfg_data.half_split = 1;
 [Q_one] = prepare_all_Q(cfg_data);
@@ -46,7 +46,7 @@ cfg_data.left_one_out = 0;
 cfg_data.half_split = 0;
 [adr_Q] = prepare_all_Q(cfg_data);
 
-%% For Fig 2 inset; half-split error
+%% For For Fig 2 and S10; half-split error
 cfg_data.left_one_out = 0;
 cfg_data.half_split = 1;
 [adr_Q_split] = prepare_all_Q(cfg_data);

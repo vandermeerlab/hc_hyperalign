@@ -12,10 +12,38 @@ for d_i = 1:length(datas)
     [actual_dists_mat_pca{d_i}, id_dists_mat_pca{d_i}] = predict_with_L_R_pca([], data);
 end
 
-%% Source-target figures in Carey
-[z_score_m, mean_shuffles_m, proportion_m] = calculate_common_metrics([], actual_dists_mat{1}, ...
-    id_dists_mat{1}, sf_dists_mat{1});
+%% Use the preserved half as control and compare to ground truth
+datas = {Q_split, adr_Q_split};
+for d_i = 1:length(datas)
+    data = datas{d_i};
+    for sr_i = 1:length(data)
+        for tar_i = 1:length(data)
+            ground_truth = data{tar_i}.right;
+            if sr_i ~= tar_i
+                actual_dist = calculate_dist('all', data{tar_i}.right_half, ground_truth) / size(ground_truth, 1);
+                actual_dists_mat_sp{d_i}(sr_i, tar_i) = actual_dist;
+            else
+                actual_dists_mat_sp{d_i}(sr_i, tar_i) = NaN;
+            end
+        end
+    end
+end
 
+%% Calculate metrics
+for d_i = 1:length(datas)
+    cfg_metric = [];
+    cfg_metric.use_adr_data = 0;
+    if d_i == 2
+        cfg_metric.use_adr_data = 1;
+    end
+    
+    [z_score{d_i}, mean_shuffles{d_i}, proportion{d_i}] = calculate_common_metrics(cfg_metric, actual_dists_mat{d_i}, ...
+        id_dists_mat{d_i}, sf_dists_mat{d_i});
+    [HT_PCA{d_i}] = calculate_HT_PCA_metrics(cfg_metric, actual_dists_mat{d_i}, ...
+        actual_dists_mat_pca{d_i}, actual_dists_mat_sp{d_i});
+end
+
+%% Source-target figures in Carey
 titles = {'HT z-score vs. shuffle', 'HT distance - shuffled dist.', 'p(HT dist. > shuffled dist.)'};
 
 cfg_plot = [];
@@ -24,7 +52,7 @@ if strcmp(cfg_shuffle.shuffle_method, 'shift')
     clims{2} = [-1e2 1e2];
 end
 
-matrix_obj = {z_score_m.out_zscore_mat, mean_shuffles_m.out_actual_mean_sf, proportion_m.out_actual_sf_mat};
+matrix_obj = {z_score{1}.out_zscore_mat, mean_shuffles{1}.out_actual_mean_sf, proportion{1}.out_actual_sf_mat};
 for m_i = 1:length(matrix_obj)
     this_ax = subplot(3, 3, m_i);
 
@@ -46,14 +74,6 @@ cfg_plot.hist_colors = {colors.HT.hist};
 cfg_plot.fit_colors = {colors.HT.fit};
 
 for d_i = 1:length(datas) % one row each for Carey, ADR
-    cfg_metric = [];
-    cfg_metric.use_adr_data = 0;
-    if d_i == 2
-        cfg_metric.use_adr_data = 1;
-    end
-    [z_score{d_i}, mean_shuffles{d_i}, proportion{d_i}] = calculate_common_metrics(cfg_metric, actual_dists_mat{d_i}, ...
-        id_dists_mat{d_i}, sf_dists_mat{d_i});
-   
     % Hard to deal with value on the limit, ex: a lot of ones in proportion
     % Workaround: Make them into 0.9999, only for visualization purpose
     keep_idx = ~isnan(proportion{d_i}.out_actual_sf_mat);
@@ -97,28 +117,18 @@ for d_i = 1:length(datas) % one row each for Carey, ADR
         end
 
         plot_hist2(cfg_plot, matrix_obj); % ht, then pca
-
-    end
-end
-
-set(gcf, 'Position', [316 185 898 721]);
-
-%% Use the preserved half as control and compare to ground truth
-datas = {Q_split, adr_Q_split};
-for d_i = 1:length(datas)
-    data = datas{d_i};
-    for sr_i = 1:length(data)
-        for tar_i = 1:length(data)
-            ground_truth = data{tar_i}.right;
-            if sr_i ~= tar_i
-                actual_dist = calculate_dist('all', data{tar_i}.right_half, ground_truth) / size(ground_truth, 1);
-                actual_dists_mat_sp{d_i}(sr_i, tar_i) = actual_dist;
-            else
-                actual_dists_mat_sp{d_i}(sr_i, tar_i) = NaN;
+        if strcmp(cfg_shuffle.shuffle_method, 'row')
+            if m_i == 2
+                hold on;
+                out_lower_m_sf_error{d_i} = HT_PCA{d_i}.out_actual_dists_sp - mean(sf_dists_mat{d_i}, 3);
+                lower_bound_m = nanmedian(out_lower_m_sf_error{d_i}(:));
+                vh_lower = vline(lower_bound_m, '-'); set(vh_lower, 'Color', 'r');
             end
         end
     end
 end
+
+set(gcf, 'Position', [316 185 898 721]);
 
 %% HT vs. PCA-only in Carey and ADR
 x_limits = {[0, 3*1e3], [0, 1e3]};
@@ -132,16 +142,7 @@ cfg_plot.fit_colors = {colors.HT.fit, colors.pca.fit};
 
 for d_i = 1:length(datas)
     data = datas{d_i};
-    
-    cfg_metric = [];
-    cfg_metric.use_adr_data = 0;
-    if d_i == 2
-        cfg_metric.use_adr_data = 1;
-    end
-    
-    [HT_PCA{d_i}] = calculate_HT_PCA_metrics(cfg_metric, actual_dists_mat{d_i}, ...
-        actual_dists_mat_pca{d_i}, actual_dists_mat_sp{d_i});
-    s_raw_errors{d_i} = set_withsubj_nan(cfg_metric, mean(sf_dists_mat{d_i}, 3));
+    % s_raw_errors{d_i} = set_withsubj_nan(cfg_metric, mean(sf_dists_mat{d_i}, 3));
     
     matrix_obj = {HT_PCA{d_i}.out_actual_dists, HT_PCA{d_i}.out_actual_dists_pca};
     
@@ -160,9 +161,9 @@ for d_i = 1:length(datas)
     hold on;
     lower_bound_m = nanmedian(HT_PCA{d_i}.out_actual_dists_sp(:));
     vh_lower = vline(lower_bound_m, '-'); set(vh_lower, 'Color', 'r');
-    hold on;
-    upper_bound_m = nanmedian(s_raw_errors{d_i}(:));
-    vh_upper = vline(upper_bound_m, '-'); set(vh_upper, 'Color', 'k');
+    % hold on;
+    % upper_bound_m = nanmedian(s_raw_errors{d_i}(:));
+    % vh_upper = vline(upper_bound_m, '-'); set(vh_upper, 'Color', 'k');
 end
 set(gcf, 'Position', [316 297 353 609]);
 
