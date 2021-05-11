@@ -1,4 +1,6 @@
 rng(mean('hyperalignment'));
+colors = get_hyper_colors();
+sub_ids = get_sub_ids_start_end();
 
 %% Plot SPD/FR between left and right for each subject
 data = Q;
@@ -71,7 +73,6 @@ p = anovan(exp_data_vector, {exp_vector subj_vector}, ...
     'model', 'interaction', 'varnames', {'left/right','subjects'});
 
 %% Plot SPD/FR differences between left and right (across different sessions) or between sessions
-
 figure;
 set(gcf, 'Position', [204 377 1368 524]);
 
