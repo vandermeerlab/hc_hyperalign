@@ -344,13 +344,13 @@ for i = 1:length(Q)
             rand_sample_idx = randsample(length(all_neurons_concat{s_i}), n_units(Q_idx));
             Q_puta_int{Q_idx}.left = all_neurons_concat{s_i}(rand_sample_idx, :);
             % Shift shuffles
-            for l_i = 1:length(Q_puta_int{Q_idx}.left)
-                if rand() <= 0.5
-                    [shuffle_indices] = shift_shuffle(win_len);
-                    L_row = Q_puta_int{Q_idx}.left(l_i, :);
-                    Q_puta_int{Q_idx}.left(l_i, :) = L_row(shuffle_indices);
-                end
-            end
+%             for l_i = 1:length(Q_puta_int{Q_idx}.left)
+%                 if rand() <= 0.5
+%                     [shuffle_indices] = shift_shuffle(win_len);
+%                     L_row = Q_puta_int{Q_idx}.left(l_i, :);
+%                     Q_puta_int{Q_idx}.left(l_i, :) = L_row(shuffle_indices);
+%                 end
+%             end
             
             Q_puta_int{Q_idx}.right = Q{Q_idx}.right;
             % sampling without replacement, if neurons were picked then
@@ -387,7 +387,7 @@ cfg_metric.use_adr_data = 0;
 [z_score, mean_shuffles, proportion] = calculate_common_metrics(cfg_metric, ...
     actual_dists_mat{2}, id_dists_mat{2}, sf_dists_mat{2});
 
-this_ax = subplot(2, 3, 1);
+this_ax = subplot(2, 3, 2);
 matrix_obj = {z_score.out_zscore_mat};
 
 cfg_plot.xlim = x_limits;
@@ -405,10 +405,10 @@ ylabel('count');
 set(gcf, 'Position', [316 253 1160 653]);
 
 %% HT prediction in Carey vs. Putative Int. in Carey.
-x_limits = [-5e4, 5e4];
-x_tick = -5e4:5000:5e4;
-xtick_labels = {sprintf('-5\\times10^{%d}', 4), sprintf('-5\\times10^{%d}', 4)};
-binsizes = 7500;
+x_limits = [-5e2, 5e2];
+x_tick = -5e2:50:5e2;
+xtick_labels = {-500, 500};
+binsizes = 75;
 
 cfg_plot = [];
 cfg_plot.hist_colors = {colors.HT.hist};
@@ -423,7 +423,7 @@ out_actual_dists_ind = set_withsubj_nan(cfg_metric, actual_dists_mat{2});
 matrix_obj = {out_actual_dists - out_actual_dists_ind};
 bino_ps = calculate_bino_p(sum(sum(out_actual_dists <= out_actual_dists_ind)), sum(sum(~isnan(out_actual_dists))), 0.5);;
 signrank_ps = signrank(out_actual_dists(:),  out_actual_dists_ind(:));
-this_ax = subplot(2, 3, 2);
+this_ax = subplot(2, 3, 1);
 
 cfg_plot.xlim = x_limits;
 cfg_plot.xtick = x_tick;
@@ -482,7 +482,7 @@ end
 % Wilcoxon signed rank test for Carey and Putative Int. off-diagonal
 ranksum(off_diag_PV_coefs{1}(:), off_diag_PV_coefs{2}(:))
 
-%% Compare shift shuffles and raw shuffles
+%% Compare shift shuffles and row shuffles
 data = Q;
 
 shuffle_methods = {'shift', 'row'};

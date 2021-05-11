@@ -18,7 +18,7 @@ for s_i = 1:length(ex_sess_idx)
         out_predicted_Q_mat{9, sess_idx}(:, w_len+1:end), ...
         out_predicted_Q_mat{15, sess_idx}(:, w_len+1:end)];
     
-    [~, max_idx] = max(example_data.left, [], 2);
+    [~, max_idx] = max(example_data.right, [], 2);
     [~, sorted_idx] = sort(max_idx);
     
     subplot(2, 1, s_i)
