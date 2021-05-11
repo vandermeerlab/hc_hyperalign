@@ -45,7 +45,7 @@ for d_i = 1:length(datas)
 end
 
 %% Withholding (Q) and Hypertransform (TC) in Carey
-x_limits = {[-6.5, 6.5], [-5.25e3, 5.25e3], [0, 1]}; % two rows, three columns in figure
+x_limits = {[-6.5, 6.5], [-5.3e3, 5.3e3], [0, 1]}; % two rows, three columns in figure
 x_tick = {-6:6,-5e3:1.25e3:5e3, 0:0.2:1};
 xtick_labels = {{-6, 6}, {-5000, 5000}, {0, 1}};
 binsizes = [1, 7.5e2, 0.1]; % for histograms
