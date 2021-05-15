@@ -8,10 +8,10 @@ tar_i = 10;
 idx = {sr_i, tar_i};
 data = Q;
 
-[~, max_sr_idx] = max(data{sr_i}.left, [], 2);
+[~, max_sr_idx] = max(data{sr_i}.right, [], 2);
 [~, sorted_sr_idx] = sort(max_sr_idx);
 
-[~, max_tar_idx] = max(data{tar_i}.left, [], 2);
+[~, max_tar_idx] = max(data{tar_i}.right, [], 2);
 [~, sorted_tar_idx] = sort(max_tar_idx);
 
 sorted_idx = {sorted_sr_idx, sorted_tar_idx};
@@ -156,7 +156,7 @@ figure;
 set(gcf, 'Position', [540 71 1139 884]);
 
 example_data = {Q{tar_i}.left, Q{tar_i}.right, out_predicted_Q_mat{sr_i, tar_i}(:, w_len+1:end)};
-[~, max_idx] = max(Q{tar_i}.left, [], 2);
+[~, max_idx] = max(Q{tar_i}.right, [], 2);
 [~, sorted_idx] = sort(max_idx);
 
 for i = 1:3
