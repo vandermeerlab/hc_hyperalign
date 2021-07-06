@@ -5,26 +5,37 @@ sub_ids = get_sub_ids_start_end();
 n_subjs = length(sub_ids.start.carey);
 
 %% Get simulated inputs.
-n_units = cellfun(@(x) size(x.left, 1), Q);
-Q_same_mu = L_R_ind(struct('same_params', [1, 0, 0], 'n_units', n_units));
-Q_same_peak = L_R_ind(struct('same_params', [0, 1, 0], 'n_units', n_units));
-Q_same_sig = L_R_ind(struct('same_params', [0, 0, 1], 'n_units', n_units));
+cfg_sim = [];
+cfg_sim.n_units = cellfun(@(x) size(x.left, 1), Q);
 
-datas = {Q_same_mu, Q_same_peak, Q_same_sig};
-themes = {'ind-same-time', 'ind-same-FR', 'ind-same-width'};
+Q_xor = L_xor_R(cfg_sim);
+Q_ind = L_R_ind(cfg_sim);
+Q_sim_HT = sim_HT(cfg_sim);
 
+cfg_sim.same_params = [1, 1, 1];
+Q_same_ps = L_R_ind(cfg_sim);
+
+datas = {Q_ind, Q_xor, Q_same_ps, Q_sim_HT};
+themes = {'ind-ind', 'x-or', 'ind-same-all', 'sim. HT'};
 %% Example inputs
-n_units = 30;
-ex_same_mu = L_R_ind(struct('same_params', [1, 0, 0], 'n_units', n_units, 'n_iters', 1));
-ex_same_peak = L_R_ind(struct('same_params', [0, 1, 0], 'n_units', n_units, 'n_iters', 1));
-ex_same_sig = L_R_ind(struct('same_params', [0, 0, 1], 'n_units', n_units, 'n_iters', 1));
+cfg_ex = [];
+cfg_ex.n_units = 30;
+cfg_ex.n_iters = 1;
+ex_xor = L_xor_R(cfg_ex);
+ex_ind = L_R_ind(cfg_ex);
+ex_same_ps = L_R_ind(struct('same_params', [1, 1, 1], 'n_units', 30, 'n_iters', 1));
+ex_sim_HT = sim_HT(cfg_ex);
 
-ex_datas = {ex_same_mu, ex_same_peak, ex_same_sig};
+ex_datas = {ex_ind, ex_xor, ex_same_ps, ex_sim_HT};
 for d_i = 1:length(ex_datas)
-    subplot(3, 3, (3*(d_i-1) + 1))
+    subplot(4, 3, (3*(d_i-1) + 1))
     imagesc([ex_datas{d_i}{1}{1}.left, ex_datas{d_i}{1}{1}.right]);
     colorbar;
-    caxis([0, 20]);
+    if d_i == 4
+        caxis([-10, 20]);
+    else
+        caxis([0, 20]);
+    end
     set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 12);
     ylabel('neuron');
     title(themes{d_i});
@@ -38,6 +49,7 @@ for d_i = 1:length(datas)
     end
 end
 
+
 %% HT prediction in various simulations.
 x_limits = [-6.5, 6.5];
 x_tick = -6:6;
@@ -47,6 +59,7 @@ binsizes = 0.5;
 cfg_plot = [];
 cfg_plot.hist_colors = {colors.HT.hist};
 cfg_plot.fit_colors = {colors.HT.fit};
+
 
 for d_i = 1:length(datas)
     iter_len = length(actual_dists_mat{d_i});
@@ -66,8 +79,8 @@ for d_i = 1:length(datas)
     
     matrix_objs = {{z_scores_sim{d_i}.out_zscore_mat}};
     for m_i = 1:length(matrix_objs)
-        this_ax = subplot(3, 3, (3*(d_i-1) + 2));
-        p_i = (m_i - 1) * 3 + d_i; % % plot index to access x_limits etc defined above
+        this_ax = subplot(4, 3, (3*(d_i-1) + 2));
+        p_i = (m_i - 1) * 4 + d_i; % % plot index to access x_limits etc defined above
         matrix_obj = matrix_objs{m_i};
 
         cfg_plot.xlim = x_limits;
@@ -109,18 +122,18 @@ end
 cfg_pv_plot = [];
 cfg_pv_plot.clim = [-0.2 1];
 for d_i = 1:length(datas)
-    cfg_pv_plot.ax = subplot(3, 3, (3*(d_i-1) + 3));
+    cfg_pv_plot.ax = subplot(4, 3, (3*(d_i-1) + 3));
     plot_PV(cfg_pv_plot, PV_coefs{d_i});
 end
 
 %% Plot off-diagonal of Population Vector correlation across subjects
-PV_coefs{4} = calculate_PV_coefs(Q);
-themes = {'ind-same-time', 'ind-same-FR', 'ind-same-width', 'Carey'};
+PV_coefs{5} = calculate_PV_coefs(Q);
+themes = {'ind-ind', 'x-or', 'ind-same-all', 'sim. HT', 'Carey'};
 
 figure;
 cfg_off_pv_plot = [];
 cfg_off_pv_plot.ax = subplot(2, 1, 1);
-cfg_off_pv_plot.num_subjs = repmat(n_subjs, 1, 4);
+cfg_off_pv_plot.num_subjs = repmat(n_subjs, 1, 5);
 cfg_off_pv_plot.ylim = [-0.3, 0.5];
 
 for d_i = 1:length(PV_coefs)
@@ -128,18 +141,18 @@ for d_i = 1:length(PV_coefs)
 end
 [mean_PV_coefs_types, sem_PV_coefs_types] = plot_off_diag_PV(cfg_off_pv_plot, off_diag_PV_coefs, themes);
 
-set(gcf, 'Position', [680 315 532 663]);
+set(gcf, 'Position', [680 301 559 677]);
 
 %% Plot Cell-by-cell correlation across subjects
-cell_coefs{4} = cell2mat(calculate_cell_coefs(Q));
-themes = {'ind-same-time', 'ind-same-FR', 'ind-same-width', 'Carey'};
+cell_coefs{5} = cell2mat(calculate_cell_coefs(Q));
+themes = {'ind-ind', 'x-or', 'ind-same-all', 'sim. HT', 'Carey'};
 
 cfg_cell_plot = [];
 cfg_cell_plot.ax = subplot(2, 1, 2);
-cfg_cell_plot.num_subjs = repmat(n_subjs, 1, 4);
+cfg_cell_plot.num_subjs = repmat(n_subjs, 1, 5);
 
 cfg_cell_plot.ylim = [-0.2, 0.5];
 
 [mean_cell_coefs, sem_cell_coefs_types] = plot_cell_by_cell(cfg_cell_plot, cell_coefs, themes);
 
-set(gcf, 'Position', [680 315 532 663]);
+set(gcf, 'Position', [680 301 559 677]);

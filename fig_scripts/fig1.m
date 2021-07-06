@@ -1,209 +1,94 @@
-%% Plot example sessions for procedure
 rng(mean('hyperalignment'));
+A = [2 0 0; 0 2 0; 1 0 0; 0 1 0; 0 0 1; 1 0 0];
+low_shift_idx_A = randsample(3:6, 2)
+B = [0 0 2; 2 0 0; 0 1 0; 0 1 0; 0 0 1; 0 1 0];
 
-%%
-% Pair of 2 and 9 is the highest z-score asymmetry pair.
-sr_i = 1;
-tar_i = 10;
-idx = {sr_i, tar_i};
+% Initialized subject 2 Left randomly
+C = zeros(size(A));
+for i = 1:length(A)
+    prob = rand();
+    if prob < 1/3
+        C(i, :) = [1 0 0];
+    elseif prob < 2/3
+        C(i, :) = [0 1 0];
+    else
+        C(i, :) = [0 0 1];
+    end
+end
+
+% Make the first two rows high-firing
+C(1:2, :) = C(1:2, :) * 2;
+% Randomly choose two low-firing-rate cells to shift left in D
+low_shift_idx = randsample(3:6, 2);
+
+D = C;
+% High-firing-rate cells shift left, chosen low-firing ones shift right
+D(1, :) = circshift(D(1, :), -1);
+D(2, :) = circshift(D(2, :), -1);
+D(low_shift_idx(1), :) = circshift(D(low_shift_idx(1), :), 1);
+D(low_shift_idx(2), :) = circshift(D(low_shift_idx(2), :), 1);
+
+shuffle_idx = randperm(size(C, 1));
+C = C(shuffle_idx, :);
+D = D(shuffle_idx, :);
+
+Q{1}.left = A; Q{1}.right = B;
+Q{2}.left = C; Q{2}.right = D;
+
 data = Q;
-
-[~, max_sr_idx] = max(data{sr_i}.right, [], 2);
-[~, sorted_sr_idx] = sort(max_sr_idx);
-
-[~, max_tar_idx] = max(data{tar_i}.right, [], 2);
-[~, sorted_tar_idx] = sort(max_tar_idx);
-
-sorted_idx = {sorted_sr_idx, sorted_tar_idx};
-                
+%%
 % Project [L, R] to PCA space.
-NumComponents = 10;
+NumComponents = 2;
 for p_i = 1:length(data)
     [proj_Q{p_i}, eigvecs{p_i}, pca_mean{p_i}] = perform_pca(data{p_i}, NumComponents);
 end
 
-%% Exclude target to be predicted
-ex_Q = Q;
-ex_Q{tar_i}.right = zeros(size(Q{tar_i}.right));
-% ex_Q{tar_i}.right = Q_one{tar_i}.right_c;
-% PCA
-ex_proj_Q = proj_Q;
-ex_eigvecs = eigvecs;
-ex_pca_mean = pca_mean;
-[ex_proj_Q{tar_i}, ex_eigvecs{tar_i}, ex_pca_mean{tar_i}] = perform_pca(ex_Q{tar_i}, NumComponents);
-
-%% Row shuffles on R activity
-s_Q = Q;
-for s_i = 1:length(Q)
-    shuffle_indices = randperm(size(Q{s_i}.right, 1));
-    s_Q{s_i}.right = Q{s_i}.right(shuffle_indices, :);
-    s_pca_input = s_Q{s_i};
-    [s_proj_Q{s_i}] = perform_pca(s_pca_input, NumComponents);
-end
-
-data{sr_i} = s_Q{sr_i};
-proj_Q{sr_i} = s_proj_Q{sr_i};
-
-%% Input and PCA
+%% Input
 figure;
-for i = 1:length(idx)
-    subplot(2, 2, 2*i-1);
-    imagesc([data{idx{i}}.left(sorted_idx{i}, :), data{idx{i}}.right(sorted_idx{i}, :)]);
+set(gcf, 'Position', [466 61 1082 935]);
+for i = 1:length(Q)
+    subplot(2, 3, 3*i-2);
+    imagesc(data{i}.left); colorbar;
     ylabel('neuron');
-    xlabel('time');
-    set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 24);
+    xlabel('location');
+    set(gca, 'xticklabel', {'A', 'B', 'C'}, 'yticklabel', {'1', '2', '3', '4', '5', '6'}, 'FontSize', 18);
+    title(['Subject ', num2str(i), ' L']);
 
-    subplot(2, 2, 2*i);
-    plot_L = plot_3d_trajectory(proj_Q{idx{i}}.left);
-    plot_L.Color = 'r';
-    hold on;
-    plot_R = plot_3d_trajectory(proj_Q{idx{i}}.right);
-    plot_R.Color = 'b';
-    if i == 1
-        plot_L.Color(4) = 0.5;
-        plot_R.Color(4) = 0.5;
-    end
-    hold on;
+    subplot(2, 3, 3*i-1);
+    imagesc(data{i}.right); colorbar;
+    ylabel('neuron');
+    xlabel('location');
+    set(gca, 'xticklabel', {'D', 'E', 'F'}, 'yticklabel', {'1', '2', '3', '4', '5', '6'}, 'FontSize', 18);
+    title(['Subject ', num2str(i), ' R']);
 end
-
-%% PCA-only
-[~, ~, M] = procrustes(proj_Q{sr_i}.right', proj_Q{sr_i}.left', 'scaling', false);
-% Apply M to L of target session to predict.
-predicted_aligned = p_transform(M, proj_Q{tar_i}.left);
 
 %% Common space
-figure;
-hyper_input = {proj_Q{sr_i}, proj_Q{tar_i}};
+% hyper_input = {proj_Q{1}, proj_Q{2}};
+hyper_input = {data{1}, data{2}};
+
 [aligned_left, aligned_right, transforms] = get_aligned_left_right(hyper_input);
 [~, ~, M] = procrustes(aligned_right{1}', aligned_left{1}', 'scaling', false);
 predicted_aligned = p_transform(M, aligned_left{2});
-
-% For withholding visulizatiion
-% hyper_input = {proj_Q{sr_i}, ex_proj_Q{tar_i}};
-% [aligned_left, aligned_right, transforms] = get_aligned_left_right(hyper_input);
-% [~, ~, M] = procrustes(aligned_right{1}', aligned_left{1}', 'scaling', false);
-% predicted_aligned = p_transform(M, aligned_left{2});
-
-% hyper_input = {proj_Q{sr_i}.left, ex_proj_Q{tar_i}.left};
-% [aligned_left, transforms] = hyperalign(hyper_input{:});
-% aligned_right{1} = p_transform(transforms{1}, proj_Q{sr_i}.right);
-% aligned_right{2} = p_transform(transforms{2}, ex_proj_Q{sr_i}.right);
-% [~, ~, M] = procrustes(aligned_right{1}', aligned_left{1}', 'scaling', false);
-% predicted_aligned = p_transform(M, aligned_left{2});
-
-s_plot_L = plot_3d_trajectory(aligned_left{1});
-s_plot_L.Color = 'r';
-s_plot_L.Color(4) = 0.5;
-hold on;
-s_plot_R = plot_3d_trajectory(aligned_right{1});
-s_plot_R.Color = 'b';
-s_plot_R.Color(4) = 0.5;
-hold on;
-t_plot_L = plot_3d_trajectory(aligned_left{2});
-t_plot_L.Color = 'r';
-hold on;
-t_plot_R = plot_3d_trajectory(aligned_right{2});
-t_plot_R.Color = 'b';
-hold on;
-p_plot_R = plot_3d_trajectory(predicted_aligned);
-p_plot_R.Color = 'g';
-
-%% Project back to PCA space and input space
-figure;
-project_back_pca = inv_p_transform(transforms{2}, [aligned_left{2}, predicted_aligned]);
-% project_back_pca = inv_p_transform(transforms{2}, predicted_aligned);
-
-w_len = size(aligned_left{2}, 2);
-pro_pca_left = project_back_pca(:, 1:w_len);
-pro_pca_right = project_back_pca(:, w_len+1:end);
-
-% pro_pca_right = project_back_pca;
-
-subplot(1, 2, 1);
-plot_L = plot_3d_trajectory(pro_pca_left);
-plot_L.Color = 'r';
-hold on;
-plot_R = plot_3d_trajectory(proj_Q{tar_i}.right);
-plot_R.Color = 'b';
-hold on;
-p_plot_R = plot_3d_trajectory(pro_pca_right);
-p_plot_R.Color = 'g';
-hold on;
-
-project_back_Q = eigvecs{tar_i} * project_back_pca + pca_mean{tar_i};
-pro_Q_right = project_back_Q(:, w_len+1:end);
-
-% project_back_Q = ex_eigvecs{tar_i} * project_back_pca + ex_pca_mean{tar_i};
-% pro_Q_right = project_back_Q;
-
-subplot(1, 2, 2);
-imagesc(pro_Q_right(sorted_idx{2}, :)); caxis([0, max(data{tar_i}.right(:))])
-ylabel('neuron');
-xlabel('time');
-set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 24);
-
-%% Fig. 1B
-% Source 6 and target 5 for fig. 1B
-sr_i = 6;
-tar_i = 5;
-data = Q;
-[~, ~, predicted_Q_mat] = predict_with_L_R([], data);
-out_predicted_Q_mat = set_withsubj_nan([], predicted_Q_mat);
-w_len = size(data{1}.left, 2);
 
 %%
-figure;
-set(gcf, 'Position', [540 71 1139 884]);
-
-example_data = {Q{tar_i}.left, Q{tar_i}.right, out_predicted_Q_mat{sr_i, tar_i}(:, w_len+1:end)};
-[~, max_idx] = max(Q{tar_i}.right, [], 2);
-[~, sorted_idx] = sort(max_idx);
-
-for i = 1:3
-
-    sorted_data = example_data{i}(sorted_idx, :);
-    
-    marker_row = nan(1, w_len);
-    marker_row(31) = 50; marker_row(33) = 50;
-    marker_row(44) = 50; marker_row(46) = 50;
-    
-    sorted_data(end+1, :) = marker_row;
-    
-    subplot(1, 3, i);
-    imagesc(sorted_data, 'AlphaData', ~isnan(sorted_data));
-    caxis([0, 50]);
-    set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 20);
-
-end
-
-%% Project [L, R] to PCA space.
-NumComponents = 10;
-for p_i = 1:length(data)
-    [proj_Q{p_i}, eigvecs{p_i}, pca_mean{p_i}] = perform_pca(data{p_i}, NumComponents);
-end
-
-figure;
-subplot(1, 2, 1);
-plot_L = plot_3d_trajectory(proj_Q{tar_i}.left);
-plot_L.Color = 'r';
-hold on;
-plot_R = plot_3d_trajectory(proj_Q{tar_i}.right);
-plot_R.Color = 'b';
-
-%% Obtain hypertransform and Project back to PCA space
-hyper_input = {proj_Q{sr_i}, proj_Q{tar_i}};
-[aligned_left, aligned_right, transforms] = get_aligned_left_right(hyper_input);
-[~, ~, M] = procrustes(aligned_right{1}', aligned_left{1}', 'scaling', false);
-predicted_aligned = p_transform(M, aligned_left{2});
-
-project_back_pca = inv_p_transform(transforms{2}, [aligned_left{2}, predicted_aligned]);
 w_len = size(aligned_left{2}, 2);
-pro_pca_left = project_back_pca(:, 1:w_len);
-pro_pca_right = project_back_pca(:, w_len+1:end);
 
-subplot(1, 2, 2);
-plot_L = plot_3d_trajectory(proj_Q{tar_i}.left);
-plot_L.Color = 'r';
-hold on;
-p_plot_R = plot_3d_trajectory(pro_pca_right);
-p_plot_R.Color = 'g';
+% project_back_pca = inv_p_transform(transforms{2}, [aligned_left{2}, predicted_aligned]);
+% project_back_Q = eigvecs{2} * project_back_pca + pca_mean{2};
+
+project_back_Q = inv_p_transform(transforms{2}, [aligned_left{2}, predicted_aligned]);
+
+pro_Q_right = project_back_Q(:, w_len+1:end);
+
+subplot(2, 3, 6);
+imagesc(pro_Q_right); colorbar;
+caxis([0, 2]);
+ylabel('neuron');
+xlabel('location');
+set(gca, 'xticklabel', {'D', 'E', 'F'}, 'yticklabel', {'1', '2', '3', '4', '5', '6'}, 'FontSize', 18);
+title('Predicted R');
+
+%% cell-by-cell and PV correlations
+cell_coefs = calculate_cell_coefs(Q);
+PV_coefs = calculate_PV_coefs(Q);
+off_diag_PV_coef = get_off_dig_PV(PV_coefs);

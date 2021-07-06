@@ -1,99 +1,71 @@
 rng(mean('hyperalignment'));
 colors = get_hyper_colors();
-sub_ids = get_sub_ids_start_end();
 
-% Carey: 1, ADR: 2;
-datas = {Q, adr_Q};
-themes = {'Carey', 'ADR'};
+%% Plot some example data L and R with predicitons (ordered by L of source).
+data = Q;
+[~, ~, predicted_Q_mat] = predict_with_L_R([], data);
+out_predicted_Q_mat = set_withsubj_nan([], predicted_Q_mat);
+w_len = size(data{1}.left, 2);
 
-%% Hyperalignment procedure
-for d_i = 1:length(datas)
-    data = datas{d_i};
-    [actual_dists_mat{d_i}, id_dists_mat{d_i}, sf_dists_mat{d_i}] = predict_with_shuffles([], data, @predict_with_L_R);
+figure;
+set(gcf, 'Position', [540 71 1139 884]);
+
+ex_sess_idx = [2, 1];
+for s_i = 1:length(ex_sess_idx)
+    sess_idx = ex_sess_idx(s_i);
+    example_data = data{sess_idx};
+    example_data.predict = [out_predicted_Q_mat{6, sess_idx}(:, w_len+1:end), ...
+        out_predicted_Q_mat{9, sess_idx}(:, w_len+1:end), ...
+        out_predicted_Q_mat{15, sess_idx}(:, w_len+1:end)];
+    
+    [~, max_idx] = max(example_data.right, [], 2);
+    [~, sorted_idx] = sort(max_idx);
+    
+    subplot(2, 1, s_i)
+    imagesc([example_data.left(sorted_idx, :), example_data.right(sorted_idx, :), example_data.predict(sorted_idx, :)]);
+    colorbar;
+    caxis([0, 50]);
+    set(gca, 'xticklabel', [], 'yticklabel', [], 'FontSize', 20);
+    ylabel('neuron');
 end
 
-%% ID prediction in Carey and ADR
-x_limits = {[0, 2*1e3], [0, 1e3]}; % two rows, three columns in figure
-x_tick = {0:200:2*1e3, 0:100:1e3};
-xtick_labels = {{0, sprintf('2\\times10^{%d}', 3)}, {0, sprintf('1\\times10^{%d}', 3)}};
-binsizes = [200, 100]; % for histograms
+%% Example row
+colors = get_hyper_colors();
 
-cfg_plot = [];
-cfg_plot.hist_colors = {colors.HT.hist, colors.ID.hist};
-cfg_plot.fit_colors = {colors.HT.fit, colors.ID.fit};
-bino_ps = zeros(length(datas), 1);
-signrank_ps = zeros(length(datas), 1);
+sess_idx = 5;
+ex_cell_idx = 52;
+datas = {Q{sess_idx}.left(ex_cell_idx, :), Q{sess_idx}.right(ex_cell_idx, :)};
+predictions = {out_predicted_Q_mat{6, sess_idx}(ex_cell_idx, w_len+1:end), ...
+        out_predicted_Q_mat{9, sess_idx}(ex_cell_idx, w_len+1:end), ...
+        out_predicted_Q_mat{15, sess_idx}(ex_cell_idx, w_len+1:end)};
 
-for d_i = 1:length(datas)
-    cfg_metric = [];
-    cfg_metric.use_adr_data = 0;
-    if d_i == 2
-        cfg_metric.use_adr_data = 1;
+fit_colors = {colors.HT.fit, colors.pca.fit, colors.wh.fit, colors.ID.fit, [198/255 113/255 113/255]};
+
+cfg_plot.fs = 24;
+cfg_plot.xlim = [0, 48];
+cfg_plot.binsize = 2;
+cfg_plot.xtick = 0:12:48;
+cfg_plot.xtick_label = {'start', 'end'};
+cfg_plot.fit = 'kernel';
+cfg_plot.hist_colors = {colors.HT.hist};
+
+for i = 1:2
+    cfg_plot.fit_colors = {fit_colors{i}};
+    cfg_plot.ax = subplot(1, 2, i);
+    plot_hist2(cfg_plot, {datas{i}});
+    xlabel('time'); ylabel('firing rate');
+    ylim([0, 20]);
+    if i == 1
+        title('left')
+    else
+        title('right')
+        hold on;
     end
-    [z_score{d_i}, ~, ~, M_ID{d_i}] = calculate_common_metrics(cfg_metric, actual_dists_mat{d_i}, ...
-        id_dists_mat{d_i}, sf_dists_mat{d_i});
-
-    matrix_obj = {M_ID{d_i}.out_actual_dists, M_ID{d_i}.out_id_dists};
-    bino_ps(d_i) = M_ID{d_i}.bino_p_id;
-    signrank_ps(d_i) = signrank(matrix_obj{1}(:),  matrix_obj{2}(:));
-    this_ax = subplot(2, 3, d_i);
-
-    cfg_plot.xlim = x_limits{d_i};
-    cfg_plot.xtick = x_tick{d_i};
-    cfg_plot.xtick_label = xtick_labels{d_i};
-    cfg_plot.binsize = binsizes(d_i);
-    cfg_plot.ax = this_ax;
-    cfg_plot.insert_zero = 0; % plot zero xtick
-    cfg_plot.fit = 'vline'; % 'gauss', 'kernel', 'vline' or 'none (no fit)
-    cfg_plot.plot_vert_zero = 0; % plot vertical dashed line at 0
-
-    plot_hist2(cfg_plot, matrix_obj); % ht, then pca
 end
 
-set(gcf, 'Position', [316 253 1160 653]);
-
-%% Cell-by-cell correlation across subjects
-for d_i = 1:length(datas)
-    cell_coefs{d_i} = cell2mat(calculate_cell_coefs(datas{d_i}));
+for j = 1:3
+    cfg_plot.fit_colors = {fit_colors{2+j}};
+    cfg_plot.ax = subplot(1, 2, 2);
+    hold on;
+    plot_hist2(cfg_plot, {predictions{j}});
 end
-
-cfg_cell_plot = [];
-cfg_cell_plot.ax = subplot(2, 3, 3);
-cfg_cell_plot.num_subjs = [length(sub_ids.start.carey), length(sub_ids.start.adr)];
-cfg_cell_plot.ylim = [-0.2, 0.6];
-
-[mean_coefs, sem_coefs_types] = plot_cell_by_cell(cfg_cell_plot, cell_coefs, themes);
-
-% Wilcoxon rank sum test for Carey and ADR
-ranksum(cell_coefs{1}, cell_coefs{2})
-
-% Wilcoxon signed rank test for Carey vs 0
-signrank(cell_coefs{1})
-%% Population Vector analysis
-for d_i = 1:length(datas)
-    data = datas{d_i};
-    PV_coefs{d_i} = calculate_PV_coefs(data);
-end
-
-%% Plot Population Vector correlation coefficents matrix
-cfg_pv_plot = [];
-cfg_pv_plot.clim = [-0.2 1];
-for d_i = 1:length(datas)
-    cfg_pv_plot.ax = subplot(2, 3, 3 + d_i);
-    plot_PV(cfg_pv_plot, PV_coefs{d_i});
-end
-
-%% Plot off-diagonal of Population Vector correlation
-cfg_off_pv_plot = [];
-cfg_off_pv_plot.ax = subplot(2, 3, 6);
-cfg_off_pv_plot.num_subjs = [length(sub_ids.start.carey), length(sub_ids.start.adr)];
-cfg_off_pv_plot.ylim = [-0.125, 1.2];
-cfg_off_pv_plot.dy = 0.125;
-
-for d_i = 1:length(datas)
-    off_diag_PV_coefs{d_i} = get_off_dig_PV(PV_coefs{d_i});
-end
-[mean_coefs, sem_coefs_types] = plot_off_diag_PV(cfg_off_pv_plot, off_diag_PV_coefs, themes);
-
-% Wilcoxon signed rank test for Carey and ADR off-diagonal
-ranksum(off_diag_PV_coefs{1}(:), off_diag_PV_coefs{2}(:))

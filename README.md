@@ -15,7 +15,7 @@ Then execute `set_hyper_path` in your matlab command window.
 Each figure has a corresponding script in
 `fig_scripts` folder and data preparation script used in fig 2, supp. fig 2, fig 3 and supp. fig 3 is located at `scripts/prepare_inputs`.
 
-Note that they might share the common scripts with only different parameter used (for flexibly testing different data input). For example, Q in figure 2 includes interneurons, so `cfg_data.removeInterneurons = 0;`, but figure 3 and so on excludes interneurons (`cfg_data.removeInterneurons = 1;`).
+Note that they might share the common scripts with only different parameter used (for flexibly testing different data input). For example, Q in figure 4 includes interneurons, so `cfg_data.removeInterneurons = 0;`, but figure 5 and so on excludes interneurons (`cfg_data.removeInterneurons = 1;`).
 
 You should adjust the parameters before preparing the data input. (We might finalize the data input used then this is no longer required.)
 
