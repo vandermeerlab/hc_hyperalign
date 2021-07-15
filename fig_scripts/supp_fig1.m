@@ -159,14 +159,14 @@ predicted_aligned = p_transform(M, aligned_left{2});
 % predicted_aligned = p_transform(M, aligned_left_only{2});
 
 figure;
-set(gcf, 'Position', [630 383 875 564]);
+set(gcf, 'Position', [466 61 1082 935]);
 for i = 1:length(Q)
     subplot(2, 3, 3*i-2);
 %     imagesc(aligned_left_only{i}); colorbar;
     imagesc(aligned_left{i}); colorbar;
     ylabel('neuron');
     xlabel('location');
-    set(gca, 'xticklabel', {'A', 'B', 'C'}, 'yticklabel', {'1', '2', '3'}, 'FontSize', 18);
+    set(gca, 'xticklabel', {'A', 'B', 'C'}, 'yticklabel', {'1', '2', '3', '4', '5', '6'}, 'FontSize', 18);
     title(['Subject ', num2str(i), ' Common L']);
     caxis([0, 2]);
 
@@ -179,18 +179,18 @@ for i = 1:length(Q)
     imagesc(aligned_right{i}); colorbar;
     ylabel('neuron');
     xlabel('location');
-    set(gca, 'xticklabel', {'D', 'E', 'F'}, 'yticklabel', {'1', '2', '3'}, 'FontSize', 18);
+    set(gca, 'xticklabel', {'D', 'E', 'F'}, 'yticklabel', {'1', '2', '3', '4', '5', '6'}, 'FontSize', 18);
     title(['Subject ', num2str(i), ' Common R']);
     caxis([0, 2]);
 end
 
-subplot(2, 3, 6);
-imagesc(predicted_aligned); colorbar;
-caxis([0, 2]);
-ylabel('neuron');
-xlabel('location');
-set(gca, 'xticklabel', {'D', 'E', 'F'}, 'yticklabel', {'1', '2', '3', '4'}, 'FontSize', 18);
-title('Common Predicted R');
+% subplot(2, 3, 6);
+% imagesc(predicted_aligned); colorbar;
+% caxis([0, 2]);
+% ylabel('neuron');
+% xlabel('location');
+% set(gca, 'xticklabel', {'D', 'E', 'F'}, 'yticklabel', {'1', '2', '3', '4'}, 'FontSize', 18);
+% title('Common Predicted R');
 
 %%
 w_len = size(aligned_left{2}, 2);
