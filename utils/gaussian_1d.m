@@ -10,7 +10,8 @@ function f = gaussian_1d(T, a, mu, sig)
     % sig (sigma): Variance
     % f = exp(-x.^2/(2*sig^2)-y.^2/(2*sig^2));
     x = 1:T;
-    % Keep 1/(sig * sqrt(2*pi)) (normalization facotr) out since we will
+    % Keep 1/(sig * sqrt(2*pi)) (normalization factor) out since we will
     % z-score later and make amplitude as height of the peak.
     f = a * exp(-((x - mu).^2) / (2 * sig^2));
+    f = f / sum(f);
 end
