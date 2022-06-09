@@ -1,16 +1,16 @@
 %% Two conditions of 1d gaussian tuning curves with fixed sigma and number of neurons
 w_len = 50;
-n_units = 100;
+n_units = 50;
 X = zeros(n_units, w_len);
 Y = zeros(n_units, w_len);
 
-p_has_field = 1;
+p_has_field = 0.5;
 
 for n_i = 1:n_units
     mu_1 = rand() * w_len;
     mu_2 = rand() * w_len;
     peak = 1;
-    sig = w_len/8;
+    sig = w_len/32;
     if rand() <= p_has_field
         X(n_i, :) = gaussian_1d(w_len, peak, mu_1, sig);
     end
@@ -38,8 +38,8 @@ xlabel('locations'); ylabel('neurons'); title('Y');
 set(gca, 'FontSize', 18);
 
 %% (Hyper/procrustes)-aligen two inputs
-[d, Z, transform] = procrustes(X, Y, 'scaling', false);
-RMSE_neuron_avg = mean(sqrt(mean((X - Z).^2, 2)));
+[d, Z, transform] = procrustes(X', Y', 'scaling', false);
+RMSE_neuron_avg = mean(sqrt(mean((X - Z').^2, 2)));
 
 % Calculate the Frobenius norm of the prediction error matrix
 % Fro_error = sum((X - Z).^2, 'all');
@@ -47,7 +47,7 @@ RMSE_neuron_avg = mean(sqrt(mean((X - Z).^2, 2)));
 % norm_factor = (sum(X.^2, 'all') + sum(Y.^2, 'all')) / 2;
 % R_sq = 1 - (Fro_error / norm_factor);
 
-subplot(1, 3, 3); imagesc(Z); colorbar;
+subplot(1, 3, 3); imagesc(Z'); colorbar;
 xlabel('locations'); ylabel('neurons'); title('Prediction of X');
 set(gca, 'FontSize', 18);
 % imagesc(transform.b * Y * transform.T + transform.c); colorbar;
@@ -56,7 +56,7 @@ set(gca, 'FontSize', 18);
 w_len = 50;
 n_units_list = 50:5:150;
 sigmas_list = 1:0.5:12.5;
-p_has_field = 1;
+p_has_field = 0.5;
 
 sim_measure_mat = zeros(length(n_units_list), length(sigmas_list));
 
@@ -84,9 +84,9 @@ for u_i = 1:length(n_units_list)
                 Y(n_i, :) = gaussian_1d(w_len, peak, mu_2, sigma);
             end
         end
-        [d, Z, transform] = procrustes(X, Y, 'scaling', false);
+        [d, Z, transform] = procrustes(X', Y', 'scaling', false);
         
-        RMSE_neuron_avg = mean(sqrt(mean((X - Z).^2, 2)));
+        RMSE_neuron_avg = mean(sqrt(mean((X - Z').^2, 2)));
         sim_measure_mat(u_i, s_i) = RMSE_neuron_avg;
         
 %         % Calculate the Frobenius norm of the prediction error matrix
@@ -104,5 +104,5 @@ xlabel('sigma'); ylabel('# of neurons');
 xticks(1:2:length(sigmas_list)); xticklabels(1:12);
 yticks(1:2:length(n_units_list)); yticklabels(50:10:150);
 set(gca, 'FontSize', 18);
-title('RMSE per neuron when p(has field)= 1');
+title('RMSE per neuron when p(has field)= 0.5');
 % title('R^2 when p(has field)= 0.5');
