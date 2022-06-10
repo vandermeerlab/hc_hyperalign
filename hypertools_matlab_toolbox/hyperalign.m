@@ -1,4 +1,4 @@
-function[aligned, transforms] = hyperalign(varargin)
+function[aligned, transforms, template2] = hyperalign(varargin)
 %HYPERALIGN  Hyperalign a series of high-dimensional trajectories
 %
 %This function implements the "hyperalignment" algorithm described by the
