@@ -7,7 +7,10 @@ sub_ids = get_sub_ids_start_end();
 sub_ids_starts = sub_ids.start.carey;
 sub_ids_ends = sub_ids.end.carey;
 
-data = TC;
+% data = TC;
+% data = TC_norm_Z;
+% data = Q;
+data = Q_norm_Z;
 
 %%
 % Project [L, R] to PCA space.
@@ -23,19 +26,23 @@ opt_dist_diffs  = cell(1, length(data));
 actual_dist_zscores = cell(1, length(data));
 
 for val_sub_i = subjects
-    align_subs_i = setdiff(subjects, val_sub_i);
-    align_subjects = subjects(align_subs_i);
+    align_subjects = setdiff(subjects, val_sub_i);
+    align_sessions = [];
+    for align_subs_i = align_subjects
+        align_sessions = [align_sessions, sub_ids_starts(align_subs_i):sub_ids_ends(align_subs_i)];
+    end
     for val_sess_i = sub_ids_starts(val_sub_i):sub_ids_ends(val_sub_i)
         H = proj_data{val_sess_i};
-        for align_i = sub_ids_starts(align_subjects(1)):sub_ids_ends(align_subjects(1))
-            for align_j = sub_ids_starts(align_subjects(2)):sub_ids_ends(align_subjects(2))
-                for align_k = sub_ids_starts(align_subjects(3)):sub_ids_ends(align_subjects(3))
+%         for align_i = sub_ids_starts(align_subjects(1)):sub_ids_ends(align_subjects(1))
+%             for align_j = sub_ids_starts(align_subjects(2)):sub_ids_ends(align_subjects(2))
+%                 for align_k = sub_ids_starts(align_subjects(3)):sub_ids_ends(align_subjects(3))
                     % Optimal H_right prediction
                     [~, ~, M_opt] = procrustes(H.right', H.left', 'scaling', false);
                     predicted_opt = p_transform(M_opt, H.left);
                     
-                    [X, Y, Z] = proj_data{[align_i, align_j, align_k]};
-                    hyper_input = {X, Y, Z};
+%                     [X, Y, Z] = proj_data{[align_i, align_j, align_k]};
+%                     hyper_input = {X, Y, Z};
+                    hyper_input = {proj_data{align_sessions}};
                     [aligned_left, aligned_right, transforms, T_left, T_right] = get_aligned_left_right(hyper_input);
                     template.left = T_left;
                     template.right = T_right;
@@ -66,9 +73,9 @@ for val_sub_i = subjects
                     end
                     zs = zscore([sf_dists, actual_dist]);
                     actual_dist_zscores{val_sess_i} = [actual_dist_zscores{val_sess_i}, zs(end)];
-                end
-            end
-        end
+%                 end
+%             end
+%         end
     end
 end
 
@@ -89,7 +96,7 @@ set(h, 'Color', 'k');
 
 hold on;
 plot(x, opt_dist_diffs_m, '.k', 'MarkerSize', 20);
-set(gca, 'XTick', x, 'XLim', [x(1)-xpad x(end)+xpad], 'YLim', [-4.5e4, 1e4], 'FontSize', 18, ...
+set(gca, 'XTick', x, 'XLim', [x(1)-xpad x(end)+xpad], 'YLim', [-1e3, 1e3], 'FontSize', 18, ...
     'LineWidth', 1, 'TickDir', 'out');
 box off;
 plot([x(1)-xpad x(end)+xpad], [0 0], '--k', 'LineWidth', 1, 'Color', [0.7 0.7 0.7]);
@@ -115,7 +122,7 @@ set(h, 'Color', 'k');
 hold on;
 plot(x, dist_zscores_m, '.k', 'MarkerSize', 20);
 set(gca, 'XTick', x, ...
-    'XLim', [x(1)-xpad x(end)+xpad], 'YLim', [-3, 0.5], 'FontSize', 18, ...
+    'XLim', [x(1)-xpad x(end)+xpad], 'YLim', [-3.5, 2], 'FontSize', 18, ...
     'LineWidth', 1, 'TickDir', 'out');
 box off;
 plot([x(1)-xpad x(end)+xpad], [0 0], '--k', 'LineWidth', 1, 'Color', [0.7 0.7 0.7]);
