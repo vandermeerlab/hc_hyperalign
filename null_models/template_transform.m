@@ -7,10 +7,10 @@ sub_ids = get_sub_ids_start_end();
 sub_ids_starts = sub_ids.start.carey;
 sub_ids_ends = sub_ids.end.carey;
 
-% data = TC;
+data = TC;
 % data = TC_norm_Z;
 % data = Q;
-data = Q_norm_Z;
+% data = Q_norm_Z;
 
 %%
 % Project [L, R] to PCA space.
@@ -33,6 +33,15 @@ for val_sub_i = subjects
     end
     for val_sess_i = sub_ids_starts(val_sub_i):sub_ids_ends(val_sub_i)
         H = proj_data{val_sess_i};
+        % Withhold R of validate session
+        ex_data = data;
+        ex_data{val_sess_i}.right = zeros(size(data{val_sess_i}.right));
+        ex_proj_data = proj_data;
+        ex_eigvecs = eigvecs;
+        ex_pca_mean = pca_mean;
+        [ex_proj_data{val_sess_i}, ex_eigvecs{val_sess_i}, ex_pca_mean{val_sess_i}] = perform_pca(ex_data{val_sess_i}, cfg.NumComponents);
+        ex_H = ex_proj_data{val_sess_i};
+        
 %         for align_i = sub_ids_starts(align_subjects(1)):sub_ids_ends(align_subjects(1))
 %             for align_j = sub_ids_starts(align_subjects(2)):sub_ids_ends(align_subjects(2))
 %                 for align_k = sub_ids_starts(align_subjects(3)):sub_ids_ends(align_subjects(3))
@@ -56,7 +65,7 @@ for val_sub_i = subjects
                     cfg.dist_dim = 'all';
                     actual_dist_opt = calculate_dist(cfg.dist_dim, p_target_opt, ground_truth);
 
-                    actual_dist = predict_with_template_align(template, H, eigvecs{val_sess_i}, pca_mean{val_sess_i}, ground_truth);
+                    [actual_dist, p_target] = predict_with_template_align(template, ex_H, ex_eigvecs{val_sess_i}, ex_pca_mean{val_sess_i}, ground_truth);
                     opt_dist_diffs{val_sess_i} = [opt_dist_diffs{val_sess_i}, actual_dist_opt - actual_dist];
                     
                     % Shuffle templates and get shuffled control predictions
@@ -69,7 +78,7 @@ for val_sub_i = subjects
                         shuffle_indices_R = randperm(size(template.right, 1));
                         s_template.right = template.right(shuffle_indices_R, :);
                         
-                        [sf_dists(sf_i)] = predict_with_template_align(s_template, H, eigvecs{val_sess_i}, pca_mean{val_sess_i}, ground_truth);
+                        [sf_dists(sf_i)] = predict_with_template_align(s_template, ex_H, ex_eigvecs{val_sess_i}, ex_pca_mean{val_sess_i}, ground_truth);
                     end
                     zs = zscore([sf_dists, actual_dist]);
                     actual_dist_zscores{val_sess_i} = [actual_dist_zscores{val_sess_i}, zs(end)];
@@ -96,7 +105,7 @@ set(h, 'Color', 'k');
 
 hold on;
 plot(x, opt_dist_diffs_m, '.k', 'MarkerSize', 20);
-set(gca, 'XTick', x, 'XLim', [x(1)-xpad x(end)+xpad], 'YLim', [-1e3, 1e3], 'FontSize', 18, ...
+set(gca, 'XTick', x, 'XLim', [x(1)-xpad x(end)+xpad], 'YLim', [-2e5, 1e5], 'FontSize', 18, ...
     'LineWidth', 1, 'TickDir', 'out');
 box off;
 plot([x(1)-xpad x(end)+xpad], [0 0], '--k', 'LineWidth', 1, 'Color', [0.7 0.7 0.7]);
