@@ -1,4 +1,4 @@
-function [actual_dist] = predict_with_template_align(template, V, eigvec, pca_mean, ground_truth)
+function [actual_dist, p_target] = predict_with_template_align(template, V, eigvec, pca_mean, ground_truth)
 
 % Align the withheld subject to template
 hyper_input_val = {template, V};
