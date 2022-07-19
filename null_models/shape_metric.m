@@ -114,3 +114,84 @@ imagesc(diff_rotation_dist_mat); colorbar;
 set(gca, 'XTick', 1:6, 'XTickLabel', {'R_{12}', 'R_{13}', 'R_{14}', 'R_{23}', 'R_{24}', 'R_{34}'}, ...
     'YTick', 1:6, 'YTickLabel', {'R_{12}', 'R_{13}', 'R_{14}', 'R_{23}', 'R_{24}', 'R_{34}'});
 title('Geodesic distances of difference between pairs');
+
+%% Obtain the distances between rotation matices (from L to R) for all source-target pairs.
+Fro_dist_diffs = zeros(length(data));
+rotation_dist_diffs = zeros(length(data));
+
+for sr_i = 1:length(data)
+    for tar_i = 1:length(data)
+        if sr_i ~= tar_i
+            X1 = proj_data{sr_i}.left;
+            Y1 = proj_data{sr_i}.right;
+            X2 = proj_data{tar_i}.left;
+            Y2 = proj_data{tar_i}.right;
+            [~, ~, transform_sr] = procrustes(Y1', X1', 'scaling', false, 'reflection',false);
+            [~, ~, transform_tar] = procrustes(Y2', X2', 'scaling', false, 'reflection',false);
+            
+            rot_X = transform_sr.T;
+            rot_Y = transform_tar.T;
+            Fro_dist_diffs(sr_i, tar_i) = sum((rot_X - rot_Y).^2, 'all');
+            
+            diff_rotation_eigvs = eig(rot_X' * rot_Y);
+            rotation_dist_diffs(sr_i, tar_i) = sqrt(sum(angle(diff_rotation_eigvs(1:2:end)).^ 2));
+        else
+            Fro_dist_diffs(sr_i, tar_i) = NaN;
+            rotation_dist_diffs(sr_i, tar_i) = NaN;
+        end
+    end
+end
+
+%%
+out_actual_dists = set_withsubj_nan([], actual_dists_mat{1});
+out_Fro_dist_diffs = set_withsubj_nan([], Fro_dist_diffs);
+out_rotation_dist_diffs = set_withsubj_nan([], rotation_dist_diffs);
+
+%% Plot Frobenius norm / Geodesic distance with z-scores
+figure;
+y = z_score{1}.out_zscore_mat(~isnan(z_score{1}.out_zscore_mat));
+% x = out_Fro_dist_diffs(~isnan(out_Fro_dist_diffs));
+x = out_rotation_dist_diffs(~isnan(out_rotation_dist_diffs));
+
+P = polyfit(x, y, 1);
+yfit = polyval(P, x);
+
+plot(x, y, '.');
+% xlabel('Frobenius norm');
+xlabel('Geodesic distance');
+ylabel('cross-subject predictability (z-scores)');
+hold on;
+
+plot(x, yfit,'r-.');
+[R, P] = corrcoef(x, y);
+eqn = string(" Correlation: " + R(1, 2));
+text(min(x), max(y), eqn, "HorizontalAlignment","left","VerticalAlignment","top")
+
+%% Obtain the distances of rotation matrices (from target to source) for all source-target pairs.
+Fro_dists = zeros(length(data));
+rotation_dists = zeros(length(data));
+
+for sr_i = 1:length(data)
+    for tar_i = 1:length(data)
+        if sr_i ~= tar_i
+            X1 = proj_data{sr_i}.left;
+            Y1 = proj_data{sr_i}.right;
+            X2 = proj_data{tar_i}.left;
+            Y2 = proj_data{tar_i}.right;
+            [~, ~, transform] = procrustes([X1, Y1]', [X2, Y2]', 'scaling', false);
+            
+            Fro_dists(sr_i, tar_i) = sum((eye(cfg.NumComponents) - transform.T).^2, 'all');
+            
+            rotation_eigvs = eig(eye(cfg.NumComponents)' * transform.T);
+            rotation_dists(sr_i, tar_i) = sqrt(sum(angle(rotation_eigvs(1:2:end)).^ 2));
+        else
+            Fro_dists(sr_i, tar_i) = NaN;
+            rotation_dists(sr_i, tar_i) = NaN;
+        end
+    end
+end
+
+%%
+out_actual_dists = set_withsubj_nan([], actual_dists_mat{1});
+out_Fro_dists = set_withsubj_nan([], Fro_dists);
+out_rotation_dists = set_withsubj_nan([], rotation_dists);
