@@ -45,7 +45,8 @@ imagesc(dists_mat); colorbar;
 sr_i = 1;
 tar_i = 10;
 
-Xs = {proj_data{sr_i}.left, proj_data{sr_i}.right, proj_data{tar_i}.left, proj_data{tar_i}.right};
+% Xs = {proj_data{sr_i}.left, proj_data{sr_i}.right, proj_data{tar_i}.left, proj_data{tar_i}.right};
+Xs = {X1, Y1, X2, Y2};
 
 rotation_mat_cells = cell(length(Xs));
 Fro_dist_mat = zeros(length(Xs));
@@ -57,9 +58,9 @@ for i = 1:length(Xs)
         Y = Xs{i}';
         [d, Z, transform] = procrustes(X, Y, 'scaling', false, 'reflection',false);
         rotation_mat_cells{i, j} = transform.T;
-        Fro_dist_mat(i, j) = sum((eye(cfg.NumComponents) - transform.T).^2, 'all');
+        Fro_dist_mat(i, j) = sum((eye(length(transform.T)) - transform.T).^2, 'all');
         
-        rotation_eigvs = eig(eye(cfg.NumComponents)' * transform.T);
+        rotation_eigvs = eig(eye(length(transform.T))' * transform.T);
         rotation_dist_mat(i, j) = sqrt(sum(angle(rotation_eigvs(1:2:end)).^ 2));
     end
 end
@@ -80,8 +81,6 @@ for i = 1:length(diff_indices)
 
     end
 end
-
-%%
 
 %% Plot of Frobenius norm
 set(0,'defaultTextInterpreter','latex'); %trying to set the default
@@ -195,3 +194,57 @@ end
 out_actual_dists = set_withsubj_nan([], actual_dists_mat{1});
 out_Fro_dists = set_withsubj_nan([], Fro_dists);
 out_rotation_dists = set_withsubj_nan([], rotation_dists);
+
+%% Simulate 1D gaussian tuning curves and apply random orthogonal matrices to verify distance metrics
+
+w_len = 50;
+n_units = 20;
+X1 = zeros(n_units, w_len);
+
+p_has_field = 1;
+
+for n_i = 1:n_units
+    mu_1 = rand() * w_len;
+    mu_2 = rand() * w_len;
+    peak = 1;
+    sig = w_len/16;
+    if rand() <= p_has_field
+        X1(n_i, :) = gaussian_1d(w_len, peak, mu_1, sig);
+    end
+end
+
+X1 = zscore(X1, 0, 2);
+
+[Q,~] = qr(randn(n_units));
+Q(:,1)=Q(:,1)*(2*(rand>0.5)-1); Q(:,2)=det(Q)*Q(:,2);
+
+Y1 = Q*X1;
+
+[R,~] = qr(randn(n_units));
+R(:,1)=R(:,1)*(2*(rand>0.5)-1); R(:,2)=det(R)*R(:,2);
+
+X2 = R*X1;
+Y2 = Q*X2;
+
+
+%% Plot simulated data
+figure;
+subplot(2, 2, 1)
+imagesc(X1); colorbar;
+xlabel('locations'); ylabel('neurons'); title('X1');
+set(gca, 'FontSize', 18);
+
+subplot(2, 2, 2)
+imagesc(Y1); colorbar;
+xlabel('locations'); ylabel('neurons'); title('Y1');
+set(gca, 'FontSize', 18);
+
+subplot(2, 2, 3)
+imagesc(X2); colorbar;
+xlabel('locations'); ylabel('neurons'); title('X2');
+set(gca, 'FontSize', 18);
+
+subplot(2, 2, 4)
+imagesc(Y2); colorbar;
+xlabel('locations'); ylabel('neurons'); title('Y2');
+set(gca, 'FontSize', 18);
