@@ -3,11 +3,13 @@ function [actual_dist, p_target] = predict_with_template_align(template, V, eigv
 % Align the withheld subject to template
 hyper_input_val = {template, V};
 [aligned_left, aligned_right, transforms] = get_aligned_left_right(hyper_input_val);
+aligned_left_template = aligned_left{1};
+aligned_right_template = aligned_right{1};
 aligned_left_val = aligned_left{2};
 transforms_val = transforms{2};
 
 % Estimate M from L to R using the template.
-[~, ~, M] = procrustes(template.right', template.left', 'scaling', false);
+[~, ~, M] = procrustes(aligned_right_template', aligned_left_template', 'scaling', false);
 % Apply M to L of the validate session V.
 predicted_aligned = p_transform(M, aligned_left_val);
 
