@@ -2,7 +2,13 @@
 rng(mean('hyperalignment'));
 
 %%
-data = TC_norm_Z;
+% data{1}.left = X1;
+% data{1}.right = Y1;
+% data{2}.left = X2;
+% data{2}.right = Y2;
+% proj_data = data;
+
+data = Q_norm_Z;
 
 % Project [L, R] to PCA space.
 cfg.NumComponents = 10;
@@ -41,6 +47,53 @@ end
 %% Plot
 imagesc(dists_mat); colorbar;
 
+%% Test if the difference in cross-condition transformation matrix decreases after alignment.
+Fro_dist_mat_pca = zeros(length(data));
+geodesic_dist_mat_pca = zeros(length(data));
+Fro_dist_mat_aligned = zeros(length(data));
+geodesic_dist_mat_aligned = zeros(length(data));
+
+w_len = size(data{1}.left, 2);
+
+for sr_i = 1:length(data)
+    left_sr = proj_data{sr_i}.left;
+    right_sr = proj_data{sr_i}.right;
+    [~, ~, M_sr] = procrustes(right_sr', left_sr', 'scaling', false, 'reflection',false);
+    for tar_i = 1:length(data)
+        if sr_i ~= tar_i
+            left_tar = proj_data{tar_i}.left;
+            right_tar = proj_data{tar_i}.right;
+            [~, ~, M_tar] = procrustes(right_tar', left_tar', 'scaling', false, 'reflection',false);
+            
+            Fro_dist_mat_pca(sr_i, tar_i) = sum((M_sr.T - M_tar.T).^2, 'all');
+            diff_rotation_eigvs_pca = eig(M_sr.T' * M_tar.T);
+            geodesic_dist_mat_pca(sr_i, tar_i) = sqrt(sum(angle(diff_rotation_eigvs_pca(1:2:end)).^ 2));
+            
+            % Hyperalign
+            [~, Z, transform] = procrustes([left_sr, right_sr]', [left_tar, right_tar]', 'scaling', false, 'reflection',false);
+            tar_aligned = Z';
+            left_tar_aligned = tar_aligned(:, 1:w_len);
+            right_tar_aligned = tar_aligned(:, w_len+1:end);
+            [~, ~, M_tar_aligned] = procrustes(right_tar_aligned', left_tar_aligned', 'scaling', false, 'reflection',false);
+            
+            Fro_dist_mat_aligned(sr_i, tar_i) = sum((M_sr.T - M_tar_aligned.T).^2, 'all');
+            diff_rotation_eigvs_aligned = eig(M_sr.T' * M_tar_aligned.T);
+            geodesic_dist_mat_aligned(sr_i, tar_i) = sqrt(sum(angle(diff_rotation_eigvs_aligned(1:2:end)).^ 2));
+        end
+    end
+end
+
+%% Plot
+subplot(1, 2, 1);
+imagesc(Fro_dist_mat_pca); colorbar;
+subplot(1, 2, 2);
+imagesc(Fro_dist_mat_aligned); colorbar;
+
+figure;
+subplot(1, 2, 1);
+imagesc(geodesic_dist_mat_pca); colorbar;
+subplot(1, 2, 2);
+imagesc(geodesic_dist_mat_aligned); colorbar;
 %% Compare norms (Frobenius and geodesic distance) of rotation matrices.
 sr_i = 1;
 tar_i = 10;
@@ -48,19 +101,19 @@ tar_i = 10;
 % Xs = {proj_data{sr_i}.left, proj_data{sr_i}.right, proj_data{tar_i}.left, proj_data{tar_i}.right};
 Xs = {X1, Y1, X2, Y2};
 
-rotation_mat_cells = cell(length(Xs));
-Fro_dist_mat = zeros(length(Xs));
-rotation_dist_mat = zeros(length(Xs));
+% rotation_mat_cells = cell(length(Xs));
+% Fro_dist_mat = zeros(length(Xs));
+% rotation_dist_mat = zeros(length(Xs));
 
 for i = 1:length(Xs)
     for j = 1:length(Xs)
-        X = Xs{j}';
-        Y = Xs{i}';
-        [d, Z, transform] = procrustes(X, Y, 'scaling', false, 'reflection',false);
-        rotation_mat_cells{i, j} = transform.T;
-        Fro_dist_mat(i, j) = sum((eye(length(transform.T)) - transform.T).^2, 'all');
+%         X = Xs{j}';
+%         Y = Xs{i}';
+%         [d, Z, transform] = procrustes(X, Y, 'scaling', false, 'reflection',false);
+%         rotation_mat_cells{i, j} = transform.T;
+        Fro_dist_mat(i, j) = sum((eye(length(rotation_mat_cells{i, j})) - rotation_mat_cells{i, j}).^2, 'all');
         
-        rotation_eigvs = eig(eye(length(transform.T))' * transform.T);
+        rotation_eigvs = eig(eye(length(rotation_mat_cells{i, j}))' * rotation_mat_cells{i, j});
         rotation_dist_mat(i, j) = sqrt(sum(angle(rotation_eigvs(1:2:end)).^ 2));
     end
 end
@@ -198,34 +251,62 @@ out_rotation_dists = set_withsubj_nan([], rotation_dists);
 %% Simulate 1D gaussian tuning curves and apply random orthogonal matrices to verify distance metrics
 
 w_len = 50;
-n_units = 20;
-X1 = zeros(n_units, w_len);
-
+n_units = 70;
 p_has_field = 1;
 
+X1 = zeros(n_units, w_len);
 for n_i = 1:n_units
     mu_1 = rand() * w_len;
-    mu_2 = rand() * w_len;
     peak = 1;
     sig = w_len/16;
     if rand() <= p_has_field
         X1(n_i, :) = gaussian_1d(w_len, peak, mu_1, sig);
     end
 end
-
 X1 = zscore(X1, 0, 2);
 
-[Q,~] = qr(randn(n_units));
-Q(:,1)=Q(:,1)*(2*(rand>0.5)-1); Q(:,2)=det(Q)*Q(:,2);
+X2 = zeros(n_units, w_len);
+for n_i = 1:n_units
+    mu_1 = rand() * w_len;
+    peak = 1;
+    sig = w_len/16;
+    if rand() <= p_has_field
+        X2(n_i, :) = gaussian_1d(w_len, peak, mu_1, sig);
+    end
+end
+X2 = zscore(X2, 0, 2);
 
-Y1 = Q*X1;
+pca_input = {X1, X2};
+cfg.NumComponents = 10;
+for p_i = 1:2
+    pca_mean{p_i} = mean(pca_input{p_i}, 2);
+    pca_input_centered = pca_input{p_i} - pca_mean{p_i};
+    [eigvecs{p_i}] = pca_egvecs(pca_input_centered, cfg.NumComponents);
+    %  project all other trials (both left and right trials) to the same dimension
+    proj_data{p_i}.left = pca_project(pca_input_centered, eigvecs{p_i});
+    
+    [Q,~] = qr(randn(cfg.NumComponents));
+    Q(:,1)=Q(:,1)*(2*(rand>0.5)-1); Q(:,2)=det(Q)*Q(:,2);
+    cross_cond{p_i} = Q;
+    proj_data{p_i}.right = Q * proj_data{p_i}.left;
+end
 
-[R,~] = qr(randn(n_units));
-R(:,1)=R(:,1)*(2*(rand>0.5)-1); R(:,2)=det(R)*R(:,2);
+Y1 = eigvecs{1} * proj_data{1}.right + pca_mean{1};
+Y2 = eigvecs{2} * proj_data{2}.right + pca_mean{2};
 
-X2 = R*X1;
-Y2 = Q*X2;
+% [Q,~] = qr(randn(n_units));
+% Q(:,1)=Q(:,1)*(2*(rand>0.5)-1); Q(:,2)=det(Q)*Q(:,2);
 
+% Y1 = Q*X1;
+
+% [R,~] = qr(randn(n_units));
+% R(:,1)=R(:,1)*(2*(rand>0.5)-1); R(:,2)=det(R)*R(:,2);
+
+% X2 = R*X1;
+% Y2 = Q*X2;
+
+% X2 = R*X1;
+% Y2 = R*Y1;
 
 %% Plot simulated data
 figure;
