@@ -22,12 +22,14 @@ end
 
 %% Derive a transformation f (L -> R) from the template obtained by alignment of N - 1 subjects.
 w_len = size(data{1}.left, 2);
-opt_dist_diffs  = cell(1, length(data));
-actual_dist_zscores = cell(1, length(data));
+% opt_dist_diffs  = cell(1, length(data));
 
-num_iters = 100;
 
-actual_dist_iters = zeros(length(data), num_iters);
+actual_dists = zeros(1, length(data));
+opt_dists = zeros(1, length(data));
+sf_dist_cells = cell(1, length(data));
+actual_dist_zscores = zeros(1, length(data));
+m_sf_dists = zeros(1, length(data));
 
 for val_sub_i = subjects
     align_subjects = setdiff(subjects, val_sub_i);
@@ -37,68 +39,147 @@ for val_sub_i = subjects
     end
     for val_sess_i = sub_ids_starts(val_sub_i):sub_ids_ends(val_sub_i)
         H = proj_data{val_sess_i};
-        % Withhold R of validate session
-        ex_data = data;
-        ex_data{val_sess_i}.right = zeros(size(data{val_sess_i}.right));
-        ex_proj_data = proj_data;
-        ex_eigvecs = eigvecs;
-        ex_pca_mean = pca_mean;
-        [ex_proj_data{val_sess_i}, ex_eigvecs{val_sess_i}, ex_pca_mean{val_sess_i}] = perform_pca(ex_data{val_sess_i}, cfg.NumComponents);
-        ex_H = ex_proj_data{val_sess_i};
         
-%         for align_i = sub_ids_starts(align_subjects(1)):sub_ids_ends(align_subjects(1))
-%             for align_j = sub_ids_starts(align_subjects(2)):sub_ids_ends(align_subjects(2))
-%                 for align_k = sub_ids_starts(align_subjects(3)):sub_ids_ends(align_subjects(3))
-                    % Compare prediction to the ground truth
-                    ground_truth = data{val_sess_i}.right;
-                    
-                    % Optimal H_right prediction
-                    [~, ~, M_opt] = procrustes(H.right', H.left', 'scaling', false);
-                    predicted_opt = p_transform(M_opt, H.left);
-                    
-                    % Project back to DATA space.
-                    p_target_opt = eigvecs{val_sess_i} * predicted_opt + pca_mean{val_sess_i};
-                    p_target_opt_ex = ex_eigvecs{val_sess_i} * predicted_opt + ex_pca_mean{val_sess_i};
-                    
-                    cfg.dist_dim = 'all';
-                    actual_dist_opt = calculate_dist(cfg.dist_dim, p_target_opt, ground_truth);
-                    
-%                     [X, Y, Z] = proj_data{[align_i, align_j, align_k]};
-%                     hyper_input = {X, Y, Z};
-                    hyper_input = {proj_data{align_sessions}};
-                    [aligned_left, aligned_right, transforms, T_left, T_right] = get_aligned_left_right(hyper_input);
-                    template.left = T_left;
-                    template.right = T_right;
-
-                    [actual_dist, predicted_aligned] = predict_with_template_align(template, ex_H, ex_eigvecs{val_sess_i}, ex_pca_mean{val_sess_i}, ground_truth);
-                    
-                    for iter_i = 1:num_iters
-                        ex_H = ex_proj_data{val_sess_i};
-                        ex_H.right = predicted_aligned;
-                        [actual_dist, p_target] = predict_with_template_align(template, ex_H, ex_eigvecs{val_sess_i}, ex_pca_mean{val_sess_i}, ground_truth);
-                        
-                        actual_dist_iters(val_sess_i, iter_i) = actual_dist;
-                    end
-                    
-                    opt_dist_diffs{val_sess_i} = [opt_dist_diffs{val_sess_i}, actual_dist_opt - actual_dist];
-                    
-                    % Shuffle templates and get shuffled control predictions
-%                     cfg.n_shuffles = 1000;
-%                     sf_dists = zeros(1, cfg.n_shuffles);
-%                     for sf_i = 1:cfg.n_shuffles
-%                         s_template.left = template.left;
-%                         shuffle_indices_R = randperm(size(template.right, 1));
-%                         s_template.right = template.right(shuffle_indices_R, :);
-%                         
-%                         [sf_dists(sf_i)] = predict_with_template_align(s_template, ex_H, ex_eigvecs{val_sess_i}, ex_pca_mean{val_sess_i}, ground_truth);
-%                     end
-%                     zs = zscore([sf_dists, actual_dist]);
-%                     actual_dist_zscores{val_sess_i} = [actual_dist_zscores{val_sess_i}, zs(end)];
-%                 end
-%             end
+        % Compare prediction to the ground truth
+        ground_truth = data{val_sess_i}.right;
+        
+        % Optimal H_right prediction
+        [~, ~, M_opt] = procrustes(H.right', H.left', 'scaling', false);
+        predicted_opt = p_transform(M_opt, H.left);
+        
+        % Project back to DATA space.
+        p_target_opt = eigvecs{val_sess_i} * predicted_opt + pca_mean{val_sess_i};
+        
+        cfg.dist_dim = 'all';
+        actual_dist_opt = calculate_dist(cfg.dist_dim, p_target_opt, ground_truth);
+        opt_dists(val_sess_i) = actual_dist_opt;
+        
+        hyper_input = {proj_data{align_sessions}};
+        
+        [aligned_left, aligned_right, transforms, T_left, T_right] = get_aligned_left_right(hyper_input);
+        template.left = T_left;
+        template.right = T_right;
+        
+        [actual_dist, predicted_aligned] = predict_with_template_align(template, H, eigvecs{val_sess_i}, pca_mean{val_sess_i}, ground_truth);
+        actual_dists(val_sess_i) = actual_dist;
+        
+%         % Shuffle templates and get shuffled control predictions
+%         cfg.n_shuffles = 1000;
+%         sf_dists = zeros(1, cfg.n_shuffles);
+%         for sf_i = 1:cfg.n_shuffles
+%             s_template.left = template.left;
+%             shuffle_indices_R = randperm(size(template.right, 1));
+%             s_template.right = template.right(shuffle_indices_R, :);
+%             
+%             [sf_dists(sf_i)] = predict_with_template_align(s_template, H, eigvecs{val_sess_i}, pca_mean{val_sess_i}, ground_truth);
 %         end
+%         sf_dist_cells{val_sess_i} = sf_dists;
+%         m_sf_dists(val_sess_i) = mean(sf_dists);
+%         
+%         zs = zscore([sf_dists, actual_dist]);
+%         actual_dist_zscores(val_sess_i) = zs(end);
+
+        % Shuffle aligned sessions and get shuffled control predictions
+        cfg.n_shuffles = 1000;
+        sf_dists = zeros(1, cfg.n_shuffles);
+        for sf_i = 1:cfg.n_shuffles
+            s_proj_data = proj_data;
+            for s_i = 1:length(align_sessions)
+                s_align_i = align_sessions(s_i);
+                shuffle_indices = randperm(size(proj_data{s_align_i}.right, 1));
+                s_proj_data{s_align_i}.right = s_proj_data{s_align_i}.right(shuffle_indices, :);
+            end
+            
+            s_hyper_input = {s_proj_data{align_sessions}};
+            [~, ~, ~, s_T_left, s_T_right] = get_aligned_left_right(s_hyper_input);
+            s_template.left = s_T_left;
+            s_template.right = s_T_right;
+            
+            [sf_dists(sf_i)] = predict_with_template_align(s_template, H, eigvecs{val_sess_i}, pca_mean{val_sess_i}, ground_truth);
+        end
+        sf_dist_cells{val_sess_i} = sf_dists;
+        m_sf_dists(val_sess_i) = mean(sf_dists);
+        
+        zs = zscore([sf_dists, actual_dist]);
+        actual_dist_zscores(val_sess_i) = zs(end);
     end
 end
+
+%% Average predictions across different cross-subject sessions
+w_len = size(data{1}.left, 2);
+% opt_dist_diffs  = cell(1, length(data));
+
+actual_dists = zeros(1, length(data));
+opt_dists = zeros(1, length(data));
+sf_dist_cells = cell(1, length(data));
+actual_dist_zscores = zeros(1, length(data));
+m_sf_dists = zeros(1, length(data));
+
+for val_sub_i = subjects
+    align_subjects = setdiff(subjects, val_sub_i);
+    align_sessions = [];
+    for align_subs_i = align_subjects
+        align_sessions = [align_sessions, sub_ids_starts(align_subs_i):sub_ids_ends(align_subs_i)];
+    end
+    for val_sess_i = sub_ids_starts(val_sub_i):sub_ids_ends(val_sub_i)
+        H = proj_data{val_sess_i};
+        
+        % Compare prediction to the ground truth
+        ground_truth = data{val_sess_i}.right;
+        
+        % Optimal H_right prediction
+        [~, ~, M_opt] = procrustes(H.right', H.left', 'scaling', false);
+        predicted_opt = p_transform(M_opt, H.left);
+        
+        % Project back to DATA space.
+        p_target_opt = eigvecs{val_sess_i} * predicted_opt + pca_mean{val_sess_i};
+        
+        cfg.dist_dim = 'all';
+        actual_dist_opt = calculate_dist(cfg.dist_dim, p_target_opt, ground_truth);
+        opt_dists(val_sess_i) = actual_dist_opt;
+        
+        for s_i = 1:length(align_sessions)
+            s_align_i = align_sessions(s_i);
+            predict_input = {proj_data{s_align_i}, H};
+            [actual_dists_mat] = predict_with_L_R([], predict_input);
+            actual_dists(val_sess_i) = actual_dists(val_sess_i) + actual_dists_mat(1, 2) / length(align_sessions);
+        end
+        
+        % Shuffle aligned sessions and get shuffled control predictions
+        cfg.n_shuffles = 1000;
+        sf_dists = zeros(1, cfg.n_shuffles);
+        for sf_i = 1:cfg.n_shuffles
+            s_proj_data = proj_data;
+            for s_i = 1:length(align_sessions)
+                s_align_i = align_sessions(s_i);
+                shuffle_indices = randperm(size(proj_data{s_align_i}.right, 1));
+                s_proj_data{s_align_i}.right = s_proj_data{s_align_i}.right(shuffle_indices, :);
+                
+                s_predict_input = {s_proj_data{s_align_i}, H};
+                [s_dists_mat] = predict_with_L_R([], s_predict_input);
+                sf_dists(sf_i) = sf_dists(sf_i) + s_dists_mat(1, 2) / length(align_sessions);
+            end            
+        end
+        sf_dist_cells{val_sess_i} = sf_dists;
+        m_sf_dists(val_sess_i) = mean(sf_dists);
+        
+        zs = zscore([sf_dists, actual_dists(val_sess_i)]);
+        actual_dist_zscores(val_sess_i) = zs(end);
+    end
+end
+
+%% Plot errors of optimal, actual and mean of shuffled prediction
+x = 1:length(data);
+xpad = 0.5;
+
+hold on;
+plot(x, actual_dists, '.k', 'MarkerSize', 20);
+set(gca, 'XTick', x, 'XLim', [x(1)-xpad x(end)+xpad], 'YLim', [-2e5, 1e5], 'FontSize', 18, ...
+    'LineWidth', 1, 'TickDir', 'out');
+box off;
+% plot([x(1)-xpad x(end)+xpad], [0 0], '--k', 'LineWidth', 1, 'Color', [0.7 0.7 0.7]);
+xlabel('Sessions')
+ylabel('$\hat{H_2}^*$ - $\hat{H_2}$ (pairwise)', 'Interpreter','latex')
 
 %% Pairwise difference between H2* and H2^
 
